@@ -3,7 +3,7 @@
 //! Agents are entities that can perform actions on behalf of users or organizations.
 //! They have capabilities, permissions, and can use tools/functions.
 
-use crate::{
+use cim_core_domain::{
     component::{Component, ComponentStorage},
     entity::{AggregateRoot, Entity, EntityId},
     errors::{DomainError, DomainResult},

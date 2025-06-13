@@ -15,9 +15,6 @@ async-trait = "0.1"
 # Domain dependencies
 cim-core-domain = { path = "../cim-core-domain" }
 
-# Bevy for ECS integration
-bevy = { version = "0.15", default-features = false, features = ["bevy_ecs"] }
-
 [dev-dependencies]
 tokio = { version = "1.42", features = ["full"] }
 pretty_assertions = "1.4"
