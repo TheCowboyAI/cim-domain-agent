@@ -1,0 +1,23 @@
+[package]
+name = "cim-domain-agent"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Core dependencies
+uuid = { version = "1.11", features = ["v4", "serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2.0"
+async-trait = "0.1"
+
+# Domain dependencies
+cim-core-domain = { path = "../cim-core-domain" }
+
+# Bevy for ECS integration
+bevy = { version = "0.15", default-features = false, features = ["bevy_ecs"] }
+
+[dev-dependencies]
+tokio = { version = "1.42", features = ["full"] }
+pretty_assertions = "1.4"
