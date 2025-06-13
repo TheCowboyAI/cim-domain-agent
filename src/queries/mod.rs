@@ -1,7 +1,7 @@
 //! Agent query definitions
 
 use uuid::Uuid;
-use cim_core_domain::query::Query;
+use cim_domain::Query;
 
 /// Query for agent information
 #[derive(Debug, Clone)]
@@ -18,9 +18,7 @@ pub enum AgentQuery {
     GetByCapability(String),
 }
 
-impl Query for AgentQuery {
-    type Result = Vec<crate::projections::AgentView>;
-}
+impl Query for AgentQuery {}
 
 /// Agent query handler
 pub struct AgentQueryHandler<R> {

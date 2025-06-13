@@ -3,10 +3,10 @@
 //! Agents are entities that can perform actions on behalf of users or organizations.
 //! They have capabilities, permissions, and can use tools/functions.
 
-use cim_core_domain::{
-    component::{Component, ComponentStorage},
-    entity::{AggregateRoot, Entity, EntityId},
-    errors::{DomainError, DomainResult},
+use cim_domain::{
+    Component, ComponentStorage,
+    AggregateRoot, Entity, EntityId,
+    DomainError, DomainResult,
 };
 use serde::{Deserialize, Serialize};
 use std::any::Any;

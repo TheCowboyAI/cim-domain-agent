@@ -1,8 +1,6 @@
 //! Agent domain events
 
-use cim_core_domain::event::{DomainEvent, EventMetadata};
-use cim_core_domain::identifiers::AggregateId;
-use cim_core_domain::subject::Subject;
+use cim_domain::{DomainEvent, EventMetadata};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::collections::HashSet;
@@ -23,16 +21,16 @@ pub struct AgentDeployed {
 }
 
 impl DomainEvent for AgentDeployed {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentDeployed"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent", "deployed")
+    fn subject(&self) -> String {
+        "agent.deployed".to_string()
     }
 }
 
@@ -48,16 +46,16 @@ pub struct AgentActivated {
 }
 
 impl DomainEvent for AgentActivated {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentActivated"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent", "activated")
+    fn subject(&self) -> String {
+        "agent.activated".to_string()
     }
 }
 
@@ -75,16 +73,16 @@ pub struct AgentSuspended {
 }
 
 impl DomainEvent for AgentSuspended {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentSuspended"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent", "suspended")
+    fn subject(&self) -> String {
+        "agent.suspended".to_string()
     }
 }
 
@@ -100,16 +98,16 @@ pub struct AgentWentOffline {
 }
 
 impl DomainEvent for AgentWentOffline {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentWentOffline"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent", "went_offline")
+    fn subject(&self) -> String {
+        "agent.went_offline".to_string()
     }
 }
 
@@ -125,16 +123,16 @@ pub struct AgentDecommissioned {
 }
 
 impl DomainEvent for AgentDecommissioned {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentDecommissioned"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent", "decommissioned")
+    fn subject(&self) -> String {
+        "agent.decommissioned".to_string()
     }
 }
 
@@ -150,16 +148,16 @@ pub struct AgentCapabilitiesAdded {
 }
 
 impl DomainEvent for AgentCapabilitiesAdded {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentCapabilitiesAdded"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent.capabilities", "added")
+    fn subject(&self) -> String {
+        "agent.capabilities.added".to_string()
     }
 }
 
@@ -175,16 +173,16 @@ pub struct AgentCapabilitiesRemoved {
 }
 
 impl DomainEvent for AgentCapabilitiesRemoved {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentCapabilitiesRemoved"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent.capabilities", "removed")
+    fn subject(&self) -> String {
+        "agent.capabilities.removed".to_string()
     }
 }
 
@@ -200,16 +198,16 @@ pub struct AgentPermissionsGranted {
 }
 
 impl DomainEvent for AgentPermissionsGranted {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentPermissionsGranted"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent.permissions", "granted")
+    fn subject(&self) -> String {
+        "agent.permissions.granted".to_string()
     }
 }
 
@@ -225,16 +223,16 @@ pub struct AgentPermissionsRevoked {
 }
 
 impl DomainEvent for AgentPermissionsRevoked {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentPermissionsRevoked"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent.permissions", "revoked")
+    fn subject(&self) -> String {
+        "agent.permissions.revoked".to_string()
     }
 }
 
@@ -250,16 +248,16 @@ pub struct AgentToolsEnabled {
 }
 
 impl DomainEvent for AgentToolsEnabled {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentToolsEnabled"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent.tools", "enabled")
+    fn subject(&self) -> String {
+        "agent.tools.enabled".to_string()
     }
 }
 
@@ -275,16 +273,16 @@ pub struct AgentToolsDisabled {
 }
 
 impl DomainEvent for AgentToolsDisabled {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentToolsDisabled"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent.tools", "disabled")
+    fn subject(&self) -> String {
+        "agent.tools.disabled".to_string()
     }
 }
 
@@ -300,16 +298,16 @@ pub struct AgentConfigurationRemoved {
 }
 
 impl DomainEvent for AgentConfigurationRemoved {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentConfigurationRemoved"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent.configuration", "removed")
+    fn subject(&self) -> String {
+        "agent.configuration.removed".to_string()
     }
 }
 
@@ -327,15 +325,15 @@ pub struct AgentConfigurationSet {
 }
 
 impl DomainEvent for AgentConfigurationSet {
-    fn aggregate_id(&self) -> AggregateId {
-        AggregateId::from(self.agent_id)
+    fn aggregate_id(&self) -> Uuid {
+        self.agent_id
     }
 
     fn event_type(&self) -> &'static str {
         "AgentConfigurationSet"
     }
 
-    fn subject(&self) -> Subject {
-        Subject::new("agent.configuration", "set")
+    fn subject(&self) -> String {
+        "agent.configuration.set".to_string()
     }
 }

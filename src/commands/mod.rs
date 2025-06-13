@@ -1,6 +1,6 @@
 //! Agent command definitions
 
-use cim_core_domain::command::Command;
+use cim_domain::Command;
 use uuid::Uuid;
 use std::collections::HashSet;
 use serde_json::Value;
@@ -20,6 +20,10 @@ pub struct DeployAgent {
 
 impl Command for DeployAgent {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Activate an agent
@@ -31,6 +35,10 @@ pub struct ActivateAgent {
 
 impl Command for ActivateAgent {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Suspend an agent
@@ -44,6 +52,10 @@ pub struct SuspendAgent {
 
 impl Command for SuspendAgent {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Set agent offline
@@ -55,6 +67,10 @@ pub struct SetAgentOffline {
 
 impl Command for SetAgentOffline {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Decommission an agent
@@ -66,6 +82,10 @@ pub struct DecommissionAgent {
 
 impl Command for DecommissionAgent {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Update agent capabilities
@@ -81,6 +101,10 @@ pub struct UpdateAgentCapabilities {
 
 impl Command for UpdateAgentCapabilities {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Grant permissions to an agent
@@ -94,6 +118,10 @@ pub struct GrantAgentPermissions {
 
 impl Command for GrantAgentPermissions {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Revoke permissions from an agent
@@ -107,6 +135,10 @@ pub struct RevokeAgentPermissions {
 
 impl Command for RevokeAgentPermissions {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Enable tools for an agent
@@ -120,6 +152,10 @@ pub struct EnableAgentTools {
 
 impl Command for EnableAgentTools {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Disable tools for an agent
@@ -133,6 +169,10 @@ pub struct DisableAgentTools {
 
 impl Command for DisableAgentTools {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Set agent configuration
@@ -148,6 +188,10 @@ pub struct SetAgentConfiguration {
 
 impl Command for SetAgentConfiguration {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
 
 /// Remove agent configuration
@@ -161,4 +205,8 @@ pub struct RemoveAgentConfiguration {
 
 impl Command for RemoveAgentConfiguration {
     type Aggregate = crate::Agent;
+
+    fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
+        Some(cim_domain::EntityId::from_uuid(self.id))
+    }
 }
