@@ -1,7 +1,7 @@
 //! Agent command handler implementation
 
-use crate::{Agent, commands::*};
-use cim_domain::{CommandHandler, CommandEnvelope, CommandAcknowledgment, CommandStatus};
+use crate::{Agent, commands::*, aggregate::AgentMarker};
+use cim_domain::{CommandHandler, CommandEnvelope, CommandAcknowledgment, CommandStatus, EntityId};
 use cim_domain::AggregateRepository;
 
 /// Agent command handler
@@ -24,13 +24,21 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<DeployAgent> fo
 
         // Add metadata component
         match agent.add_component(command.metadata) {
-            Ok(_) => {
-                // In a real implementation, we would publish events here
-                CommandAcknowledgment {
-                    command_id: envelope.id,
-                    correlation_id: envelope.correlation_id,
-                    status: CommandStatus::Accepted,
-                    reason: None,
+            Ok(_events) => {
+                // Save the agent to repository
+                match self.repository.save(&agent) {
+                    Ok(_) => CommandAcknowledgment {
+                        command_id: envelope.id,
+                        correlation_id: envelope.correlation_id,
+                        status: CommandStatus::Accepted,
+                        reason: None,
+                    },
+                    Err(e) => CommandAcknowledgment {
+                        command_id: envelope.id,
+                        correlation_id: envelope.correlation_id,
+                        status: CommandStatus::Rejected,
+                        reason: Some(format!("Failed to save agent: {}", e)),
+                    }
                 }
             }
             Err(e) => {
@@ -49,13 +57,49 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<ActivateAgent> 
     fn handle(&mut self, envelope: CommandEnvelope<ActivateAgent>) -> CommandAcknowledgment {
         let command = envelope.command;
 
-        // In a real implementation, we would load the agent from repository
-        // For now, just return acknowledgment
-        CommandAcknowledgment {
-            command_id: envelope.id,
-            correlation_id: envelope.correlation_id,
-            status: CommandStatus::Accepted,
-            reason: None,
+        // Load the agent from repository
+        let entity_id = EntityId::<AgentMarker>::from_uuid(command.id);
+        match self.repository.load(entity_id) {
+            Ok(Some(mut agent)) => {
+                // Activate the agent
+                match agent.activate() {
+                    Ok(_events) => {
+                        // Save the agent back to repository
+                        match self.repository.save(&agent) {
+                            Ok(_) => CommandAcknowledgment {
+                                command_id: envelope.id,
+                                correlation_id: envelope.correlation_id,
+                                status: CommandStatus::Accepted,
+                                reason: None,
+                            },
+                            Err(e) => CommandAcknowledgment {
+                                command_id: envelope.id,
+                                correlation_id: envelope.correlation_id,
+                                status: CommandStatus::Rejected,
+                                reason: Some(format!("Failed to save agent: {}", e)),
+                            }
+                        }
+                    }
+                    Err(e) => CommandAcknowledgment {
+                        command_id: envelope.id,
+                        correlation_id: envelope.correlation_id,
+                        status: CommandStatus::Rejected,
+                        reason: Some(format!("Failed to activate agent: {}", e)),
+                    }
+                }
+            }
+            Ok(None) => CommandAcknowledgment {
+                command_id: envelope.id,
+                correlation_id: envelope.correlation_id,
+                status: CommandStatus::Rejected,
+                reason: Some("Agent not found".to_string()),
+            },
+            Err(e) => CommandAcknowledgment {
+                command_id: envelope.id,
+                correlation_id: envelope.correlation_id,
+                status: CommandStatus::Rejected,
+                reason: Some(format!("Failed to load agent: {}", e)),
+            }
         }
     }
 }

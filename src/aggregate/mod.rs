@@ -118,11 +118,14 @@ impl Agent {
     }
 
     /// Add a component to the agent
-    pub fn add_component<C: Component>(&mut self, component: C) -> DomainResult<()> {
+    pub fn add_component<C: Component>(&mut self, component: C) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
         self.components.add(component)?;
         self.entity.touch();
         self.version += 1;
-        Ok(())
+        
+        // For now, we'll return an empty vec since component changes might not always generate events
+        // In a real implementation, you might want to generate specific events for certain components
+        Ok(vec![])
     }
 
     /// Get a component by type
@@ -146,13 +149,25 @@ impl Agent {
     }
 
     /// Activate the agent
-    pub fn activate(&mut self) -> DomainResult<()> {
+    pub fn activate(&mut self) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
         match self.status {
             AgentStatus::Initializing | AgentStatus::Suspended | AgentStatus::Offline => {
                 self.status = AgentStatus::Active;
                 self.entity.touch();
                 self.version += 1;
-                Ok(())
+                
+                let event = crate::events::AgentActivated {
+                    agent_id: self.id(),
+                    activated_at: chrono::Utc::now(),
+                    event_metadata: cim_domain::EventMetadata {
+                        source: "agent-domain".to_string(),
+                        version: "v1".to_string(),
+                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
+                        properties: std::collections::HashMap::new(),
+                    },
+                };
+                
+                Ok(vec![Box::new(event)])
             }
             AgentStatus::Active => Err(DomainError::InvalidStateTransition {
                 from: "Active".to_string(),
@@ -166,14 +181,26 @@ impl Agent {
     }
 
     /// Suspend the agent
-    pub fn suspend(&mut self, _reason: String) -> DomainResult<()> {
+    pub fn suspend(&mut self, reason: String) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
         match self.status {
             AgentStatus::Active => {
                 self.status = AgentStatus::Suspended;
                 self.entity.touch();
                 self.version += 1;
-                // Store suspension reason in metadata component if needed
-                Ok(())
+                
+                let event = crate::events::AgentSuspended {
+                    agent_id: self.id(),
+                    reason,
+                    suspended_at: chrono::Utc::now(),
+                    event_metadata: cim_domain::EventMetadata {
+                        source: "agent-domain".to_string(),
+                        version: "v1".to_string(),
+                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
+                        properties: std::collections::HashMap::new(),
+                    },
+                };
+                
+                Ok(vec![Box::new(event)])
             }
             AgentStatus::Decommissioned => Err(DomainError::InvalidStateTransition {
                 from: "Decommissioned".to_string(),
@@ -187,7 +214,7 @@ impl Agent {
     }
 
     /// Decommission the agent
-    pub fn decommission(&mut self) -> DomainResult<()> {
+    pub fn decommission(&mut self) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
         if self.status == AgentStatus::Decommissioned {
             return Err(DomainError::InvalidStateTransition {
                 from: "Decommissioned".to_string(),
@@ -197,17 +224,41 @@ impl Agent {
         self.status = AgentStatus::Decommissioned;
         self.entity.touch();
         self.version += 1;
-        Ok(())
+        
+        let event = crate::events::AgentDecommissioned {
+            agent_id: self.id(),
+            decommissioned_at: chrono::Utc::now(),
+            event_metadata: cim_domain::EventMetadata {
+                source: "agent-domain".to_string(),
+                version: "v1".to_string(),
+                propagation_scope: cim_domain::PropagationScope::LocalOnly,
+                properties: std::collections::HashMap::new(),
+            },
+        };
+        
+        Ok(vec![Box::new(event)])
     }
 
     /// Set agent offline
-    pub fn set_offline(&mut self) -> DomainResult<()> {
+    pub fn set_offline(&mut self) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
         match self.status {
             AgentStatus::Active | AgentStatus::Suspended => {
                 self.status = AgentStatus::Offline;
                 self.entity.touch();
                 self.version += 1;
-                Ok(())
+                
+                let event = crate::events::AgentWentOffline {
+                    agent_id: self.id(),
+                    offline_at: chrono::Utc::now(),
+                    event_metadata: cim_domain::EventMetadata {
+                        source: "agent-domain".to_string(),
+                        version: "v1".to_string(),
+                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
+                        properties: std::collections::HashMap::new(),
+                    },
+                };
+                
+                Ok(vec![Box::new(event)])
             }
             _ => Err(DomainError::InvalidStateTransition {
                 from: format!("{:?}", self.status),
