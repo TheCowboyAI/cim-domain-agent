@@ -25,7 +25,7 @@ pub use commands::{
     ActivateAgent, DecommissionAgent, DeployAgent, DisableAgentTools,
     EnableAgentTools, GrantAgentPermissions, RemoveAgentConfiguration,
     RevokeAgentPermissions, SetAgentConfiguration, SetAgentOffline,
-    SuspendAgent, UpdateAgentCapabilities,
+    SuspendAgent, ChangeAgentCapabilities,
 };
 
 pub use events::{

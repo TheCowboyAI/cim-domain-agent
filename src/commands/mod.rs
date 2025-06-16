@@ -88,9 +88,9 @@ impl Command for DecommissionAgent {
     }
 }
 
-/// Update agent capabilities
+/// Change agent capabilities
 #[derive(Debug, Clone)]
-pub struct UpdateAgentCapabilities {
+pub struct ChangeAgentCapabilities {
     /// Agent ID
     pub id: Uuid,
     /// Capabilities to add
@@ -99,7 +99,7 @@ pub struct UpdateAgentCapabilities {
     pub remove_capabilities: Vec<String>,
 }
 
-impl Command for UpdateAgentCapabilities {
+impl Command for ChangeAgentCapabilities {
     type Aggregate = crate::Agent;
 
     fn aggregate_id(&self) -> Option<cim_domain::EntityId<Self::Aggregate>> {
