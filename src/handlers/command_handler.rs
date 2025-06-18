@@ -37,7 +37,7 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<DeployAgent> fo
                         command_id: envelope.id,
                         correlation_id: envelope.correlation_id,
                         status: CommandStatus::Rejected,
-                        reason: Some(format!("Failed to save agent: {}", e)),
+                        reason: Some(format!("Failed to save agent: {e}")),
                     }
                 }
             }
@@ -76,7 +76,7 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<ActivateAgent> 
                                 command_id: envelope.id,
                                 correlation_id: envelope.correlation_id,
                                 status: CommandStatus::Rejected,
-                                reason: Some(format!("Failed to save agent: {}", e)),
+                                reason: Some(format!("Failed to save agent: {e}")),
                             }
                         }
                     }
@@ -84,7 +84,7 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<ActivateAgent> 
                         command_id: envelope.id,
                         correlation_id: envelope.correlation_id,
                         status: CommandStatus::Rejected,
-                        reason: Some(format!("Failed to activate agent: {}", e)),
+                        reason: Some(format!("Failed to activate agent: {e}")),
                     }
                 }
             }
@@ -98,7 +98,7 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<ActivateAgent> 
                 command_id: envelope.id,
                 correlation_id: envelope.correlation_id,
                 status: CommandStatus::Rejected,
-                reason: Some(format!("Failed to load agent: {}", e)),
+                reason: Some(format!("Failed to load agent: {e}")),
             }
         }
     }

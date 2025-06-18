@@ -386,6 +386,12 @@ pub struct PermissionsComponent {
     pub roles: HashSet<String>,
 }
 
+impl Default for PermissionsComponent {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PermissionsComponent {
     /// Create a new empty permissions component
     pub fn new() -> Self {
