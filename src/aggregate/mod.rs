@@ -117,6 +117,11 @@ impl Agent {
         self.owner_id
     }
 
+    /// Get the version
+    pub fn version(&self) -> u64 {
+        self.version
+    }
+
     /// Add a component to the agent
     pub fn add_component<C: Component>(&mut self, component: C) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
         self.components.add(component)?;

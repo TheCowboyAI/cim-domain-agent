@@ -29,13 +29,13 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<DeployAgent> fo
                 match self.repository.save(&agent) {
                     Ok(_) => CommandAcknowledgment {
                         command_id: envelope.id,
-                        correlation_id: envelope.correlation_id,
+                        correlation_id: envelope.identity.correlation_id.clone(),
                         status: CommandStatus::Accepted,
                         reason: None,
                     },
                     Err(e) => CommandAcknowledgment {
                         command_id: envelope.id,
-                        correlation_id: envelope.correlation_id,
+                        correlation_id: envelope.identity.correlation_id.clone(),
                         status: CommandStatus::Rejected,
                         reason: Some(format!("Failed to save agent: {e}")),
                     }
@@ -44,7 +44,7 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<DeployAgent> fo
             Err(e) => {
                 CommandAcknowledgment {
                     command_id: envelope.id,
-                    correlation_id: envelope.correlation_id,
+                    correlation_id: envelope.identity.correlation_id.clone(),
                     status: CommandStatus::Rejected,
                     reason: Some(e.to_string()),
                 }
@@ -68,13 +68,13 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<ActivateAgent> 
                         match self.repository.save(&agent) {
                             Ok(_) => CommandAcknowledgment {
                                 command_id: envelope.id,
-                                correlation_id: envelope.correlation_id,
+                                correlation_id: envelope.identity.correlation_id.clone(),
                                 status: CommandStatus::Accepted,
                                 reason: None,
                             },
                             Err(e) => CommandAcknowledgment {
                                 command_id: envelope.id,
-                                correlation_id: envelope.correlation_id,
+                                correlation_id: envelope.identity.correlation_id.clone(),
                                 status: CommandStatus::Rejected,
                                 reason: Some(format!("Failed to save agent: {e}")),
                             }
@@ -82,7 +82,7 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<ActivateAgent> 
                     }
                     Err(e) => CommandAcknowledgment {
                         command_id: envelope.id,
-                        correlation_id: envelope.correlation_id,
+                        correlation_id: envelope.identity.correlation_id.clone(),
                         status: CommandStatus::Rejected,
                         reason: Some(format!("Failed to activate agent: {e}")),
                     }
@@ -90,13 +90,13 @@ impl<R: AggregateRepository<Agent> + Send + Sync> CommandHandler<ActivateAgent> 
             }
             Ok(None) => CommandAcknowledgment {
                 command_id: envelope.id,
-                correlation_id: envelope.correlation_id,
+                correlation_id: envelope.identity.correlation_id.clone(),
                 status: CommandStatus::Rejected,
                 reason: Some("Agent not found".to_string()),
             },
             Err(e) => CommandAcknowledgment {
                 command_id: envelope.id,
-                correlation_id: envelope.correlation_id,
+                correlation_id: envelope.identity.correlation_id.clone(),
                 status: CommandStatus::Rejected,
                 reason: Some(format!("Failed to load agent: {e}")),
             }

@@ -1,7 +1,8 @@
 //! Agent query definitions
 
 use uuid::Uuid;
-use cim_domain::Query;
+use cim_domain::{Query, QueryHandler, QueryEnvelope, QueryResponse};
+use serde::{Serialize, Deserialize};
 
 /// Query for agent information
 #[derive(Debug, Clone)]
@@ -19,6 +20,33 @@ pub enum AgentQuery {
 }
 
 impl Query for AgentQuery {}
+
+/// Data transfer object for Agent
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentDto {
+    /// Agent ID
+    pub id: Uuid,
+    /// Agent type
+    pub agent_type: crate::AgentType,
+    /// Current status
+    pub status: crate::AgentStatus,
+    /// Owner ID
+    pub owner_id: Uuid,
+    /// Version
+    pub version: u64,
+}
+
+impl From<&crate::Agent> for AgentDto {
+    fn from(agent: &crate::Agent) -> Self {
+        Self {
+            id: agent.id(),
+            agent_type: agent.agent_type(),
+            status: agent.status(),
+            owner_id: agent.owner_id(),
+            version: agent.version(),
+        }
+    }
+}
 
 /// Trait for agent read models
 pub trait AgentReadModel {
@@ -69,6 +97,23 @@ impl<R: AgentReadModel> AgentQueryHandler<R> {
             AgentQuery::GetByCapability(capability) => {
                 self.read_model.get_by_capability(&capability)
             }
+        }
+    }
+}
+
+impl<R: AgentReadModel + Send + Sync> QueryHandler<AgentQuery> for AgentQueryHandler<R> {
+    fn handle(&self, envelope: QueryEnvelope<AgentQuery>) -> QueryResponse {
+        let agents = self.execute(envelope.query);
+        let agent_dtos: Vec<AgentDto> = agents.iter().map(AgentDto::from).collect();
+        
+        QueryResponse {
+            query_id: envelope.identity.message_id,
+            correlation_id: envelope.identity.correlation_id,
+            result: serde_json::to_value(agent_dtos).unwrap_or_else(|e| {
+                serde_json::json!({
+                    "error": format!("Failed to serialize agents: {}", e)
+                })
+            }),
         }
     }
 }
