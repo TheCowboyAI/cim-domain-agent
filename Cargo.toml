@@ -16,6 +16,13 @@ async-trait = "0.1"
 cim-domain = { path = "../cim-domain" }
 cim-subject = { path = "../cim-subject" }
 
+# Bevy dependencies
+bevy_ecs = { version = "0.16", default-features = false }
+bevy_app = { version = "0.16", default-features = false }
+
+# For semver in metadata component
+semver = "1.0"
+
 [dev-dependencies]
 tokio = { version = "1.42", features = ["full"] }
 pretty_assertions = "1.4"

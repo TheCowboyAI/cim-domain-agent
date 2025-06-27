@@ -13,6 +13,10 @@ pub mod projections;
 pub mod queries;
 pub mod value_objects;
 
+// ECS modules
+pub mod components;
+pub mod systems;
+
 // Re-export main types
 pub use aggregate::{
     Agent, AgentMarker, AgentMetadata, AgentStatus, AgentType,
@@ -38,3 +42,7 @@ pub use events::{
 pub use handlers::{AgentCommandHandler, AgentEventHandler};
 pub use projections::AgentView;
 pub use queries::{AgentQuery, AgentQueryHandler};
+
+// Re-export ECS types
+pub use components::*;
+pub use systems::*;
