@@ -1,10 +1,19 @@
 //! Lifecycle systems for agent management
 
 use bevy_ecs::prelude::*;
-use bevy_app::prelude::*;
 use crate::components::*;
 use crate::events::*;
 use uuid::Uuid;
+
+/// Helper to create event metadata
+fn create_event_metadata() -> cim_domain::EventMetadata {
+    cim_domain::EventMetadata {
+        source: "agent-lifecycle".to_string(),
+        version: "v1".to_string(),
+        propagation_scope: cim_domain::PropagationScope::LocalOnly,
+        properties: std::collections::HashMap::new(),
+    }
+}
 
 /// System for creating new agents
 ///
@@ -53,8 +62,14 @@ pub fn create_agent_system(
             agent_id: deploy_cmd.agent_id,
             agent_type: deploy_cmd.agent_type,
             owner_id: deploy_cmd.owner_id,
-            deployed_at: chrono::Utc::now(),
-            event_metadata: cim_domain::EventMetadata::default(),
+            metadata: crate::aggregate::AgentMetadata {
+                name: deploy_cmd.name.clone(),
+                description: deploy_cmd.description.clone(),
+                tags: std::collections::HashSet::new(),
+                created_at: chrono::Utc::now(),
+                last_active: None,
+            },
+            event_metadata: create_event_metadata(),
         });
     }
 }
@@ -95,7 +110,7 @@ pub fn activate_agent_system(
                 activated_events.write(AgentActivated {
                     agent_id: activate_cmd.agent_id,
                     activated_at: chrono::Utc::now(),
-                    event_metadata: cim_domain::EventMetadata::default(),
+                    event_metadata: create_event_metadata(),
                 });
             }
         }
@@ -139,7 +154,7 @@ pub fn suspend_agent_system(
                     agent_id: suspend_cmd.agent_id,
                     reason: suspend_cmd.reason.clone(),
                     suspended_at: chrono::Utc::now(),
-                    event_metadata: cim_domain::EventMetadata::default(),
+                    event_metadata: create_event_metadata(),
                 });
             }
         }
@@ -181,7 +196,7 @@ pub fn decommission_agent_system(
             decommissioned_events.write(AgentDecommissioned {
                 agent_id: decommission_cmd.agent_id,
                 decommissioned_at: chrono::Utc::now(),
-                event_metadata: cim_domain::EventMetadata::default(),
+                event_metadata: create_event_metadata(),
             });
 
             // Despawn the entity after a delay to allow event processing
@@ -226,7 +241,7 @@ pub fn set_agent_offline_system(
                 went_offline_events.write(AgentWentOffline {
                     agent_id: offline_cmd.agent_id,
                     offline_at: chrono::Utc::now(),
-                    event_metadata: cim_domain::EventMetadata::default(),
+                    event_metadata: create_event_metadata(),
                 });
             }
         }
@@ -253,7 +268,7 @@ pub fn update_agent_readiness_system(
         Option<&AgentAuthentication>,
     )>,
 ) {
-    for (entity, status, mut readiness, capabilities, permissions, auth) in agent_query.iter_mut() {
+    for (_entity, status, mut readiness, capabilities, permissions, auth) in agent_query.iter_mut() {
         // Check status readiness
         readiness.update_check(
             "status".to_string(),

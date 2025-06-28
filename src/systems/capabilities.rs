@@ -1,7 +1,6 @@
 //! Capabilities management systems
 
 use bevy_ecs::prelude::*;
-use bevy_app::prelude::*;
 use crate::components::*;
 use crate::events::*;
 use uuid::Uuid;
@@ -50,8 +49,12 @@ pub fn manage_capabilities_system(
                 added_events.write(AgentCapabilitiesAdded {
                     agent_id: capability_cmd.agent_id,
                     capabilities: actually_added,
-                    added_at: chrono::Utc::now(),
-                    event_metadata: cim_domain::EventMetadata::default(),
+                    event_metadata: cim_domain::EventMetadata {
+                        source: "agent-capabilities".to_string(),
+                        version: "v1".to_string(),
+                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
+                        properties: std::collections::HashMap::new(),
+                    },
                 });
             }
 
@@ -59,8 +62,12 @@ pub fn manage_capabilities_system(
                 removed_events.write(AgentCapabilitiesRemoved {
                     agent_id: capability_cmd.agent_id,
                     capabilities: actually_removed,
-                    removed_at: chrono::Utc::now(),
-                    event_metadata: cim_domain::EventMetadata::default(),
+                    event_metadata: cim_domain::EventMetadata {
+                        source: "agent-capabilities".to_string(),
+                        version: "v1".to_string(),
+                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
+                        properties: std::collections::HashMap::new(),
+                    },
                 });
             }
         }
@@ -79,20 +86,23 @@ pub fn manage_capabilities_system(
 pub fn update_capability_usage_system(
     mut usage_events: EventReader<CapabilityUsedEvent>,
     mut agent_query: Query<(&AgentEntity, Option<&mut CapabilityUsageStats>)>,
-    mut commands: Commands,
+    _commands: Commands,
 ) {
     for usage_event in usage_events.read() {
         // Find the agent
         let agent_found = agent_query.iter_mut()
             .find(|(entity, _)| entity.agent_id == usage_event.agent_id);
 
-        if let Some((agent_entity, usage_stats)) = agent_found {
+        if let Some((_agent_entity, usage_stats)) = agent_found {
             if let Some(mut stats) = usage_stats {
                 // Update existing stats
-                let cap_stats = stats.usage_count
-                    .entry(usage_event.capability.clone())
-                    .or_insert(0);
-                *cap_stats += 1;
+                let count = {
+                    let cap_stats = stats.usage_count
+                        .entry(usage_event.capability.clone())
+                        .or_insert(0);
+                    *cap_stats += 1;
+                    *cap_stats
+                };
 
                 stats.last_used.insert(
                     usage_event.capability.clone(),
@@ -106,9 +116,9 @@ pub fn update_capability_usage_system(
                     .unwrap_or(0.0);
                 
                 let new_rate = if usage_event.success {
-                    (current_rate * (*cap_stats as f32 - 1.0) + 1.0) / *cap_stats as f32
+                    (current_rate * (count as f32 - 1.0) + 1.0) / count as f32
                 } else {
-                    (current_rate * (*cap_stats as f32 - 1.0)) / *cap_stats as f32
+                    (current_rate * (count as f32 - 1.0)) / count as f32
                 };
                 
                 stats.success_rate.insert(usage_event.capability.clone(), new_rate);
@@ -122,17 +132,8 @@ pub fn update_capability_usage_system(
                     if usage_event.success { 1.0 } else { 0.0 }
                 );
 
-                // Find the entity to add the component to
-                if let Ok((entity, _)) = agent_query.get(
-                    agent_query.iter()
-                        .find(|(e, _)| e.agent_id == usage_event.agent_id)
-                        .map(|(e, _)| e)
-                        .unwrap()
-                        .agent_id
-                ) {
-                    // This is a workaround - in real code, we'd need the Entity ID
-                    // commands.entity(entity).insert(new_stats);
-                }
+                // TODO: In a real implementation, we'd need to store the Entity ID
+                // to add the component. For now, this is a placeholder.
             }
         }
     }
@@ -156,7 +157,7 @@ pub fn check_capability_requirements_system(
         &mut AgentReadiness,
     )>,
 ) {
-    for (entity, capabilities, requirements, mut readiness) in agent_query.iter_mut() {
+    for (_entity, capabilities, requirements, mut readiness) in agent_query.iter_mut() {
         if let Some(reqs) = requirements {
             // Check required capabilities
             let missing_required: Vec<_> = reqs.required
@@ -208,14 +209,14 @@ pub fn check_capability_requirements_system(
 pub fn categorize_capabilities_system(
     mut categorize_events: EventReader<CapabilityCategorizeCommand>,
     mut agent_query: Query<(&AgentEntity, &AgentCapabilities, Option<&mut CapabilityCategories>)>,
-    mut commands: Commands,
+    _commands: Commands,
 ) {
     for categorize_cmd in categorize_events.read() {
         // Find the agent
         let agent_found = agent_query.iter_mut()
             .find(|(entity, _, _)| entity.agent_id == categorize_cmd.agent_id);
 
-        if let Some((_, capabilities, categories)) = agent_found {
+        if let Some((_, _capabilities, categories)) = agent_found {
             if let Some(mut cats) = categories {
                 // Update existing categories
                 cats.add_to_category(

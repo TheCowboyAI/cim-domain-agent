@@ -1,7 +1,6 @@
 //! Query systems for agent information
 
 use bevy_ecs::prelude::*;
-use bevy_app::prelude::*;
 use crate::components::*;
 use uuid::Uuid;
 

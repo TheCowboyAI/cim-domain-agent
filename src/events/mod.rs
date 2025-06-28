@@ -4,9 +4,10 @@ use cim_domain::{DomainEvent, EventMetadata};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::collections::HashSet;
+use bevy_ecs::prelude::Event;
 
 /// Agent deployed event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentDeployed {
     /// Agent ID
     pub agent_id: Uuid,
@@ -35,7 +36,7 @@ impl DomainEvent for AgentDeployed {
 }
 
 /// Agent activated event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentActivated {
     /// Agent ID
     pub agent_id: Uuid,
@@ -60,7 +61,7 @@ impl DomainEvent for AgentActivated {
 }
 
 /// Agent suspended event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentSuspended {
     /// Agent ID
     pub agent_id: Uuid,
@@ -87,7 +88,7 @@ impl DomainEvent for AgentSuspended {
 }
 
 /// Agent went offline event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentWentOffline {
     /// Agent ID
     pub agent_id: Uuid,
@@ -112,7 +113,7 @@ impl DomainEvent for AgentWentOffline {
 }
 
 /// Agent decommissioned event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentDecommissioned {
     /// Agent ID
     pub agent_id: Uuid,
@@ -137,7 +138,7 @@ impl DomainEvent for AgentDecommissioned {
 }
 
 /// Agent capabilities added event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentCapabilitiesAdded {
     /// Agent ID
     pub agent_id: Uuid,
@@ -162,7 +163,7 @@ impl DomainEvent for AgentCapabilitiesAdded {
 }
 
 /// Agent capabilities removed event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentCapabilitiesRemoved {
     /// Agent ID
     pub agent_id: Uuid,
@@ -187,7 +188,7 @@ impl DomainEvent for AgentCapabilitiesRemoved {
 }
 
 /// Agent permissions granted event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentPermissionsGranted {
     /// Agent ID
     pub agent_id: Uuid,
@@ -212,7 +213,7 @@ impl DomainEvent for AgentPermissionsGranted {
 }
 
 /// Agent permissions revoked event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentPermissionsRevoked {
     /// Agent ID
     pub agent_id: Uuid,
@@ -237,7 +238,7 @@ impl DomainEvent for AgentPermissionsRevoked {
 }
 
 /// Agent tools enabled event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentToolsEnabled {
     /// Agent ID
     pub agent_id: Uuid,
@@ -262,7 +263,7 @@ impl DomainEvent for AgentToolsEnabled {
 }
 
 /// Agent tools disabled event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentToolsDisabled {
     /// Agent ID
     pub agent_id: Uuid,
@@ -287,7 +288,7 @@ impl DomainEvent for AgentToolsDisabled {
 }
 
 /// Agent configuration removed event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentConfigurationRemoved {
     /// Agent ID
     pub agent_id: Uuid,
@@ -312,7 +313,7 @@ impl DomainEvent for AgentConfigurationRemoved {
 }
 
 /// Agent configuration set event
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Event)]
 pub struct AgentConfigurationSet {
     /// Agent ID
     pub agent_id: Uuid,
