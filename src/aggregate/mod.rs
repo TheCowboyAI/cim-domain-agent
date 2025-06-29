@@ -13,6 +13,15 @@ use std::any::Any;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use uuid::Uuid;
+use chrono::{DateTime, Utc};
+use bevy::prelude::*;
+
+use crate::commands::*;
+use crate::events::*;
+use crate::value_objects::*;
+
+/// Agent ID type
+pub type AgentId = Uuid;
 
 /// Marker type for Agent entities
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -271,6 +280,41 @@ impl Agent {
             }),
         }
     }
+
+    /// Configure AI capabilities for the agent
+    pub fn configure_ai_capabilities(&mut self, capabilities: crate::value_objects::AICapabilities) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
+        // Only AI agents can have AI capabilities
+        if self.agent_type != AgentType::AI {
+            return Err(DomainError::ValidationError(
+                format!("Cannot configure AI capabilities for {:?} agent", self.agent_type)
+            ));
+        }
+
+        // Agent must be in a valid state
+        match self.status {
+            AgentStatus::Active | AgentStatus::Initializing | AgentStatus::Suspended => {
+                // Store the capabilities as a component
+                let ai_component = AICapabilitiesComponent {
+                    capabilities: capabilities.clone(),
+                    last_updated: chrono::Utc::now(),
+                };
+                
+                self.add_component(ai_component)?;
+                self.version += 1;
+                
+                let event = crate::events::AICapabilitiesConfigured {
+                    agent_id: crate::value_objects::AgentId::from_uuid(self.id()),
+                    capabilities,
+                    configured_at: chrono::Utc::now(),
+                };
+                
+                Ok(vec![Box::new(event)])
+            }
+            _ => Err(DomainError::ValidationError(
+                format!("Cannot configure AI capabilities for agent in {:?} state", self.status)
+            )),
+        }
+    }
 }
 
 impl AggregateRoot for Agent {
@@ -517,6 +561,29 @@ impl Component for ConfigurationComponent {
 
     fn type_name(&self) -> &'static str {
         "ConfigurationComponent"
+    }
+}
+
+/// AI capabilities component - AI-specific configuration
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AICapabilitiesComponent {
+    /// AI capabilities configuration
+    pub capabilities: crate::value_objects::AICapabilities,
+    /// Last updated timestamp
+    pub last_updated: chrono::DateTime<chrono::Utc>,
+}
+
+impl Component for AICapabilitiesComponent {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn clone_box(&self) -> Box<dyn Component> {
+        Box::new(self.clone())
+    }
+
+    fn type_name(&self) -> &'static str {
+        "AICapabilitiesComponent"
     }
 }
 

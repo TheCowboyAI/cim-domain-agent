@@ -26,7 +26,8 @@ fn test_agent_lifecycle() {
         .add_event::<cim_domain_agent::events::AgentDeployed>()
         .add_event::<cim_domain_agent::events::AgentActivated>()
         .add_event::<cim_domain_agent::events::AgentSuspended>()
-        .add_event::<cim_domain_agent::events::AgentDecommissioned>();
+        .add_event::<cim_domain_agent::events::AgentDecommissioned>()
+        .add_event::<cim_domain_agent::events::AgentCapabilitiesChanged>();
 
     // Add systems
     app.add_systems(Update, (
@@ -96,8 +97,7 @@ fn test_capability_management() {
     app.add_event::<AgentDeployCommand>()
         .add_event::<ChangeAgentCapabilitiesCommand>()
         .add_event::<cim_domain_agent::events::AgentDeployed>()
-        .add_event::<cim_domain_agent::events::AgentCapabilitiesAdded>()
-        .add_event::<cim_domain_agent::events::AgentCapabilitiesRemoved>();
+        .add_event::<cim_domain_agent::events::AgentCapabilitiesChanged>();
 
     // Add systems
     app.add_systems(Update, (
@@ -173,8 +173,7 @@ fn test_permission_system() {
         .add_event::<GrantPermissionsCommand>()
         .add_event::<RevokePermissionsCommand>()
         .add_event::<cim_domain_agent::events::AgentDeployed>()
-        .add_event::<cim_domain_agent::events::AgentPermissionsGranted>()
-        .add_event::<cim_domain_agent::events::AgentPermissionsRevoked>();
+        .add_event::<cim_domain_agent::events::AgentPermissionsChanged>();
 
     // Add systems
     app.add_systems(Update, (

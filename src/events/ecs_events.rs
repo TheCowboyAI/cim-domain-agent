@@ -20,25 +20,29 @@ pub struct AgentWentOfflineEvent(pub AgentWentOffline);
 pub struct AgentDecommissionedEvent(pub AgentDecommissioned);
 
 #[derive(Event, Debug, Clone)]
-pub struct AgentCapabilitiesAddedEvent(pub AgentCapabilitiesAdded);
+pub struct AgentCapabilitiesChangedEvent(pub AgentCapabilitiesChanged);
 
 #[derive(Event, Debug, Clone)]
-pub struct AgentCapabilitiesRemovedEvent(pub AgentCapabilitiesRemoved);
+pub struct AgentPermissionsChangedEvent(pub AgentPermissionsChanged);
 
 #[derive(Event, Debug, Clone)]
-pub struct AgentPermissionsGrantedEvent(pub AgentPermissionsGranted);
+pub struct AgentToolsChangedEvent(pub AgentToolsChanged);
+
+// AI-specific events
+#[derive(Event, Debug, Clone)]
+pub struct AICapabilitiesConfiguredEvent(pub AICapabilitiesConfigured);
 
 #[derive(Event, Debug, Clone)]
-pub struct AgentPermissionsRevokedEvent(pub AgentPermissionsRevoked);
+pub struct GraphAnalysisCompletedEvent(pub GraphAnalysisCompleted);
 
 #[derive(Event, Debug, Clone)]
-pub struct AgentToolsEnabledEvent(pub AgentToolsEnabled);
+pub struct TransformationSuggestionsGeneratedEvent(pub TransformationSuggestionsGenerated);
 
 #[derive(Event, Debug, Clone)]
-pub struct AgentToolsDisabledEvent(pub AgentToolsDisabled);
+pub struct AIRecommendationsExecutedEvent(pub AIRecommendationsExecuted);
 
 #[derive(Event, Debug, Clone)]
-pub struct AgentConfigurationRemovedEvent(pub AgentConfigurationRemoved);
+pub struct AgentTrainedOnPatternsEvent(pub AgentTrainedOnPatterns);
 
 #[derive(Event, Debug, Clone)]
-pub struct AgentConfigurationSetEvent(pub AgentConfigurationSet); 
+pub struct AIAnalysisFailedEvent(pub AIAnalysisFailed); 

@@ -18,8 +18,7 @@ use uuid::Uuid;
 pub fn manage_capabilities_system(
     mut capability_events: EventReader<ChangeAgentCapabilitiesCommand>,
     mut agent_query: Query<(&AgentEntity, &mut AgentCapabilities)>,
-    mut added_events: EventWriter<AgentCapabilitiesAdded>,
-    mut removed_events: EventWriter<AgentCapabilitiesRemoved>,
+    mut changed_events: EventWriter<AgentCapabilitiesChanged>,
 ) {
     for capability_cmd in capability_events.read() {
         // Find the agent
@@ -44,30 +43,13 @@ pub fn manage_capabilities_system(
                 }
             }
 
-            // Emit events for changes
-            if !actually_added.is_empty() {
-                added_events.write(AgentCapabilitiesAdded {
-                    agent_id: capability_cmd.agent_id,
-                    capabilities: actually_added,
-                    event_metadata: cim_domain::EventMetadata {
-                        source: "agent-capabilities".to_string(),
-                        version: "v1".to_string(),
-                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
-                        properties: std::collections::HashMap::new(),
-                    },
-                });
-            }
-
-            if !actually_removed.is_empty() {
-                removed_events.write(AgentCapabilitiesRemoved {
-                    agent_id: capability_cmd.agent_id,
-                    capabilities: actually_removed,
-                    event_metadata: cim_domain::EventMetadata {
-                        source: "agent-capabilities".to_string(),
-                        version: "v1".to_string(),
-                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
-                        properties: std::collections::HashMap::new(),
-                    },
+            // Emit event for changes
+            if !actually_added.is_empty() || !actually_removed.is_empty() {
+                changed_events.write(AgentCapabilitiesChanged {
+                    agent_id: crate::value_objects::AgentId::from_uuid(capability_cmd.agent_id),
+                    added: actually_added,
+                    removed: actually_removed,
+                    changed_at: chrono::Utc::now(),
                 });
             }
         }
@@ -232,6 +214,29 @@ pub fn categorize_capabilities_system(
                 );
                 
                 // Would add component here in real implementation
+            }
+        }
+    }
+}
+
+/// Sync agent capabilities with domain events
+pub fn sync_agent_capabilities(
+    mut events: EventReader<AgentCapabilitiesChanged>,
+    mut query: Query<(&AgentEntity, &mut AgentCapabilities)>,
+) {
+    for event in events.read() {
+        // Find the agent with matching ID
+        for (agent_entity, mut capabilities) in query.iter_mut() {
+            if agent_entity.agent_id == event.agent_id.as_uuid() {
+                // Add new capabilities
+                for cap in &event.added {
+                    capabilities.add(cap.clone());
+                }
+                
+                // Remove capabilities
+                for cap in &event.removed {
+                    capabilities.remove(cap);
+                }
             }
         }
     }

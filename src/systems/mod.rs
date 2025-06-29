@@ -18,4 +18,8 @@ pub use capabilities::*;
 // pub use permissions::*;     // TODO: Implement permissions systems
 // pub use tools::*;           // TODO: Implement tools systems
 // pub use monitoring::*;      // TODO: Implement monitoring systems
-pub use query::*; 
+pub use query::*;
+
+// Re-export commonly used systems
+pub use lifecycle::{update_agent_status, process_agent_commands};
+pub use capabilities::sync_agent_capabilities; 

@@ -1,48 +1,36 @@
-//! Agent domain module
+//! Agent domain for CIM
 //!
-//! This module contains all agent-related domain logic including:
-//! - Agent aggregate and components
-//! - Agent commands and events
-//! - Agent command and query handlers
+//! This domain manages AI agents that can analyze and transform graphs.
 
 pub mod aggregate;
 pub mod commands;
+pub mod components;
 pub mod events;
 pub mod handlers;
 pub mod projections;
 pub mod queries;
-pub mod value_objects;
-
-// ECS modules
-pub mod components;
 pub mod systems;
+pub mod value_objects;
+pub mod integration;
+pub mod ai_providers;
 
-// Re-export main types
-pub use aggregate::{
-    Agent, AgentMarker, AgentMetadata, AgentStatus, AgentType,
-    AuthMethod, AuthenticationComponent, CapabilitiesComponent,
-    ConfigurationComponent, PermissionsComponent, ToolAccessComponent,
-    ToolDefinition, ToolUsageStats,
+// Re-export commonly used types
+pub use aggregate::Agent;
+pub use commands::*;
+pub use events::*;
+
+// Re-export specific value objects to avoid conflicts
+pub use value_objects::{
+    AgentId, AgentType, AgentStatus, AgentCapability, AgentPermission,
+    AgentMetadata, AgentConstraint, AgentContext, ExecutionResult,
+    PerformanceMetrics, AICapabilities, AnalysisCapability
 };
 
-pub use commands::{
-    ActivateAgent, DecommissionAgent, DeployAgent, DisableAgentTools,
-    EnableAgentTools, GrantAgentPermissions, RemoveAgentConfiguration,
-    RevokeAgentPermissions, SetAgentConfiguration, SetAgentOffline,
-    SuspendAgent, ChangeAgentCapabilities,
+// Re-export from analysis_result
+pub use value_objects::analysis_result::{
+    AnalysisResult, Finding, Recommendation, RecommendationType,
+    EffortLevel, RecommendedAction
 };
 
-pub use events::{
-    AgentActivated, AgentCapabilitiesAdded, AgentCapabilitiesRemoved,
-    AgentConfigurationRemoved, AgentConfigurationSet, AgentDecommissioned,
-    AgentDeployed, AgentPermissionsGranted, AgentPermissionsRevoked,
-    AgentSuspended, AgentToolsDisabled, AgentToolsEnabled, AgentWentOffline,
-};
-
-pub use handlers::{AgentCommandHandler, AgentEventHandler};
-pub use projections::AgentView;
-pub use queries::{AgentQuery, AgentQueryHandler};
-
-// Re-export ECS types
-pub use components::*;
-pub use systems::*;
+// Re-export transformation separately
+pub use value_objects::transformation::TransformationSuggestion;

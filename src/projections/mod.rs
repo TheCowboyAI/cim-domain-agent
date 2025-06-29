@@ -3,16 +3,19 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::collections::{HashMap, HashSet};
+use crate::aggregate::{Agent, AgentId, AgentType, AgentStatus};
+use crate::events::*;
+use chrono::{DateTime, Utc};
 
 /// Read model view of an agent
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AgentView {
     /// Agent ID
-    pub id: Uuid,
+    pub id: AgentId,
     /// Agent type
-    pub agent_type: crate::AgentType,
+    pub agent_type: AgentType,
     /// Current status
-    pub status: crate::AgentStatus,
+    pub status: AgentStatus,
     /// Owner ID
     pub owner_id: Uuid,
     /// Agent name
@@ -30,9 +33,9 @@ pub struct AgentView {
     /// Tags
     pub tags: HashSet<String>,
     /// Creation timestamp
-    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub created_at: DateTime<Utc>,
     /// Last activity
-    pub last_active: Option<chrono::DateTime<chrono::Utc>>,
+    pub last_active: Option<DateTime<Utc>>,
     /// Version
     pub version: u64,
 }
