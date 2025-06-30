@@ -2,7 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 use crate::value_objects::{AgentId, AICapabilities};
-use crate::value_objects::analysis_result::{AnalysisResult, TransformationSuggestion};
+use crate::value_objects::analysis_result::{AnalysisResult};
+use crate::value_objects::transformation::TransformationSuggestion;
 use crate::value_objects::ai_capabilities::AnalysisCapability;
 use bevy::prelude::Event;
 use cim_domain::DomainEvent;
@@ -88,22 +89,6 @@ impl DomainEvent for TransformationSuggestionsGenerated {
     fn subject(&self) -> String {
         "agent.ai.transformation_suggestions_generated".to_string()
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TransformationSuggestion {
-    /// Unique ID for this suggestion
-    pub id: String,
-    /// Target graph type
-    pub target_type: String,
-    /// Confidence score (0.0 - 1.0)
-    pub confidence: f32,
-    /// Expected benefits
-    pub benefits: Vec<String>,
-    /// Potential risks
-    pub risks: Vec<String>,
-    /// Transformation parameters
-    pub parameters: HashMap<String, serde_json::Value>,
 }
 
 /// AI recommendations executed

@@ -21,5 +21,5 @@ pub use capabilities::*;
 pub use query::*;
 
 // Re-export commonly used systems
-pub use lifecycle::{update_agent_status, process_agent_commands};
+pub use lifecycle::update_agent_status;
 pub use capabilities::sync_agent_capabilities; 

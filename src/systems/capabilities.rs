@@ -227,7 +227,7 @@ pub fn sync_agent_capabilities(
     for event in events.read() {
         // Find the agent with matching ID
         for (agent_entity, mut capabilities) in query.iter_mut() {
-            if agent_entity.agent_id == event.agent_id.as_uuid() {
+            if agent_entity.agent_id == *event.agent_id.as_uuid() {
                 // Add new capabilities
                 for cap in &event.added {
                     capabilities.add(cap.clone());

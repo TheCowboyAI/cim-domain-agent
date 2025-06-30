@@ -1,9 +1,9 @@
 //! Anthropic Claude API provider for AI capabilities
 
 use super::*;
-use crate::value_objects::analysis_result::{
-    Finding, Recommendation, RecommendationType, EffortLevel, 
-    RecommendedAction, AnalysisResult
+use crate::value_objects::{
+    AnalysisResult, Recommendation, RecommendedAction,
+    Insight, Impact, Priority, EffortLevel
 };
 use reqwest::{Client, header::{HeaderMap, HeaderValue, CONTENT_TYPE}};
 use serde::{Deserialize, Serialize};
@@ -82,53 +82,68 @@ impl AnthropicProvider {
         // Try to parse as JSON first
         let json_result: Result<serde_json::Value, _> = serde_json::from_str(content);
         
-        let (findings, recommendations) = if let Ok(json) = json_result {
-            // Extract findings and recommendations from JSON
-            let findings = self.extract_findings(&json);
+        let (recommendations, insights) = if let Ok(json) = json_result {
+            // Extract recommendations and insights from JSON
             let recommendations = self.extract_recommendations(&json);
-            (findings, recommendations)
+            let insights = self.extract_insights(&json);
+            (recommendations, insights)
         } else {
-            // Fallback: create basic finding from text response
-            let findings = vec![Finding {
-                id: uuid::Uuid::new_v4().to_string(),
-                finding_type: "analysis".to_string(),
+            // Fallback: create basic insight from text response
+            let insights = vec![Insight {
+                id: uuid::Uuid::new_v4(),
+                category: "analysis".to_string(),
                 description: content.clone(),
-                severity: 0.5,
-                related_elements: vec![],
-                evidence: HashMap::new(),
+                evidence: vec![],
+                confidence: 0.5,
+                impact: Impact::Medium,
             }];
-            (findings, vec![])
+            (vec![], insights)
         };
         
         Ok(AnalysisResult {
-            analysis_type,
-            confidence: 0.85, // Claude confidence estimate
-            findings,
+            id: uuid::Uuid::new_v4(),
+            confidence_score: 0.85, // Claude confidence estimate
+            summary: format!("{:?} analysis completed", analysis_type),
             recommendations,
-            raw_response: Some(json!(content)),
+            insights,
+            metadata: HashMap::from([
+                ("provider".to_string(), json!("anthropic")),
+                ("model".to_string(), json!(self.model.clone())),
+                ("analysis_type".to_string(), json!(format!("{:?}", analysis_type))),
+            ]),
+            timestamp: std::time::SystemTime::now(),
         })
     }
     
-    /// Extract findings from JSON response
-    fn extract_findings(&self, json: &serde_json::Value) -> Vec<Finding> {
-        json.get("findings")
+    /// Extract insights from JSON response
+    fn extract_insights(&self, json: &serde_json::Value) -> Vec<Insight> {
+        json.get("insights")
+            .or_else(|| json.get("findings")) // Support both "insights" and "findings"
             .and_then(|f| f.as_array())
-            .map(|findings| {
-                findings.iter()
-                    .filter_map(|f| {
-                        Some(Finding {
-                            id: f.get("id")?.as_str()?.to_string(),
-                            finding_type: f.get("type").and_then(|t| t.as_str()).unwrap_or("general").to_string(),
-                            description: f.get("description")?.as_str()?.to_string(),
-                            severity: f.get("severity").and_then(|s| s.as_f64()).unwrap_or(0.5) as f32,
-                            related_elements: f.get("related_elements")
+            .map(|insights| {
+                insights.iter()
+                    .filter_map(|i| {
+                        Some(Insight {
+                            id: uuid::Uuid::new_v4(),
+                            category: i.get("category")
+                                .or_else(|| i.get("type"))
+                                .and_then(|t| t.as_str())
+                                .unwrap_or("general")
+                                .to_string(),
+                            description: i.get("description")?.as_str()?.to_string(),
+                            evidence: i.get("evidence")
                                 .and_then(|e| e.as_array())
                                 .map(|arr| arr.iter().filter_map(|v| v.as_str().map(String::from)).collect())
                                 .unwrap_or_default(),
-                            evidence: f.get("evidence")
-                                .and_then(|e| e.as_object())
-                                .map(|obj| obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
-                                .unwrap_or_default(),
+                            confidence: i.get("confidence")
+                                .or_else(|| i.get("severity"))
+                                .and_then(|s| s.as_f64())
+                                .unwrap_or(0.5) as f32,
+                            impact: match i.get("impact").and_then(|imp| imp.as_str()).unwrap_or("medium") {
+                                "high" => Impact::High,
+                                "low" => Impact::Low,
+                                _ => Impact::Medium,
+                            },
                         })
                     })
                     .collect()
@@ -144,16 +159,34 @@ impl AnthropicProvider {
                 recommendations.iter()
                     .filter_map(|r| {
                         Some(Recommendation {
-                            id: r.get("id")?.as_str()?.to_string(),
-                            recommendation_type: self.parse_recommendation_type(
-                                r.get("type").and_then(|t| t.as_str()).unwrap_or("workflow")
-                            ),
-                            description: r.get("description")?.as_str()?.to_string(),
-                            expected_impact: r.get("expected_impact").and_then(|i| i.as_str()).unwrap_or("Unknown").to_string(),
-                            effort_level: self.parse_effort_level(
-                                r.get("effort").and_then(|e| e.as_str()).unwrap_or("medium")
-                            ),
-                            actions: self.extract_actions(r.get("actions")),
+                            id: uuid::Uuid::new_v4(),
+                            title: r.get("title")
+                                .or_else(|| r.get("description"))
+                                .and_then(|d| d.as_str())
+                                .unwrap_or("Recommendation")
+                                .to_string(),
+                            description: r.get("description")
+                                .or_else(|| r.get("details"))
+                                .and_then(|d| d.as_str())
+                                .unwrap_or("")
+                                .to_string(),
+                            priority: match r.get("priority").and_then(|p| p.as_str()).unwrap_or("medium") {
+                                "critical" => Priority::Critical,
+                                "high" => Priority::High,
+                                "low" => Priority::Low,
+                                _ => Priority::Medium,
+                            },
+                            expected_impact: r.get("expected_impact")
+                                .and_then(|i| i.as_str())
+                                .unwrap_or("Unknown")
+                                .to_string(),
+                            effort_level: match r.get("effort").and_then(|e| e.as_str()).unwrap_or("medium") {
+                                "high" => EffortLevel::High,
+                                "low" => EffortLevel::Low,
+                                _ => EffortLevel::Medium,
+                            },
+                            actions: self.extract_actions(r),
+                            metadata: HashMap::new(),
                         })
                     })
                     .collect()
@@ -161,45 +194,42 @@ impl AnthropicProvider {
             .unwrap_or_default()
     }
     
-    fn parse_recommendation_type(&self, type_str: &str) -> RecommendationType {
-        match type_str.to_lowercase().as_str() {
-            "workflow" | "workflow_optimization" => RecommendationType::WorkflowOptimization,
-            "structure" | "structural_improvement" => RecommendationType::StructuralImprovement,
-            "performance" | "performance_enhancement" => RecommendationType::PerformanceEnhancement,
-            "semantic" | "semantic_enrichment" => RecommendationType::SemanticEnrichment,
-            _ => RecommendationType::Custom(type_str.to_string()),
-        }
-    }
+
     
-    fn parse_effort_level(&self, effort_str: &str) -> EffortLevel {
-        match effort_str.to_lowercase().as_str() {
-            "low" => EffortLevel::Low,
-            "medium" => EffortLevel::Medium,
-            "high" => EffortLevel::High,
-            _ => EffortLevel::Medium,
-        }
-    }
-    
-    fn extract_actions(&self, actions_value: Option<&serde_json::Value>) -> Vec<RecommendedAction> {
-        actions_value
+    fn extract_actions(&self, recommendation: &serde_json::Value) -> Vec<RecommendedAction> {
+        recommendation.get("actions")
+            .or_else(|| recommendation.get("steps"))
             .and_then(|a| a.as_array())
             .map(|actions| {
                 actions.iter()
                     .enumerate()
-                    .filter_map(|(i, a)| {
-                        Some(RecommendedAction {
-                            id: a.get("id").and_then(|id| id.as_str()).unwrap_or(&format!("A{:03}", i + 1)).to_string(),
-                            action_type: a.get("type").and_then(|t| t.as_str()).unwrap_or("transform").to_string(),
-                            target_elements: a.get("targets")
-                                .and_then(|t| t.as_array())
-                                .map(|arr| arr.iter().filter_map(|v| v.as_str().map(String::from)).collect())
-                                .unwrap_or_default(),
-                            parameters: a.get("parameters")
+                    .map(|(i, action)| {
+                        RecommendedAction {
+                            id: uuid::Uuid::new_v4(),
+                            action_type: action.get("type")
+                                .and_then(|t| t.as_str())
+                                .unwrap_or("step")
+                                .to_string(),
+                            target: action.get("target")
+                                .and_then(|t| t.as_str())
+                                .unwrap_or("")
+                                .to_string(),
+                            description: action.get("description")
+                                .and_then(|d| d.as_str())
+                                .or_else(|| action.as_str())
+                                .map(|d| d.to_string())
+                                .unwrap_or_else(|| format!("Step {}", i + 1)),
+                            estimated_duration: std::time::Duration::from_secs(
+                                action.get("duration_seconds")
+                                    .and_then(|d| d.as_u64())
+                                    .unwrap_or(300)
+                            ),
+                            parameters: action.get("parameters")
                                 .and_then(|p| p.as_object())
                                 .map(|obj| obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
                                 .unwrap_or_default(),
-                            execution_order: i as u32 + 1,
-                        })
+                            dependencies: Vec::new(),
+                        }
                     })
                     .collect()
             })
@@ -319,7 +349,7 @@ impl GraphAnalysisProvider for AnthropicProvider {
                         rationale: t.get("rationale").and_then(|r| r.as_str()).unwrap_or("").to_string(),
                         expected_benefit: t.get("expected_benefit").and_then(|b| b.as_str()).unwrap_or("").to_string(),
                         transformation_steps: t.get("steps").and_then(|s| s.as_array()).cloned().unwrap_or_default(),
-                        risk_assessment: t.get("risk_assessment").cloned().unwrap_or(json!({})),
+                        risk_assessment: t.get("risk_assessment").cloned(),
                     })
                     .collect()
             })

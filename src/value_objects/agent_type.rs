@@ -61,4 +61,36 @@ impl From<crate::aggregate::AgentType> for AgentType {
             crate::aggregate::AgentType::External => AgentType::Integration,
         }
     }
+}
+
+/// Agent capability
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct AgentCapability {
+    /// Capability identifier
+    pub id: String,
+    
+    /// Human-readable name
+    pub name: String,
+    
+    /// Description of what this capability enables
+    pub description: String,
+    
+    /// Category of capability
+    pub category: String,
+}
+
+/// Agent permission
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct AgentPermission {
+    /// Permission identifier
+    pub id: String,
+    
+    /// Resource this permission applies to
+    pub resource: String,
+    
+    /// Action allowed on the resource
+    pub action: String,
+    
+    /// Optional conditions for the permission
+    pub conditions: Option<serde_json::Value>,
 } 

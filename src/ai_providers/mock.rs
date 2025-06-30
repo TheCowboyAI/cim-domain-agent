@@ -1,11 +1,11 @@
 //! Mock AI provider for testing
 
 use super::*;
-use crate::value_objects::analysis_result::{
-    Finding, Recommendation, RecommendationType, EffortLevel, 
-    RecommendedAction, AnalysisResult
+use crate::value_objects::{
+    AnalysisResult, Recommendation, RecommendedAction,
+    Insight, Impact, Priority, EffortLevel
 };
-use crate::events::{ExecutionResult, LearnedPattern};
+use uuid::Uuid;
 
 /// Mock AI provider that returns predetermined responses
 pub struct MockAIProvider {
@@ -30,62 +30,92 @@ impl GraphAnalysisProvider for MockAIProvider {
         analysis_type: AnalysisCapability,
         _parameters: HashMap<String, Value>,
     ) -> AIProviderResult<AnalysisResult> {
-        // Simulate processing delay
-        tokio::time::sleep(tokio::time::Duration::from_millis(self.delay_ms)).await;
-        
-        // Generate mock findings based on graph size
-        let mut findings = vec![];
-        
-        if graph_data.nodes.len() > 5 {
-            findings.push(Finding {
-                id: "MOCK-F001".to_string(),
-                finding_type: "complexity".to_string(),
-                description: format!(
-                    "Graph has {} nodes, which may indicate high complexity",
-                    graph_data.nodes.len()
-                ),
-                severity: 0.6,
-                related_elements: graph_data.nodes.iter()
-                    .take(3)
-                    .map(|n| n.id.clone())
-                    .collect(),
-                evidence: HashMap::from([
-                    ("node_count".to_string(), json!(graph_data.nodes.len())),
-                    ("edge_count".to_string(), json!(graph_data.edges.len())),
-                ]),
-            });
-        }
-        
-        // Generate mock recommendations
+        tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+
+        let insights = vec![
+            Insight {
+                id: Uuid::new_v4(),
+                category: "complexity".to_string(),
+                description: format!("Graph has {} nodes, which may indicate high complexity", graph_data.nodes.len()),
+                evidence: vec![format!("Node count: {}", graph_data.nodes.len())],
+                confidence: 0.6,
+                impact: Impact::Medium,
+            },
+            Insight {
+                id: Uuid::new_v4(),
+                category: "optimization".to_string(),
+                description: "Graph processing could be optimized".to_string(),
+                evidence: vec!["Sequential processing detected".to_string()],
+                confidence: 0.85,
+                impact: Impact::High,
+            },
+            Insight {
+                id: Uuid::new_v4(),
+                category: "performance".to_string(),
+                description: "Parallel processing opportunities identified".to_string(),
+                evidence: vec![
+                    "Independent tasks found: Validate Payment and Check Inventory".to_string(),
+                    "These tasks have no data dependencies".to_string()
+                ],
+                confidence: 0.9,
+                impact: Impact::High,
+            },
+        ];
+
         let recommendations = vec![
             Recommendation {
-                id: "MOCK-R001".to_string(),
-                recommendation_type: RecommendationType::WorkflowOptimization,
-                description: "Consider parallelizing sequential nodes".to_string(),
-                expected_impact: "Reduce processing time by 30%".to_string(),
+                id: Uuid::new_v4(),
+                title: "Enable Parallel Processing".to_string(),
+                description: "Add parallel gateway to enable concurrent execution of Validate Payment and Check Inventory tasks".to_string(),
+                priority: Priority::High,
+                expected_impact: "30-40% reduction in processing time".to_string(),
+                effort_level: EffortLevel::Low,
+                actions: vec![
+                    RecommendedAction {
+                        id: Uuid::new_v4(),
+                        action_type: "add_node".to_string(),
+                        target: "workflow".to_string(),
+                        description: "Add parallel gateway after Order Received".to_string(),
+                        estimated_duration: std::time::Duration::from_secs(300),
+                        parameters: HashMap::new(),
+                        dependencies: vec![],
+                    },
+                ],
+                metadata: HashMap::new(),
+            },
+            Recommendation {
+                id: Uuid::new_v4(),
+                title: "Add Performance Monitoring".to_string(),
+                description: "Implement monitoring to track workflow performance metrics and identify bottlenecks".to_string(),
+                priority: Priority::Medium,
+                expected_impact: "Improved visibility and 10-15% performance gain through optimization".to_string(),
                 effort_level: EffortLevel::Medium,
                 actions: vec![
                     RecommendedAction {
-                        id: "MOCK-A001".to_string(),
-                        action_type: "parallelize".to_string(),
-                        target_elements: vec!["node-1".to_string(), "node-2".to_string()],
+                        id: Uuid::new_v4(),
+                        action_type: "add_monitoring".to_string(),
+                        target: "workflow".to_string(),
+                        description: "Add performance monitoring node".to_string(),
+                        estimated_duration: std::time::Duration::from_secs(600),
                         parameters: HashMap::new(),
-                        execution_order: 1,
+                        dependencies: vec![],
                     },
                 ],
+                metadata: HashMap::new(),
             },
         ];
-        
+
         Ok(AnalysisResult {
-            analysis_type,
-            confidence: 0.75,
-            findings,
+            id: Uuid::new_v4(),
+            confidence_score: 0.75,
+            summary: format!("Mock analysis of graph with {} nodes and {} edges", 
+                graph_data.nodes.len(), 
+                graph_data.edges.len()
+            ),
             recommendations,
-            raw_response: Some(json!({
-                "mock": true,
-                "graph_id": graph_data.graph_id.to_string(),
-                "analysis_type": format!("{:?}", analysis_type),
-            })),
+            insights,
+            metadata: HashMap::new(),
+            timestamp: std::time::SystemTime::now(),
         })
     }
     
@@ -113,10 +143,10 @@ impl GraphAnalysisProvider for MockAIProvider {
                         "goal": goal,
                     }),
                 ],
-                risk_assessment: json!({
+                risk_assessment: Some(json!({
                     "risk_level": "low",
                     "mitigation": "Create backup before transformation",
-                }),
+                })),
             })
             .collect();
         
@@ -128,8 +158,8 @@ impl GraphAnalysisProvider for MockAIProvider {
         match capability {
             AnalysisCapability::GraphAnalysis => true,
             AnalysisCapability::WorkflowOptimization => true,
-            AnalysisCapability::PatternDetection => true,
             AnalysisCapability::SemanticAnalysis => true,
+            AnalysisCapability::PatternDetection => true,
             AnalysisCapability::TransformationSuggestion => true,
             AnalysisCapability::Custom(_) => true,
         }
@@ -184,7 +214,7 @@ mod tests {
             HashMap::new(),
         ).await.unwrap();
         
-        assert_eq!(result.confidence, 0.75);
-        assert!(result.raw_response.is_some());
+        assert_eq!(result.confidence_score, 0.75);
+        assert!(!result.metadata.is_empty());
     }
 } 

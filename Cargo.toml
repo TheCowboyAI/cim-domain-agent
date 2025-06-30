@@ -11,21 +11,60 @@ serde_json = "1.0"
 thiserror = "2.0"
 tracing = "0.1"
 async-trait = "0.1"
-bevy = { path = "../bevy-patched", default-features = false }
+bevy = { path = "../bevy-patched", default-features = false, features = [
+    "bevy_pbr",
+    "bevy_render",
+    "bevy_ui",
+    "bevy_text",
+    "bevy_asset",
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_sprite",
+    "default_font",
+    "png",
+    "multi_threaded",
+    "bevy_gltf",
+    "bevy_scene",
+    "bevy_gizmos",
+    "x11",
+    "wayland",
+    "tonemapping_luts",
+    "ktx2",
+    "zstd",
+] }
 bevy_ecs = { path = "../bevy-patched/crates/bevy_ecs" }
+bevy_egui = "0.32"
 chrono = { version = "0.4", features = ["serde"] }
 
 # AI provider dependencies
-reqwest = { version = "0.11", features = ["json"] }
+reqwest = { version = "0.11", features = ["json", "stream"] }
 tokio = { version = "1.32", features = ["full"] }
 
 # Domain dependencies
 cim-domain = { path = "../cim-domain" }
 cim-domain-graph = { path = "../cim-domain-graph" }
+cim-domain-conceptualspaces = { path = "../cim-domain-conceptualspaces" }
+cim-domain-dialog = { path = "../cim-domain-dialog" }
 cim-infrastructure = { path = "../cim-infrastructure" }
 
 # For semver in metadata component
 semver = "1.0"
+
+# Environment variables for API keys
+dotenvy = "0.15"
+
+# For colored terminal output in demos
+colored = "2.0"
+
+# For async-sync bridge in Bevy demos
+crossbeam = "0.8"
+
+# For particle effects in demos
+rand = "0.8"
+
+# For terminal UI demos
+ratatui = "0.28"
+crossterm = "0.28"
 
 # AI/ML dependencies (optional for now)
 # These will be activated when implementing actual AI integrations
@@ -39,6 +78,7 @@ tokio-test = "0.4"
 mockall = "0.11"
 tracing-subscriber = "0.3"
 dotenv = "0.15"
+pollster = "0.3"
 
 [features]
 default = []
@@ -50,3 +90,71 @@ all-ai-providers = ["ai-openai", "ai-anthropic", "ai-ollama"]
 [[example]]
 name = "ai_agent_demo"
 path = "examples/ai_agent_demo.rs"
+
+[[example]]
+name = "ai_conceptual_integration_demo"
+path = "examples/ai_conceptual_integration_demo.rs"
+
+[[example]]
+name = "ai_real_providers_demo"
+path = "examples/ai_real_providers_demo.rs"
+
+[[example]]
+name = "claude_conversation_demo"
+path = "examples/claude_conversation_demo.rs"
+
+[[example]]
+name = "claude_dialog_demo"
+path = "examples/claude_dialog_demo.rs"
+
+[[example]]
+name = "ai_visual_demo"
+path = "examples/ai_visual_demo.rs"
+
+[[example]]
+name = "ai_visual_demo_simple"
+path = "examples/ai_visual_demo_simple.rs"
+
+[[example]]
+name = "ai_visual_bevy_demo"
+path = "examples/ai_visual_bevy_demo.rs"
+
+[[example]]
+name = "ai_graph_analysis_integration"
+path = "examples/ai_graph_analysis_integration.rs"
+
+[[example]]
+name = "ai_provider_demo_simple"
+path = "examples/ai_provider_demo_simple.rs"
+
+[[example]]
+name = "claude_advanced_demo"
+path = "examples/claude_advanced_demo.rs"
+
+[[example]]
+name = "test_all_providers"
+path = "examples/test_all_providers.rs"
+
+[[example]]
+name = "test_ollama_only"
+path = "examples/test_ollama_only.rs"
+
+[[example]]
+name = "interactive_ai_graph_demo"
+path = "examples/interactive_ai_graph_demo.rs"
+
+[[example]]
+name = "interactive_chat_demo"
+path = "examples/interactive_chat_demo.rs"
+
+[[example]]
+name = "simple_bevy_graph_demo"
+path = "examples/simple_bevy_graph_demo.rs"
+
+[[example]]
+name = "cim_3d_graph_demo"
+path = "examples/cim_3d_graph_demo.rs"
+
+[[example]]
+name = "interactive_bevy_demo"
+path = "examples/interactive_bevy_demo.rs"

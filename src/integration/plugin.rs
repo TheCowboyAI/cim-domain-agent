@@ -12,7 +12,6 @@ impl Plugin for AgentPlugin {
             // Add agent systems
             .add_systems(Update, (
                 update_agent_status,
-                process_agent_commands,
                 sync_agent_capabilities,
             ))
             // Add agent events

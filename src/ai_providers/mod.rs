@@ -7,13 +7,16 @@ use async_trait::async_trait;
 use std::collections::HashMap;
 use serde_json::{json, Value};
 use thiserror::Error;
-use crate::value_objects::analysis_result::{AnalysisResult, TransformationSuggestion};
-use crate::value_objects::ai_capabilities::AnalysisCapability;
+use crate::value_objects::{
+    AICapabilities, AnalysisCapability, ModelParameters,
+    AnalysisResult, TransformationSuggestion,
+};
 
 pub mod mock;
 pub mod openai;
 pub mod anthropic;
 pub mod ollama;
+pub mod config;
 
 /// Errors that can occur during AI provider operations
 #[derive(Debug, Error)]
@@ -149,7 +152,7 @@ impl AIProviderFactory {
             }
             #[cfg(feature = "ai-ollama")]
             ProviderConfig::Ollama { host, model } => {
-                Ok(Box::new(ollama::OllamaProvider::new(host.clone(), model.clone())?))
+                Ok(Box::new(ollama::OllamaProvider::new(model.clone(), Some(host.clone()))?))
             }
             #[cfg(not(feature = "ai-openai"))]
             ProviderConfig::OpenAI { .. } => Err(AIProviderError::ConfigurationError(

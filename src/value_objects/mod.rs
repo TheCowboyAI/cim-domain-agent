@@ -1,41 +1,39 @@
 //! Value objects for the Agent domain
 
+pub mod agent_id;
 pub mod agent_type;
+pub mod ai_capabilities;
+pub mod analysis_result;
+pub mod transformation;
 pub mod status;
 pub mod tool;
-pub mod capability;
-pub mod permission;
+pub mod tool_access;
 pub mod metadata;
 pub mod constraint;
 pub mod context;
 pub mod execution_result;
 pub mod performance_metrics;
-pub mod ai_capabilities;
-pub mod analysis_result;
-pub mod transformation;
+pub mod permission;
 
-// Re-export all value objects
-pub use agent_type::*;
-pub use status::*;
-pub use tool::*;
-pub use capability::*;
-pub use permission::*;
-pub use metadata::*;
-pub use constraint::*;
-pub use context::*;
-pub use execution_result::*;
-pub use performance_metrics::*;
-
-// Re-export from ai_capabilities but exclude duplicates
-pub use ai_capabilities::{
-    AICapabilities, AnalysisCapability, ModelParameters, EmbeddingModel
-};
-
-// Re-export from analysis_result
+// Re-export types
+pub use agent_id::AgentId;
+pub use agent_type::AgentType;
+pub use ai_capabilities::{AICapabilities, ModelParameters, AnalysisCapability};
 pub use analysis_result::{
-    AnalysisResult, Finding, Recommendation, RecommendationType, 
-    EffortLevel, RecommendedAction
+    AnalysisResult, Recommendation, RecommendedAction,
+    Priority, Impact, EffortLevel, Insight,
+    Finding, RecommendationType
 };
-
-// Re-export from transformation
 pub use transformation::TransformationSuggestion;
+pub use status::AgentTaskStatus;
+pub use tool::{Tool, ToolCategory, ToolPermission, ToolUsage};
+pub use tool_access::{ToolAccess, ToolType, ToolConfig, AuthMethod, RateLimit, RetryPolicy};
+pub use metadata::AgentMetadata;
+pub use constraint::AgentConstraint;
+pub use context::AgentContext;
+pub use execution_result::ExecutionResult;
+pub use performance_metrics::PerformanceMetrics;
+pub use permission::{Permission, PermissionScope};
+
+// Re-export commonly used types
+pub use agent_type::{AgentCapability, AgentPermission};

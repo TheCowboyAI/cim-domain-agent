@@ -3,8 +3,7 @@
 use uuid::Uuid;
 use cim_domain::{Query, QueryHandler as CqrsQueryHandler, QueryEnvelope, QueryResponse};
 use serde::{Serialize, Deserialize};
-use crate::aggregate::{AgentId, AgentType};
-use crate::value_objects::status::AgentStatus;
+use crate::aggregate::{AgentId, AgentType, AgentStatus};
 
 /// Query for agent information
 #[derive(Debug, Clone, Serialize, Deserialize)]

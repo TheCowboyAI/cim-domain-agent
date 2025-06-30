@@ -1,9 +1,17 @@
-//! Integration tests for Agent domain ECS refactoring
+//! ECS Integration tests for Agent domain
 
-use bevy_app::prelude::*;
-use bevy_ecs::prelude::*;
-use cim_domain_agent::components::*;
-use cim_domain_agent::systems::*;
+use bevy::prelude::*;
+use cim_domain_agent::{
+    components::{AgentComponent, CapabilitiesComponent, PermissionsComponent},
+    systems::{
+        agent_deployment_system, capability_update_system, permission_management_system,
+        ai_analysis_system,
+    },
+    commands::{DeployAgent, UpdateCapabilities, GrantPermissions, RevokePermissions},
+    events::{AgentDeployed, CapabilitiesUpdated, PermissionsGranted, PermissionsRevoked},
+    value_objects::{AgentId, AgentType, AICapabilities, AnalysisCapability},
+};
+use std::collections::HashSet;
 use uuid::Uuid;
 
 /// Test agent lifecycle
@@ -300,4 +308,223 @@ fn test_readiness_system() {
         .expect("Status check should exist");
     
     assert_eq!(status_check.status, CheckStatus::Passed);
+}
+
+#[test]
+fn test_agent_deployment_system() {
+    let mut app = App::new();
+    
+    // Add required plugins and resources
+    app.add_plugins(MinimalPlugins);
+    
+    // Add events
+    app.add_event::<DeployAgent>()
+       .add_event::<AgentDeployed>();
+    
+    // Add systems
+    app.add_systems(Update, agent_deployment_system);
+    
+    // Send deploy command
+    app.world_mut().send_event(DeployAgent {
+        id: AgentId::new(),
+        agent_type: AgentType::Analyzer,
+        capabilities: AICapabilities {
+            supported_models: vec!["gpt-4".to_string()],
+            capabilities: vec![AnalysisCapability::GraphAnalysis],
+        },
+    });
+    
+    // Run the system
+    app.update();
+    
+    // Check that agent was deployed
+    let events = app.world().resource::<Events<AgentDeployed>>();
+    let mut reader = events.get_reader();
+    let deployed_events: Vec<_> = reader.read(events).collect();
+    
+    assert_eq!(deployed_events.len(), 1);
+}
+
+#[test]
+fn test_capability_update_system() {
+    let mut app = App::new();
+    
+    app.add_plugins(MinimalPlugins);
+    
+    // Add events
+    app.add_event::<UpdateCapabilities>()
+       .add_event::<CapabilitiesUpdated>();
+    
+    // Add systems
+    app.add_systems(Update, capability_update_system);
+    
+    // Create an agent entity
+    let agent_id = AgentId::new();
+    let entity = app.world_mut().spawn((
+        AgentComponent { id: agent_id },
+        CapabilitiesComponent {
+            capabilities: AICapabilities {
+                supported_models: vec!["gpt-3.5-turbo".to_string()],
+                capabilities: vec![AnalysisCapability::GraphAnalysis],
+            },
+        },
+    )).id();
+    
+    // Send update command
+    app.world_mut().send_event(UpdateCapabilities {
+        agent_id,
+        new_capabilities: AICapabilities {
+            supported_models: vec!["gpt-4".to_string(), "claude-3".to_string()],
+            capabilities: vec![
+                AnalysisCapability::GraphAnalysis,
+                AnalysisCapability::WorkflowOptimization,
+            ],
+        },
+    });
+    
+    // Run the system
+    app.update();
+    
+    // Check that capabilities were updated
+    let capabilities = app.world().get::<CapabilitiesComponent>(entity).unwrap();
+    assert_eq!(capabilities.capabilities.supported_models.len(), 2);
+    assert_eq!(capabilities.capabilities.capabilities.len(), 2);
+}
+
+#[test]
+fn test_permission_management_system() {
+    let mut app = App::new();
+    
+    app.add_plugins(MinimalPlugins);
+    
+    // Add events
+    app.add_event::<GrantPermissions>()
+       .add_event::<RevokePermissions>()
+       .add_event::<PermissionsGranted>()
+       .add_event::<PermissionsRevoked>();
+    
+    // Add systems
+    app.add_systems(Update, permission_management_system);
+    
+    // Create an agent entity
+    let agent_id = AgentId::new();
+    let entity = app.world_mut().spawn((
+        AgentComponent { id: agent_id },
+        PermissionsComponent {
+            permissions: HashSet::new(),
+        },
+    )).id();
+    
+    // Grant permissions
+    app.world_mut().send_event(GrantPermissions {
+        agent_id,
+        permissions: HashSet::from([
+            "read:graphs".to_string(),
+            "write:analysis".to_string(),
+        ]),
+    });
+    
+    app.update();
+    
+    // Check permissions were granted
+    let permissions = app.world().get::<PermissionsComponent>(entity).unwrap();
+    assert_eq!(permissions.permissions.len(), 2);
+    assert!(permissions.permissions.contains("read:graphs"));
+    
+    // Revoke a permission
+    app.world_mut().send_event(RevokePermissions {
+        agent_id,
+        permissions: HashSet::from(["write:analysis".to_string()]),
+    });
+    
+    app.update();
+    
+    // Check permission was revoked
+    let permissions = app.world().get::<PermissionsComponent>(entity).unwrap();
+    assert_eq!(permissions.permissions.len(), 1);
+    assert!(!permissions.permissions.contains("write:analysis"));
+}
+
+#[test]
+fn test_ai_analysis_system() {
+    let mut app = App::new();
+    
+    app.add_plugins(MinimalPlugins);
+    
+    // Add events
+    app.add_event::<cim_domain_agent::commands::RequestGraphAnalysis>()
+       .add_event::<cim_domain_agent::events::GraphAnalysisCompleted>();
+    
+    // Add systems
+    app.add_systems(Update, ai_analysis_system);
+    
+    // Create an agent entity with analysis capabilities
+    let agent_id = AgentId::new();
+    app.world_mut().spawn((
+        AgentComponent { id: agent_id },
+        CapabilitiesComponent {
+            capabilities: AICapabilities {
+                supported_models: vec!["gpt-4".to_string()],
+                capabilities: vec![
+                    AnalysisCapability::GraphAnalysis,
+                    AnalysisCapability::SemanticAnalysis,
+                ],
+            },
+        },
+    ));
+    
+    // Request analysis
+    app.world_mut().send_event(cim_domain_agent::commands::RequestGraphAnalysis {
+        agent_id,
+        graph_id: cim_domain_graph::GraphId::new(),
+        capability: AnalysisCapability::GraphAnalysis,
+        parameters: Default::default(),
+    });
+    
+    app.update();
+    
+    // In a real test, we would check for the analysis completion event
+    // For now, just verify the system runs without panicking
+}
+
+#[test]
+fn test_agent_query_system() {
+    let mut app = App::new();
+    
+    app.add_plugins(MinimalPlugins);
+    
+    // Create multiple agents
+    let agent1 = AgentId::new();
+    let agent2 = AgentId::new();
+    
+    app.world_mut().spawn((
+        AgentComponent { id: agent1 },
+        CapabilitiesComponent {
+            capabilities: AICapabilities {
+                supported_models: vec!["gpt-4".to_string()],
+                capabilities: vec![AnalysisCapability::GraphAnalysis],
+            },
+        },
+    ));
+    
+    app.world_mut().spawn((
+        AgentComponent { id: agent2 },
+        CapabilitiesComponent {
+            capabilities: AICapabilities {
+                supported_models: vec!["claude-3".to_string()],
+                capabilities: vec![AnalysisCapability::WorkflowOptimization],
+            },
+        },
+    ));
+    
+    // Query agents with specific capabilities
+    let agents_with_graph_analysis: Vec<_> = app.world()
+        .query::<(&AgentComponent, &CapabilitiesComponent)>()
+        .iter(&app.world())
+        .filter(|(_, cap)| cap.capabilities.capabilities.contains(&AnalysisCapability::GraphAnalysis))
+        .map(|(agent, _)| agent.id)
+        .collect();
+    
+    assert_eq!(agents_with_graph_analysis.len(), 1);
+    assert_eq!(agents_with_graph_analysis[0], agent1);
 } 

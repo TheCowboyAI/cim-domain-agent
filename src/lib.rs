@@ -15,15 +15,23 @@ pub mod integration;
 pub mod ai_providers;
 
 // Re-export commonly used types
-pub use aggregate::Agent;
+pub use aggregate::{Agent, AgentStatus, AgentType};
 pub use commands::*;
 pub use events::*;
 
+// Re-export components for ECS usage
+pub use components::{
+    AgentEntity, AgentOwner, AgentTypeComponent, 
+    AgentState, AgentMetadata as AgentMetadataComponent,
+    AgentLifecycle, AgentActivity
+};
+
 // Re-export specific value objects to avoid conflicts
 pub use value_objects::{
-    AgentId, AgentType, AgentStatus, AgentCapability, AgentPermission,
+    AgentId, AgentCapability, AgentPermission,
     AgentMetadata, AgentConstraint, AgentContext, ExecutionResult,
-    PerformanceMetrics, AICapabilities, AnalysisCapability
+    PerformanceMetrics, AICapabilities, AnalysisCapability,
+    AgentTaskStatus  // Renamed from AgentStatus to avoid conflict
 };
 
 // Re-export from analysis_result

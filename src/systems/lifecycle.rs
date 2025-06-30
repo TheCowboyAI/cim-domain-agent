@@ -1,10 +1,15 @@
 //! Lifecycle systems for agent management
 
 use bevy::prelude::*;
-use crate::components::{AgentStatus, AgentTypeComponent};
-use crate::events::{AgentDeployed, AgentRetired};
+use crate::components::{
+    AgentStatus, AgentState, AgentTypeComponent, AgentEntity, AgentOwner,
+    AgentMetadata as AgentMetadataComponent, AgentLifecycle, AgentActivity,
+    AgentReadiness, AgentCapabilities, AgentPermissions, AgentAuthentication,
+    LifecycleEventType, CheckStatus, AuthenticationStatus
+};
+use crate::events::{AgentDeployed, AgentActivated, AgentSuspended, AgentDecommissioned, AgentWentOffline};
 use crate::aggregate::{AgentMarker, CapabilitiesComponent};
-use crate::commands::DeployAgent;
+
 use uuid::Uuid;
 
 /// Helper to create event metadata
@@ -38,7 +43,7 @@ pub fn create_agent_system(
             AgentTypeComponent::from(deploy_cmd.agent_type),
             AgentOwner { owner_id: deploy_cmd.owner_id },
             AgentStatus::new(AgentState::Initializing),
-            AgentMetadata::new(deploy_cmd.name.clone(), deploy_cmd.description.clone()),
+            AgentMetadataComponent::new(deploy_cmd.name.clone(), deploy_cmd.description.clone()),
             AgentLifecycle::default(),
             AgentActivity::default(),
             AgentReadiness::default(),
@@ -319,7 +324,7 @@ pub fn update_agent_readiness_system(
 pub fn update_agent_status(
     mut commands: Commands,
     mut agent_events: EventReader<AgentDeployed>,
-    mut retire_events: EventReader<AgentRetired>,
+    mut decommission_events: EventReader<AgentDecommissioned>,
     mut query: Query<(Entity, &mut AgentStatus)>,
 ) {
     // Handle deployed agents
@@ -327,52 +332,21 @@ pub fn update_agent_status(
         // Find the agent entity and update its status
         for (entity, mut status) in query.iter_mut() {
             // Update status based on deployment
-            status.state = crate::value_objects::status::AgentState::Active;
+            status.transition_to(AgentState::Active);
         }
     }
 
-    // Handle retired agents
-    for event in retire_events.read() {
+    // Handle decommissioned agents
+    for event in decommission_events.read() {
         // Find the agent entity and update its status
         for (entity, mut status) in query.iter_mut() {
-            // Update status to retired
-            status.state = crate::value_objects::status::AgentState::Retired;
+            // Update status to decommissioned
+            status.transition_to(AgentState::Decommissioned);
         }
     }
 }
 
-/// System to process agent commands
-pub fn process_agent_commands(
-    mut commands: Commands,
-    mut deploy_events: EventReader<DeployAgentCommand>,
-) {
-    for event in deploy_events.read() {
-        // Create agent entity with components
-        commands.spawn((
-            AgentMarker,
-            AgentStatus::default(),
-            AgentTypeComponent::from(event.agent_type.clone()),
-        ));
-    }
-}
 
-/// Command event for deploying agent (wrapper for ECS)
-#[derive(Event, Debug, Clone)]
-pub struct DeployAgentCommand {
-    pub id: uuid::Uuid,
-    pub agent_type: crate::aggregate::AgentType,
-    pub owner_id: uuid::Uuid,
-}
-
-impl From<DeployAgent> for DeployAgentCommand {
-    fn from(cmd: DeployAgent) -> Self {
-        Self {
-            id: cmd.id,
-            agent_type: cmd.agent_type.into(),
-            owner_id: cmd.owner_id,
-        }
-    }
-}
 
 // Command events for lifecycle operations
 #[derive(Event)]
@@ -411,18 +385,10 @@ pub struct SetAgentOfflineCommand {
 impl From<crate::aggregate::AgentType> for AgentTypeComponent {
     fn from(agent_type: crate::aggregate::AgentType) -> Self {
         match agent_type {
-            crate::aggregate::AgentType::Personal => AgentTypeComponent {
-                variant: crate::value_objects::agent_type::AgentType::Personal,
-            },
-            crate::aggregate::AgentType::Assistant => AgentTypeComponent {
-                variant: crate::value_objects::agent_type::AgentType::Assistant,
-            },
-            crate::aggregate::AgentType::Service => AgentTypeComponent {
-                variant: crate::value_objects::agent_type::AgentType::Service,
-            },
-            crate::aggregate::AgentType::Integration => AgentTypeComponent {
-                variant: crate::value_objects::agent_type::AgentType::Integration,
-            },
+            crate::aggregate::AgentType::Human => AgentTypeComponent::Human,
+            crate::aggregate::AgentType::AI => AgentTypeComponent::AI,
+            crate::aggregate::AgentType::System => AgentTypeComponent::System,
+            crate::aggregate::AgentType::External => AgentTypeComponent::External,
         }
     }
 } 

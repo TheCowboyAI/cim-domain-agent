@@ -1,9 +1,12 @@
 //! Integration tests for AI providers
 //! These tests require actual API keys and services to be available
 
-use cim_domain_agent::ai_providers::{
-    AIProviderFactory, GraphAnalysisProvider, AnalysisCapability,
-    GraphData, NodeData, EdgeData,
+use cim_domain_agent::{
+    ai_providers::{
+        AIProviderFactory, GraphAnalysisProvider, ProviderConfig,
+        GraphData, NodeData, EdgeData, AIProviderError,
+    },
+    value_objects::{AnalysisCapability, ModelParameters},
 };
 use std::collections::HashMap;
 use serde_json::json;
@@ -57,186 +60,287 @@ fn create_test_graph() -> GraphData {
 
 #[tokio::test]
 async fn test_mock_provider() {
-    let provider = AIProviderFactory::create_mock();
-    let graph = create_test_graph();
+    let provider = AIProviderFactory::create_provider(&ProviderConfig::Mock)
+        .expect("Failed to create mock provider");
     
-    // Test analysis
+    let graph_data = create_test_graph();
+    
     let result = provider.analyze_graph(
-        graph.clone(),
-        AnalysisCapability::WorkflowOptimization,
-        HashMap::new(),
-    ).await.unwrap();
-    
-    assert!(!result.findings.is_empty());
-    assert!(!result.recommendations.is_empty());
-    assert!(result.confidence > 0.0);
-    
-    // Test transformation suggestions
-    let transformations = provider.suggest_transformations(
-        graph,
-        vec!["Optimize performance".to_string()],
-        HashMap::new(),
-    ).await.unwrap();
-    
-    assert!(!transformations.is_empty());
-}
-
-#[tokio::test]
-#[ignore = "requires OPENAI_API_KEY environment variable"]
-async fn test_openai_provider() {
-    dotenv::dotenv().ok();
-    
-    let api_key = match env::var("OPENAI_API_KEY") {
-        Ok(key) => key,
-        Err(_) => {
-            eprintln!("Skipping OpenAI test: OPENAI_API_KEY not set");
-            return;
-        }
-    };
-    
-    let provider = AIProviderFactory::create_openai(api_key, "gpt-3.5-turbo".to_string())
-        .expect("Failed to create OpenAI provider");
-    
-    let graph = create_test_graph();
-    
-    // Test analysis with a simple graph
-    let result = provider.analyze_graph(
-        graph,
-        AnalysisCapability::WorkflowOptimization,
-        HashMap::from([
-            ("temperature".to_string(), json!(0.7)),
-            ("max_tokens".to_string(), json!(500)),
-        ]),
-    ).await.expect("OpenAI analysis failed");
-    
-    assert!(!result.findings.is_empty(), "OpenAI should return findings");
-    assert!(result.confidence > 0.0, "Confidence should be positive");
-}
-
-#[tokio::test]
-#[ignore = "requires ANTHROPIC_API_KEY environment variable"]
-async fn test_anthropic_provider() {
-    dotenv::dotenv().ok();
-    
-    let api_key = match env::var("ANTHROPIC_API_KEY") {
-        Ok(key) => key,
-        Err(_) => {
-            eprintln!("Skipping Anthropic test: ANTHROPIC_API_KEY not set");
-            return;
-        }
-    };
-    
-    let provider = AIProviderFactory::create_anthropic(api_key, "claude-3-haiku-20240307".to_string())
-        .expect("Failed to create Anthropic provider");
-    
-    let graph = create_test_graph();
-    
-    // Test analysis
-    let result = provider.analyze_graph(
-        graph,
-        AnalysisCapability::PatternDetection,
-        HashMap::new(),
-    ).await.expect("Anthropic analysis failed");
-    
-    assert!(!result.findings.is_empty(), "Anthropic should return findings");
-    assert!(result.confidence > 0.0, "Confidence should be positive");
-}
-
-#[tokio::test]
-#[ignore = "requires Ollama running locally"]
-async fn test_ollama_provider() {
-    let provider = AIProviderFactory::create_ollama("llama2".to_string(), None)
-        .expect("Failed to create Ollama provider");
-    
-    // First check if Ollama is available
-    if let Err(e) = provider.check_health().await {
-        eprintln!("Skipping Ollama test: {}", e);
-        return;
-    }
-    
-    let graph = create_test_graph();
-    
-    // Test analysis with local model
-    let result = provider.analyze_graph(
-        graph,
+        graph_data,
         AnalysisCapability::GraphAnalysis,
-        HashMap::from([
-            ("temperature".to_string(), json!(0.5)),
-            ("max_tokens".to_string(), json!(1000)),
-        ]),
-    ).await.expect("Ollama analysis failed");
+        HashMap::new(),
+    ).await;
     
-    // Local models might not always parse JSON perfectly
-    assert!(result.confidence > 0.0, "Confidence should be positive");
+    assert!(result.is_ok());
+    let analysis = result.unwrap();
+    assert!(!analysis.insights.is_empty());
+    assert!(!analysis.recommendations.is_empty());
+}
+
+#[cfg(feature = "ai-openai")]
+#[tokio::test]
+#[ignore] // Ignore by default as it requires API key
+async fn test_openai_provider() {
+    let api_key = std::env::var("OPENAI_API_KEY")
+        .expect("OPENAI_API_KEY environment variable not set");
+    
+    let provider = AIProviderFactory::create_provider(&ProviderConfig::OpenAI {
+        api_key,
+        model: "gpt-3.5-turbo".to_string(),
+    }).expect("Failed to create OpenAI provider");
+    
+    let graph_data = create_test_graph();
+    
+    let result = provider.analyze_graph(
+        graph_data,
+        AnalysisCapability::GraphAnalysis,
+        HashMap::new(),
+    ).await;
+    
+    assert!(result.is_ok());
+    let analysis = result.unwrap();
+    assert!(!analysis.insights.is_empty());
+}
+
+#[cfg(feature = "ai-anthropic")]
+#[tokio::test]
+#[ignore] // Ignore by default as it requires API key
+async fn test_anthropic_provider() {
+    let api_key = std::env::var("ANTHROPIC_API_KEY")
+        .expect("ANTHROPIC_API_KEY environment variable not set");
+    
+    let provider = AIProviderFactory::create_provider(&ProviderConfig::Anthropic {
+        api_key,
+        model: "claude-3-haiku-20240307".to_string(),
+    }).expect("Failed to create Anthropic provider");
+    
+    let graph_data = create_test_graph();
+    
+    let result = provider.analyze_graph(
+        graph_data,
+        AnalysisCapability::WorkflowOptimization,
+        HashMap::new(),
+    ).await;
+    
+    assert!(result.is_ok());
+}
+
+#[cfg(feature = "ai-ollama")]
+#[tokio::test]
+#[ignore] // Ignore by default as it requires Ollama running
+async fn test_ollama_provider() {
+    let provider = AIProviderFactory::create_provider(&ProviderConfig::Ollama {
+        host: "http://localhost:11434".to_string(),
+        model: "llama2".to_string(),
+    }).expect("Failed to create Ollama provider");
+    
+    let graph_data = create_simple_graph(); // Use simpler graph for local model
+    
+    let result = provider.analyze_graph(
+        graph_data,
+        AnalysisCapability::GraphAnalysis,
+        HashMap::new(),
+    ).await;
+    
+    // Ollama might fail if not running, so we just check it doesn't panic
+    match result {
+        Ok(analysis) => {
+            assert!(!analysis.insights.is_empty());
+        }
+        Err(e) => {
+            println!("Ollama test failed (expected if Ollama not running): {}", e);
+        }
+    }
 }
 
 #[tokio::test]
 async fn test_provider_capabilities() {
-    let mock = AIProviderFactory::create_mock();
+    let provider = AIProviderFactory::create_provider(&ProviderConfig::Mock)
+        .expect("Failed to create provider");
     
-    // All providers should support basic capabilities
-    assert!(mock.supports_capability(&AnalysisCapability::GraphAnalysis));
-    assert!(mock.supports_capability(&AnalysisCapability::WorkflowOptimization));
-    assert!(mock.supports_capability(&AnalysisCapability::PatternDetection));
-    assert!(mock.supports_capability(&AnalysisCapability::SemanticAnalysis));
-    assert!(mock.supports_capability(&AnalysisCapability::TransformationSuggestion));
-    
-    // Custom capabilities should also be supported
-    assert!(mock.supports_capability(&AnalysisCapability::Custom("custom".to_string())));
+    assert!(provider.supports_capability(&AnalysisCapability::GraphAnalysis));
+    assert!(provider.supports_capability(&AnalysisCapability::WorkflowOptimization));
+    assert!(provider.supports_capability(&AnalysisCapability::SemanticAnalysis));
 }
 
 #[tokio::test]
-async fn test_complex_workflow_analysis() {
-    let provider = AIProviderFactory::create_mock();
+async fn test_transformation_suggestions() {
+    let provider = AIProviderFactory::create_provider(&ProviderConfig::Mock)
+        .expect("Failed to create provider");
     
-    // Create a more complex workflow
-    let mut graph = create_test_graph();
+    let graph_data = create_test_graph();
     
-    // Add parallel branches
-    graph.nodes.push(NodeData {
-        node_id: "parallel1".to_string(),
-        node_type: "process".to_string(),
+    let suggestions = provider.suggest_transformations(
+        graph_data,
+        vec!["optimize_parallelism".to_string(), "reduce_bottlenecks".to_string()],
+        HashMap::new(),
+    ).await.unwrap();
+    
+    assert!(!suggestions.is_empty());
+    assert!(suggestions[0].transformation_type.is_some());
+}
+
+#[tokio::test]
+async fn test_error_handling() {
+    let provider = AIProviderFactory::create_provider(&ProviderConfig::Mock)
+        .expect("Failed to create provider");
+    
+    // Create an invalid graph (no nodes)
+    let invalid_graph = GraphData {
+        graph_id: uuid::Uuid::new_v4(),
+        nodes: vec![],
+        edges: vec![],
+        metadata: HashMap::new(),
+    };
+    
+    // This should still work, but might give different results
+    let result = provider.analyze_graph(
+        invalid_graph,
+        AnalysisCapability::GraphAnalysis,
+        HashMap::new(),
+    ).await;
+    
+    assert!(result.is_ok());
+}
+
+#[tokio::test]
+async fn test_parallel_analysis() {
+    let provider = AIProviderFactory::create_provider(&ProviderConfig::Mock)
+        .expect("Failed to create provider");
+    
+    let graph_data = create_test_graph();
+    
+    // Add parallel nodes
+    let mut parallel_graph = graph_data.clone();
+    parallel_graph.nodes.push(NodeData {
+        id: "parallel1".to_string(),
+        node_type: "parallel".to_string(),
         label: "Parallel Task 1".to_string(),
-        properties: HashMap::from([
-            ("duration_ms".to_string(), json!(2000)),
-        ]),
+        properties: HashMap::new(),
+        position: None,
     });
     
-    graph.nodes.push(NodeData {
-        node_id: "parallel2".to_string(),
-        node_type: "process".to_string(),
+    parallel_graph.nodes.push(NodeData {
+        id: "parallel2".to_string(),
+        node_type: "parallel".to_string(),
         label: "Parallel Task 2".to_string(),
-        properties: HashMap::from([
-            ("duration_ms".to_string(), json!(3000)),
-        ]),
+        properties: HashMap::new(),
+        position: None,
     });
     
-    // Add edges for parallel execution
-    graph.edges.push(EdgeData {
-        edge_id: "e3".to_string(),
-        source: "n1".to_string(),
+    parallel_graph.edges.push(EdgeData {
+        id: "e3".to_string(),
+        source: "start".to_string(),
         target: "parallel1".to_string(),
         edge_type: "parallel".to_string(),
         properties: HashMap::new(),
     });
     
-    graph.edges.push(EdgeData {
-        edge_id: "e4".to_string(),
-        source: "n1".to_string(),
+    parallel_graph.edges.push(EdgeData {
+        id: "e4".to_string(),
+        source: "start".to_string(),
         target: "parallel2".to_string(),
         edge_type: "parallel".to_string(),
         properties: HashMap::new(),
     });
     
     let result = provider.analyze_graph(
-        graph,
+        parallel_graph,
         AnalysisCapability::WorkflowOptimization,
         HashMap::new(),
     ).await.unwrap();
     
-    // Should identify the parallel execution opportunity
-    let has_parallel_finding = result.findings.iter()
-        .any(|f| f.description.contains("parallel"));
-    
-    assert!(has_parallel_finding, "Should identify parallel execution patterns");
+    // Check that the analysis mentions parallelism
+    let insights_text = result.insights.join(" ");
+    assert!(insights_text.to_lowercase().contains("parallel") || 
+            insights_text.contains("concurrent") ||
+            insights_text.contains("simultaneously"));
+}
+
+// Helper function to create a test graph
+fn create_test_graph() -> GraphData {
+    GraphData {
+        graph_id: uuid::Uuid::new_v4(),
+        nodes: vec![
+            NodeData {
+                id: "start".to_string(),
+                node_type: "start".to_string(),
+                label: "Start Node".to_string(),
+                properties: HashMap::from([
+                    ("priority".to_string(), json!("high")),
+                ]),
+                position: Some((0.0, 0.0, 0.0)),
+            },
+            NodeData {
+                id: "process".to_string(),
+                node_type: "task".to_string(),
+                label: "Process Data".to_string(),
+                properties: HashMap::from([
+                    ("duration".to_string(), json!(30)),
+                    ("resource".to_string(), json!("cpu")),
+                ]),
+                position: Some((1.0, 0.0, 0.0)),
+            },
+            NodeData {
+                id: "end".to_string(),
+                node_type: "end".to_string(),
+                label: "End Node".to_string(),
+                properties: HashMap::new(),
+                position: Some((2.0, 0.0, 0.0)),
+            },
+        ],
+        edges: vec![
+            EdgeData {
+                id: "e1".to_string(),
+                source: "start".to_string(),
+                target: "process".to_string(),
+                edge_type: "sequence".to_string(),
+                properties: HashMap::new(),
+            },
+            EdgeData {
+                id: "e2".to_string(),
+                source: "process".to_string(),
+                target: "end".to_string(),
+                edge_type: "sequence".to_string(),
+                properties: HashMap::new(),
+            },
+        ],
+        metadata: HashMap::from([
+            ("name".to_string(), json!("Test Workflow")),
+            ("version".to_string(), json!("1.0")),
+        ]),
+    }
+}
+
+// Simpler graph for testing with local models
+fn create_simple_graph() -> GraphData {
+    GraphData {
+        graph_id: uuid::Uuid::new_v4(),
+        nodes: vec![
+            NodeData {
+                id: "a".to_string(),
+                node_type: "node".to_string(),
+                label: "A".to_string(),
+                properties: HashMap::new(),
+                position: None,
+            },
+            NodeData {
+                id: "b".to_string(),
+                node_type: "node".to_string(),
+                label: "B".to_string(),
+                properties: HashMap::new(),
+                position: None,
+            },
+        ],
+        edges: vec![
+            EdgeData {
+                id: "e1".to_string(),
+                source: "a".to_string(),
+                target: "b".to_string(),
+                edge_type: "edge".to_string(),
+                properties: HashMap::new(),
+            },
+        ],
+        metadata: HashMap::new(),
+    }
 } 

@@ -2,29 +2,82 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use serde_json::Value;
-use crate::value_objects::AnalysisCapability;
+use uuid::Uuid;
 
-/// Result of an AI analysis
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AnalysisResult {
-    /// Type of analysis performed
-    pub analysis_type: AnalysisCapability,
-    
-    /// Confidence score (0.0 to 1.0)
-    pub confidence: f32,
-    
-    /// Analysis findings
-    pub findings: Vec<Finding>,
-    
-    /// Recommendations based on analysis
-    pub recommendations: Vec<Recommendation>,
-    
-    /// Raw response from AI provider
-    pub raw_response: Option<Value>,
+/// Priority level for recommendations
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Priority {
+    Low,
+    Medium,
+    High,
+    Critical,
 }
 
-/// A specific finding from the analysis
+/// Impact level of changes
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Impact {
+    Low,
+    Medium,
+    High,
+}
+
+/// Effort level required
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum EffortLevel {
+    Low,
+    Medium,
+    High,
+}
+
+/// Represents a recommendation from AI analysis
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Recommendation {
+    pub id: Uuid,
+    pub title: String,
+    pub description: String,
+    pub priority: Priority,
+    pub expected_impact: String,
+    pub effort_level: EffortLevel,
+    pub actions: Vec<RecommendedAction>,
+    pub metadata: HashMap<String, serde_json::Value>,
+}
+
+/// Represents a specific action within a recommendation
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RecommendedAction {
+    pub id: Uuid,
+    pub action_type: String,
+    pub target: String,
+    pub description: String,
+    pub estimated_duration: std::time::Duration,
+    pub parameters: HashMap<String, serde_json::Value>,
+    pub dependencies: Vec<Uuid>,
+}
+
+/// Result of AI analysis
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AnalysisResult {
+    pub id: Uuid,
+    pub confidence_score: f32,
+    pub summary: String,
+    pub recommendations: Vec<Recommendation>,
+    pub insights: Vec<Insight>,
+    pub metadata: HashMap<String, serde_json::Value>,
+    pub timestamp: std::time::SystemTime,
+}
+
+/// Represents an insight from analysis
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Insight {
+    pub id: Uuid,
+    pub category: String,
+    pub description: String,
+    pub evidence: Vec<String>,
+    pub confidence: f32,
+    pub impact: Impact,
+}
+
+/// A specific finding from the analysis (legacy support)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Finding {
     /// Unique identifier for this finding
@@ -43,32 +96,10 @@ pub struct Finding {
     pub related_elements: Vec<String>,
     
     /// Supporting evidence
-    pub evidence: HashMap<String, Value>,
+    pub evidence: HashMap<String, serde_json::Value>,
 }
 
-/// A recommendation based on analysis
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Recommendation {
-    /// Unique identifier
-    pub id: String,
-    
-    /// Type of recommendation
-    pub recommendation_type: RecommendationType,
-    
-    /// Description of the recommendation
-    pub description: String,
-    
-    /// Expected impact if implemented
-    pub expected_impact: String,
-    
-    /// Effort level required
-    pub effort_level: EffortLevel,
-    
-    /// Specific actions to implement
-    pub actions: Vec<RecommendedAction>,
-}
-
-/// Types of recommendations
+/// Types of recommendations (legacy support)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum RecommendationType {
     /// Optimize workflow processes
@@ -83,33 +114,55 @@ pub enum RecommendationType {
     /// Enrich semantic information
     SemanticEnrichment,
     
+    /// General improvement
+    Improvement,
+    
+    /// Optimization suggestion
+    Optimization,
+    
     /// Custom recommendation type
     Custom(String),
 }
 
-/// Level of effort required
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum EffortLevel {
-    Low,
-    Medium,
-    High,
+impl Default for AnalysisResult {
+    fn default() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            confidence_score: 0.0,
+            summary: String::new(),
+            recommendations: Vec::new(),
+            insights: Vec::new(),
+            metadata: HashMap::new(),
+            timestamp: std::time::SystemTime::now(),
+        }
+    }
 }
 
-/// A specific action to take
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RecommendedAction {
-    /// Action identifier
-    pub id: String,
-    
-    /// Type of action (e.g., "add_edge", "remove_node", "parallelize")
-    pub action_type: String,
-    
-    /// Elements to apply action to
-    pub target_elements: Vec<String>,
-    
-    /// Parameters for the action
-    pub parameters: HashMap<String, Value>,
-    
-    /// Order in which to execute (if multiple actions)
-    pub execution_order: u32,
+impl Default for Recommendation {
+    fn default() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            title: String::new(),
+            description: String::new(),
+            priority: Priority::Medium,
+            expected_impact: String::new(),
+            effort_level: EffortLevel::Medium,
+            actions: Vec::new(),
+            metadata: HashMap::new(),
+        }
+    }
+}
+
+impl Default for RecommendedAction {
+    fn default() -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            action_type: String::new(),
+            target: String::new(),
+            description: String::new(),
+            estimated_duration: std::time::Duration::from_secs(3600),
+            parameters: HashMap::new(),
+            dependencies: Vec::new(),
+        }
+    }
 } 
