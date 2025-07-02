@@ -1,14 +1,17 @@
-//! Authentication systems for agent domain
+//! Authentication systems for agents
 //!
 //! This module provides ECS systems for handling agent authentication,
 //! including token validation, session management, and authentication state updates.
 
-use bevy::prelude::*;
-use crate::components::{AgentEntity, AgentStatus, AgentCapabilities};
+use bevy_ecs::prelude::*;
+use bevy::prelude::{Time, EventReader, EventWriter, Plugin, App, Update};
+use chrono::{DateTime, Utc, Duration};
+use crate::components::{AgentEntity, AgentCapabilities};
 use crate::events::AuthenticationEvent;
 use crate::value_objects::{AgentId, AuthToken, SessionId};
 use std::collections::HashMap;
 use uuid::Uuid;
+use tracing::{info, warn, error, debug};
 
 /// Component representing authentication state
 #[derive(Component, Debug, Clone)]

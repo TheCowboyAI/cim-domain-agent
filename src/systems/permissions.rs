@@ -58,11 +58,12 @@ pub fn handle_permission_changes(
     mut requests: EventReader<PermissionChangeRequest>,
     mut query: Query<(&AgentEntity, &mut PermissionsComponent, &AuthenticationState)>,
     policy_manager: Res<PermissionPolicyManager>,
+    mut permissions_changed: EventWriter<AgentPermissionsChanged>,
 ) {
     for request in requests.read() {
         if let Some((agent, mut permissions, auth_state)) = query
             .iter_mut()
-            .find(|(a, _, _)| a.agent_id == request.agent_id)
+            .find(|(a, _, _)| AgentId::from_uuid(a.agent_id) == request.agent_id)
         {
             // Check if permission requires authentication
             let requires_auth = policy_manager
@@ -74,10 +75,14 @@ pub fn handle_permission_changes(
                 continue;
             }
 
+            let mut granted_permissions = Vec::new();
+            let mut revoked_permissions = Vec::new();
+
             match request.action {
                 PermissionAction::Grant => {
                     // Add permission
                     permissions.permissions.insert(request.permission.clone());
+                    granted_permissions.push(request.permission.clone());
                     
                     // Add scope if provided
                     if let Some(scope) = &request.scope {
@@ -91,30 +96,31 @@ pub fn handle_permission_changes(
                     {
                         for perm in inherited {
                             permissions.permissions.insert(perm.clone());
+                            granted_permissions.push(perm.clone());
                         }
                     }
-                    
-                    // Trigger event
-                    commands.trigger(PermissionsChangedEvent::PermissionGranted {
-                        agent_id: agent.agent_id.clone(),
-                        permission: request.permission.clone(),
-                    });
                 }
                 PermissionAction::Revoke => {
                     // Remove permission
-                    permissions.permissions.remove(&request.permission);
+                    if permissions.permissions.remove(&request.permission) {
+                        revoked_permissions.push(request.permission.resource.clone());
+                    }
                     
                     // Remove scope if specified
                     if let Some(scope) = &request.scope {
                         permissions.scopes.remove(scope);
                     }
-                    
-                    // Trigger event
-                    commands.trigger(PermissionsChangedEvent::PermissionRevoked {
-                        agent_id: agent.agent_id.clone(),
-                        permission: request.permission.clone(),
-                    });
                 }
+            }
+
+            // Send event if any changes were made
+            if !granted_permissions.is_empty() || !revoked_permissions.is_empty() {
+                permissions_changed.send(AgentPermissionsChanged {
+                    agent_id: AgentId::from_uuid(agent.agent_id),
+                    granted: granted_permissions,
+                    revoked: revoked_permissions,
+                    changed_at: chrono::Utc::now(),
+                });
             }
         }
     }
@@ -126,18 +132,40 @@ pub fn sync_permissions_with_capabilities(
 ) {
     for (permissions, mut capabilities) in &mut query {
         // Update capabilities based on permissions
-        capabilities.can_generate_text = permissions.permissions.iter()
-            .any(|p| p.resource == "text_generation" && !p.is_expired());
-        capabilities.can_analyze_code = permissions.permissions.iter()
-            .any(|p| p.resource == "code_analysis" && !p.is_expired());
-        capabilities.can_execute_tools = permissions.permissions.iter()
-            .any(|p| p.resource == "tool_execution" && !p.is_expired());
-        capabilities.can_access_knowledge = permissions.permissions.iter()
-            .any(|p| p.resource == "knowledge_base" && !p.is_expired());
-        capabilities.can_learn = permissions.permissions.iter()
-            .any(|p| p.resource == "learning" && !p.is_expired());
-        capabilities.can_collaborate = permissions.permissions.iter()
-            .any(|p| p.resource == "collaboration" && !p.is_expired());
+        if permissions.permissions.iter()
+            .any(|p| p.resource == "text_generation" && !p.is_expired()) {
+            capabilities.add("capability.natural_language".to_string());
+        } else {
+            capabilities.remove("capability.natural_language");
+        }
+        
+        if permissions.permissions.iter()
+            .any(|p| p.resource == "code_analysis" && !p.is_expired()) {
+            capabilities.add("capability.compute".to_string());
+        } else {
+            capabilities.remove("capability.compute");
+        }
+        
+        if permissions.permissions.iter()
+            .any(|p| p.resource == "tool_execution" && !p.is_expired()) {
+            capabilities.add("capability.execute".to_string());
+        } else {
+            capabilities.remove("capability.execute");
+        }
+        
+        if permissions.permissions.iter()
+            .any(|p| p.resource == "knowledge_base" && !p.is_expired()) {
+            capabilities.add("capability.read".to_string());
+        } else {
+            capabilities.remove("capability.read");
+        }
+        
+        if permissions.permissions.iter()
+            .any(|p| p.resource == "system" && p.access_level == AccessLevel::Write && !p.is_expired()) {
+            capabilities.add("capability.write".to_string());
+        } else {
+            capabilities.remove("capability.write");
+        }
     }
 }
 
@@ -150,15 +178,15 @@ pub fn check_permission_requirements(
     for check in permission_checks.read() {
         if let Some((agent, permissions)) = query
             .iter()
-            .find(|(a, _)| a.agent_id == check.agent_id)
+            .find(|(a, _)| AgentId::from_uuid(a.agent_id) == check.agent_id)
         {
             let has_permission = permissions.permissions.contains(&check.required_permission);
             let has_scope = check.required_scope.as_ref()
                 .map(|scope| permissions.scopes.contains(scope))
                 .unwrap_or(true);
             
-            check_results.send(PermissionCheckResult {
-                agent_id: agent.agent_id.clone(),
+            check_results.write(PermissionCheckResult {
+                agent_id: check.agent_id.clone(),
                 permission: check.required_permission.clone(),
                 allowed: has_permission && has_scope,
                 reason: if !has_permission {
@@ -170,7 +198,7 @@ pub fn check_permission_requirements(
                 },
             });
         } else {
-            check_results.send(PermissionCheckResult {
+            check_results.write(PermissionCheckResult {
                 agent_id: check.agent_id.clone(),
                 permission: check.required_permission.clone(),
                 allowed: false,
@@ -202,22 +230,29 @@ pub fn apply_default_permissions(
     mut commands: Commands,
     query: Query<(Entity, &AgentEntity), Added<AgentEntity>>,
     policy_manager: Res<PermissionPolicyManager>,
+    mut permissions_changed: EventWriter<AgentPermissionsChanged>,
 ) {
     for (entity, agent) in &query {
         let mut permissions = PermissionsComponent::default();
         
         // Add default permissions
-        for perm in &policy_manager.default_permissions {
+        let granted: Vec<Permission> = policy_manager.default_permissions.iter().cloned().collect();
+        for perm in &granted {
             permissions.permissions.insert(perm.clone());
         }
         
         // Add component to entity
         commands.entity(entity).insert(permissions);
         
-        // Trigger event
-        commands.trigger(PermissionsChangedEvent::DefaultPermissionsApplied {
-            agent_id: agent.agent_id.clone(),
-        });
+        // Send event if permissions were added
+        if !granted.is_empty() {
+            permissions_changed.send(AgentPermissionsChanged {
+                agent_id: AgentId::from_uuid(agent.agent_id),
+                granted,
+                revoked: vec![],
+                changed_at: chrono::Utc::now(),
+            });
+        }
     }
 }
 

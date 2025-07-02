@@ -55,12 +55,11 @@ impl AuthenticationEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use uuid::Uuid;
 
     #[test]
     fn test_authentication_event_agent_id() {
-        let agent_id = AgentId(Uuid::new_v4());
-        let session_id = SessionId(Uuid::new_v4());
+        let agent_id = AgentId::new();
+        let session_id = SessionId::new();
         
         let event = AuthenticationEvent::Authenticated {
             agent_id: agent_id.clone(),
@@ -73,7 +72,7 @@ mod tests {
     
     #[test]
     fn test_authentication_failed_event() {
-        let agent_id = AgentId(Uuid::new_v4());
+        let agent_id = AgentId::new();
         
         let event = AuthenticationEvent::AuthenticationFailed {
             agent_id: agent_id.clone(),

@@ -135,6 +135,18 @@ impl Default for RetryPolicy {
     }
 }
 
+impl Default for ToolConfig {
+    fn default() -> Self {
+        Self {
+            endpoint: String::new(),
+            auth: AuthMethod::None,
+            parameters: HashMap::new(),
+            timeout_seconds: 30,
+            retry_policy: RetryPolicy::default(),
+        }
+    }
+}
+
 impl ToolAccess {
     /// Create a new tool access configuration
     pub fn new(tool_id: impl Into<String>, name: impl Into<String>, tool_type: ToolType) -> Self {

@@ -16,9 +16,11 @@ pub mod openai;
 pub mod anthropic;
 pub mod ollama;
 pub mod config;
+pub mod provider_manager;
 
 // Re-export commonly used types
-pub use config::{create_provider_config, ProviderType};
+pub use config::{create_provider_config, ProviderType, load_provider_config};
+pub use provider_manager::{AIProviderManager, SelectionStrategy};
 
 /// Errors that can occur during AI provider operations
 #[derive(Debug, Error)]

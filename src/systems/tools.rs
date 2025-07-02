@@ -7,8 +7,8 @@ use bevy::prelude::*;
 use crate::components::{AgentEntity, AgentCapabilities};
 use crate::events::AgentToolsChanged;
 use crate::value_objects::{
-    AgentId, Tool, ToolCategory, ToolPermission, ToolUsage,
-    ExecutionResult, ToolAccess, ToolType, ToolConfig
+    AgentId, Tool, ToolCategory, ToolUsage,
+    ExecutionResult, ExecutionError, ToolAccess, ToolType, ToolConfig
 };
 use crate::systems::permissions::PermissionsComponent;
 use std::collections::{HashMap, HashSet};
@@ -18,7 +18,7 @@ use uuid::Uuid;
 #[derive(Component, Debug, Clone)]
 pub struct ToolsComponent {
     pub available_tools: HashMap<String, Tool>,
-    pub tool_usage: HashMap<String, ToolUsage>,
+    pub tool_usage_history: Vec<ToolUsage>,
     pub active_executions: HashSet<Uuid>,
 }
 
@@ -26,7 +26,7 @@ impl Default for ToolsComponent {
     fn default() -> Self {
         Self {
             available_tools: HashMap::new(),
-            tool_usage: HashMap::new(),
+            tool_usage_history: Vec::new(),
             active_executions: HashSet::new(),
         }
     }
@@ -69,6 +69,13 @@ pub struct ExecuteToolResponse {
     pub result: ExecutionResult,
 }
 
+/// Event for tool assignment requests
+#[derive(Event, Debug, Clone)]
+pub struct AssignToolRequest {
+    pub agent_id: AgentId,
+    pub tool_name: String,
+}
+
 /// System to handle tool registration
 pub fn handle_tool_registration(
     mut registry: ResMut<ToolRegistry>,
@@ -91,10 +98,8 @@ pub fn handle_tool_registration(
             registry.access_policies.insert(tool_name.clone(), access.clone());
         }
         
-        // Trigger registration event
-        commands.trigger(ToolsChangedEvent::ToolRegistered {
-            tool_name,
-        });
+        // Tool registration doesn't trigger AgentToolsChanged as it's system-wide
+        // AgentToolsChanged is only for agent-specific tool changes
     }
 }
 
@@ -104,64 +109,53 @@ pub fn assign_tools_to_agents(
     mut query: Query<(Entity, &AgentEntity, &mut ToolsComponent, &PermissionsComponent)>,
     registry: Res<ToolRegistry>,
     mut tool_assignments: EventReader<AssignToolRequest>,
+    mut tools_changed: EventWriter<AgentToolsChanged>,
 ) {
     for assignment in tool_assignments.read() {
         if let Some((entity, agent, mut tools, permissions)) = query
             .iter_mut()
-            .find(|(_, a, _, _)| a.agent_id == assignment.agent_id)
+            .find(|(_, a, _, _)| AgentId::from_uuid(a.agent_id) == assignment.agent_id)
         {
             // Check if tool exists in registry
             if let Some(tool) = registry.tools.get(&assignment.tool_name) {
                 // Check permissions
-                let has_permission = match &tool.required_permission {
-                    ToolPermission::None => true,
-                    ToolPermission::Execute => permissions.permissions.iter()
-                        .any(|p| p.resource == "tool_execution" && !p.is_expired()),
-                    ToolPermission::Admin => permissions.permissions.iter()
-                        .any(|p| p.resource == "system" && p.access_level == crate::value_objects::AccessLevel::Admin && !p.is_expired()),
-                    ToolPermission::Custom(resource) => permissions.permissions.iter()
-                        .any(|p| p.resource == resource && !p.is_expired()),
-                };
+                let has_permission = tool.required_permissions.is_empty() || 
+                    tool.required_permissions.iter().all(|required| {
+                        permissions.permissions.iter()
+                            .any(|p| &p.resource == required && !p.is_expired())
+                    });
                 
                 if has_permission {
                     // Add tool to agent
                     tools.available_tools.insert(tool.name.clone(), tool.clone());
                     
-                    // Initialize usage tracking
-                    tools.tool_usage.insert(
+                    // Usage tracking will be done when the tool is actually used
+                    
+                    // Create tool access for the event
+                    let tool_access = ToolAccess::new(
+                        tool.id.clone(),
                         tool.name.clone(),
-                        ToolUsage {
-                            total_uses: 0,
-                            successful_uses: 0,
-                            failed_uses: 0,
-                            last_used: None,
-                            average_execution_time: std::time::Duration::from_secs(0),
-                        },
+                        match &tool.category {
+                            ToolCategory::Analysis => ToolType::AIService,
+                            ToolCategory::Query => ToolType::Database,
+                            ToolCategory::Communication => ToolType::MessageQueue,
+                            ToolCategory::Integration => ToolType::RestAPI,
+                            _ => ToolType::Custom(format!("{:?}", tool.category)),
+                        }
                     );
                     
                     // Trigger event
-                    commands.trigger(ToolsChangedEvent::ToolAssigned {
-                        agent_id: agent.agent_id.clone(),
-                        tool_name: tool.name.clone(),
-                    });
-                } else {
-                    // Permission denied
-                    commands.trigger(ToolsChangedEvent::ToolAssignmentFailed {
-                        agent_id: agent.agent_id.clone(),
-                        tool_name: tool.name.clone(),
-                        reason: "Insufficient permissions".to_string(),
+                    tools_changed.send(AgentToolsChanged {
+                        agent_id: AgentId::from_uuid(agent.agent_id),
+                        enabled: vec![tool_access],
+                        disabled: vec![],
+                        changed_at: chrono::Utc::now(),
                     });
                 }
+                // If permission denied, we don't send an event - just log it
             }
         }
     }
-}
-
-/// Event for tool assignment requests
-#[derive(Event, Debug, Clone)]
-pub struct AssignToolRequest {
-    pub agent_id: AgentId,
-    pub tool_name: String,
 }
 
 /// System to handle tool execution
@@ -176,19 +170,23 @@ pub fn handle_tool_execution(
     for request in execution_requests.read() {
         if let Some((agent, mut tools, capabilities)) = query
             .iter_mut()
-            .find(|(a, _, _)| a.agent_id == request.agent_id)
+            .find(|(a, _, _)| AgentId::from_uuid(a.agent_id) == request.agent_id)
         {
             // Check if agent has the tool
-            if let Some(tool) = tools.available_tools.get(&request.tool_name) {
-                // Check if agent can execute tools
-                if !capabilities.can_execute_tools {
-                    execution_responses.send(ExecuteToolResponse {
+            if let Some(tool) = tools.available_tools.get(&request.tool_name).cloned() {
+                // Check if agent has execute capability
+                if !capabilities.has("capability.execute") {
+                    execution_responses.write(ExecuteToolResponse {
                         agent_id: request.agent_id.clone(),
                         tool_name: request.tool_name.clone(),
                         execution_id: request.execution_id,
-                        result: ExecutionResult::failure(
-                            "Agent does not have tool execution capability".to_string()
-                        ),
+                        result: ExecutionResult::failure(ExecutionError {
+                            code: "NO_EXECUTE_CAPABILITY".to_string(),
+                            message: "Agent does not have tool execution capability".to_string(),
+                            stack_trace: None,
+                            recoverable: false,
+                            remediation: Some("Grant execute capability to the agent".to_string()),
+                        }),
                     });
                     continue;
                 }
@@ -198,49 +196,48 @@ pub fn handle_tool_execution(
                 
                 // Simulate tool execution (in real implementation, this would call actual tool)
                 let start_time = std::time::Instant::now();
-                let result = execute_tool_mock(tool, &request.parameters);
+                let result = execute_tool_mock(&tool, &request.parameters);
                 let execution_time = start_time.elapsed();
                 
-                // Update usage statistics
-                if let Some(usage) = tools.tool_usage.get_mut(&request.tool_name) {
-                    usage.total_uses += 1;
-                    if result.success {
-                        usage.successful_uses += 1;
-                    } else {
-                        usage.failed_uses += 1;
-                    }
-                    usage.last_used = Some(std::time::SystemTime::now());
-                    
-                    // Update average execution time
-                    let total_time = usage.average_execution_time * usage.total_uses as u32;
-                    usage.average_execution_time = (total_time + execution_time) / (usage.total_uses as u32);
-                }
+                // Record usage
+                let usage = ToolUsage {
+                    tool_id: request.tool_name.clone(),
+                    agent_id: agent.agent_id,
+                    used_at: chrono::Utc::now(),
+                    duration_ms: execution_time.as_millis() as u64,
+                    success: result.success,
+                    error: if result.success { None } else { result.error.as_ref().map(|e| e.message.clone()) },
+                    input_summary: Some(request.parameters.clone()),
+                    output_summary: result.output.clone(),
+                };
+                tools.tool_usage_history.push(usage);
                 
                 // Remove from active executions
                 tools.active_executions.remove(&request.execution_id);
                 
                 // Send response
-                execution_responses.send(ExecuteToolResponse {
+                execution_responses.write(ExecuteToolResponse {
                     agent_id: request.agent_id.clone(),
                     tool_name: request.tool_name.clone(),
                     execution_id: request.execution_id,
                     result,
                 });
                 
-                // Trigger event
-                commands.trigger(ToolsChangedEvent::ToolExecuted {
-                    agent_id: agent.agent_id.clone(),
-                    tool_name: request.tool_name.clone(),
-                });
+                // Tool execution doesn't trigger AgentToolsChanged
+                // as it's not changing the tool availability
             } else {
                 // Tool not available
-                execution_responses.send(ExecuteToolResponse {
+                execution_responses.write(ExecuteToolResponse {
                     agent_id: request.agent_id.clone(),
                     tool_name: request.tool_name.clone(),
                     execution_id: request.execution_id,
-                    result: ExecutionResult::failure(
-                        format!("Tool '{}' not available for agent", request.tool_name)
-                    ),
+                    result: ExecutionResult::failure(ExecutionError {
+                        code: "TOOL_NOT_AVAILABLE".to_string(),
+                        message: format!("Tool '{}' not available for agent", request.tool_name),
+                        stack_trace: None,
+                        recoverable: false,
+                        remediation: Some("Assign the tool to the agent first".to_string()),
+                    }),
                 });
             }
         }
@@ -249,23 +246,23 @@ pub fn handle_tool_execution(
 
 /// System to remove tools from agents
 pub fn handle_tool_removal(
-    mut commands: Commands,
+    _commands: Commands,
     mut removal_requests: EventReader<RemoveToolRequest>,
     mut query: Query<(&AgentEntity, &mut ToolsComponent)>,
+    mut tools_changed: EventWriter<AgentToolsChanged>,
 ) {
     for request in removal_requests.read() {
         if let Some((agent, mut tools)) = query
             .iter_mut()
-            .find(|(a, _)| a.agent_id == request.agent_id)
+            .find(|(a, _)| AgentId::from_uuid(a.agent_id) == request.agent_id)
         {
             if tools.available_tools.remove(&request.tool_name).is_some() {
-                // Also remove usage stats
-                tools.tool_usage.remove(&request.tool_name);
-                
                 // Trigger event
-                commands.trigger(ToolsChangedEvent::ToolRemoved {
-                    agent_id: agent.agent_id.clone(),
-                    tool_name: request.tool_name.clone(),
+                tools_changed.send(AgentToolsChanged {
+                    agent_id: AgentId::from_uuid(agent.agent_id),
+                    enabled: vec![],
+                    disabled: vec![request.tool_name.clone()],
+                    changed_at: chrono::Utc::now(),
                 });
             }
         }
@@ -282,7 +279,7 @@ pub struct RemoveToolRequest {
 /// Mock tool execution function
 fn execute_tool_mock(tool: &Tool, parameters: &serde_json::Value) -> ExecutionResult {
     // Simulate different tool behaviors based on category
-    match tool.category {
+    match &tool.category {
         ToolCategory::Analysis => {
             ExecutionResult::success(serde_json::json!({
                 "analysis": "Mock analysis result",
@@ -290,9 +287,16 @@ fn execute_tool_mock(tool: &Tool, parameters: &serde_json::Value) -> ExecutionRe
                 "tool": tool.name
             }))
         }
-        ToolCategory::Generation => {
+        ToolCategory::Transformation => {
             ExecutionResult::success(serde_json::json!({
-                "generated": "Mock generated content",
+                "transformed": "Mock transformation result",
+                "parameters": parameters,
+                "tool": tool.name
+            }))
+        }
+        ToolCategory::Query => {
+            ExecutionResult::success(serde_json::json!({
+                "query_result": "Mock query result",
                 "parameters": parameters,
                 "tool": tool.name
             }))
@@ -304,24 +308,19 @@ fn execute_tool_mock(tool: &Tool, parameters: &serde_json::Value) -> ExecutionRe
                 "tool": tool.name
             }))
         }
-        ToolCategory::DataProcessing => {
+        ToolCategory::DataManipulation => {
             ExecutionResult::success(serde_json::json!({
-                "processed": "Mock data processing complete",
+                "manipulated": "Mock data manipulation complete",
                 "parameters": parameters,
                 "tool": tool.name
             }))
         }
-        ToolCategory::SystemControl => {
-            // Simulate restricted tool
-            if parameters.get("authorized").and_then(|v| v.as_bool()).unwrap_or(false) {
-                ExecutionResult::success(serde_json::json!({
-                    "system": "Mock system control executed",
-                    "parameters": parameters,
-                    "tool": tool.name
-                }))
-            } else {
-                ExecutionResult::failure("Unauthorized system control access".to_string())
-            }
+        ToolCategory::Integration => {
+            ExecutionResult::success(serde_json::json!({
+                "integrated": "Mock integration complete",
+                "parameters": parameters,
+                "tool": tool.name
+            }))
         }
         ToolCategory::Custom(_) => {
             ExecutionResult::success(serde_json::json!({
@@ -365,7 +364,7 @@ mod tests {
     fn test_tools_component_default() {
         let tools = ToolsComponent::default();
         assert!(tools.available_tools.is_empty());
-        assert!(tools.tool_usage.is_empty());
+        assert!(tools.tool_usage_history.is_empty());
         assert!(tools.active_executions.is_empty());
     }
     
@@ -379,13 +378,12 @@ mod tests {
     
     #[test]
     fn test_mock_tool_execution() {
-        let tool = Tool {
-            name: "test_tool".to_string(),
-            description: "Test tool".to_string(),
-            category: ToolCategory::Analysis,
-            required_permission: ToolPermission::None,
-            version: "1.0.0".to_string(),
-        };
+        let tool = Tool::new(
+            "test_tool".to_string(),
+            "test_tool".to_string(),
+            "Test tool".to_string(),
+            ToolCategory::Analysis,
+        );
         
         let params = serde_json::json!({ "test": true });
         let result = execute_tool_mock(&tool, &params);

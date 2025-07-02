@@ -7,7 +7,7 @@ use crate::{
     value_objects::{AgentId, AnalysisCapability, AnalysisResult, analysis_result::Recommendation},
 };
 use cim_domain_conceptualspaces::{
-    ConceptualPoint,
+    ConceptualPoint, ConceptualSpaceId,
     DistanceMetric,
     similarity::SimilarityEngine,
 };
@@ -18,7 +18,7 @@ use uuid::Uuid;
 /// Agent capability for conceptual space reasoning
 pub struct ConceptualReasoningCapability {
     /// The conceptual space this agent operates in
-    pub space_id: Uuid,
+    pub space_id: ConceptualSpaceId,
     
     /// Similarity engine for semantic analysis
     pub similarity_engine: SimilarityEngine,
@@ -29,7 +29,7 @@ pub struct ConceptualReasoningCapability {
 
 impl ConceptualReasoningCapability {
     /// Create a new conceptual reasoning capability
-    pub fn new(space_id: Uuid) -> Self {
+    pub fn new(space_id: ConceptualSpaceId) -> Self {
         let mut dimension_mappings = HashMap::new();
         
         // Map analysis capabilities to conceptual dimensions
@@ -67,7 +67,7 @@ impl ConceptualReasoningCapability {
     }
     
     /// Analyze a graph using conceptual reasoning
-    pub async fn analyze_graph(
+    pub fn analyze_graph(
         &self,
         graph_id: GraphId,
         graph_point: ConceptualPoint,
@@ -282,7 +282,7 @@ mod tests {
     
     #[test]
     fn test_conceptual_reasoning_capability() {
-        let capability = ConceptualReasoningCapability::new(Uuid::new_v4());
+        let capability = ConceptualReasoningCapability::new(ConceptualSpaceId::new());
         
         assert!(capability.dimension_mappings.contains_key(&AnalysisCapability::GraphAnalysis));
         assert!(capability.dimension_mappings.contains_key(&AnalysisCapability::SemanticAnalysis));
@@ -290,7 +290,7 @@ mod tests {
     
     #[test]
     fn test_dimension_mappings() {
-        let capability = ConceptualReasoningCapability::new(Uuid::new_v4());
+        let capability = ConceptualReasoningCapability::new(ConceptualSpaceId::new());
         let mappings = &capability.dimension_mappings;
         
         let graph_dims = &mappings[&AnalysisCapability::GraphAnalysis];

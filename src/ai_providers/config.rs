@@ -65,7 +65,7 @@ pub enum ProviderType {
 }
 
 /// Create a provider configuration from a provider type using environment variables
-pub fn create_provider_config(provider_type: &ProviderType) -> ProviderConfig {
+pub fn create_provider_config_from_type(provider_type: &ProviderType) -> ProviderConfig {
     match provider_type {
         ProviderType::Mock => ProviderConfig::Mock,
         ProviderType::OpenAI => {
@@ -89,13 +89,51 @@ pub fn create_provider_config(provider_type: &ProviderType) -> ProviderConfig {
     }
 }
 
+/// Create a provider configuration from parameters
+pub fn create_provider_config(
+    provider_name: &str,
+    api_key: Option<String>,
+    model: Option<String>,
+    host: Option<String>,
+) -> AIProviderResult<ProviderConfig> {
+    match provider_name.to_lowercase().as_str() {
+        "mock" => Ok(ProviderConfig::Mock),
+        
+        "openai" => {
+            let api_key = api_key.ok_or_else(|| {
+                AIProviderError::ConfigurationError("API key required for OpenAI".to_string())
+            })?;
+            let model = model.unwrap_or_else(|| "gpt-4".to_string());
+            Ok(ProviderConfig::OpenAI { api_key, model })
+        }
+        
+        "anthropic" => {
+            let api_key = api_key.ok_or_else(|| {
+                AIProviderError::ConfigurationError("API key required for Anthropic".to_string())
+            })?;
+            let model = model.unwrap_or_else(|| "claude-3-opus-20240229".to_string());
+            Ok(ProviderConfig::Anthropic { api_key, model })
+        }
+        
+        "ollama" => {
+            let host = host.unwrap_or_else(|| "http://localhost:11434".to_string());
+            let model = model.unwrap_or_else(|| "llama2".to_string());
+            Ok(ProviderConfig::Ollama { host, model })
+        }
+        
+        _ => Err(AIProviderError::ConfigurationError(
+            format!("Unknown provider: {}", provider_name)
+        )),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     
     #[test]
     fn test_create_mock_config() {
-        let config = create_provider_config(&ProviderType::Mock);
+        let config = create_provider_config_from_type(&ProviderType::Mock);
         match config {
             ProviderConfig::Mock => (),
             _ => panic!("Expected mock config"),
@@ -108,7 +146,7 @@ mod tests {
         env::set_var("OPENAI_API_KEY", "test-key");
         env::set_var("OPENAI_MODEL", "gpt-4");
         
-        let config = create_provider_config(&ProviderType::OpenAI);
+        let config = create_provider_config_from_type(&ProviderType::OpenAI);
         
         match config {
             ProviderConfig::OpenAI { api_key, model } => {

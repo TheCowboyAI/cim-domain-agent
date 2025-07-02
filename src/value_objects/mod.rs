@@ -32,7 +32,7 @@ pub use tool_access::{ToolAccess, ToolType, ToolConfig, AuthMethod, RateLimit, R
 pub use metadata::AgentMetadata;
 pub use constraint::AgentConstraint;
 pub use context::AgentContext;
-pub use execution_result::ExecutionResult;
+pub use execution_result::{ExecutionResult, ExecutionError, ExecutionMetrics, LogEntry, LogLevel, SideEffect, SideEffectType, TokenUsage};
 pub use performance_metrics::PerformanceMetrics;
 pub use permission::{Permission, PermissionScope, AccessLevel};
 pub use authentication::{AuthToken, SessionId};

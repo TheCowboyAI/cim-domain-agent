@@ -18,7 +18,7 @@
 //! ```
 
 use cim_domain_agent::{
-    ai_providers::{*, config::create_provider_config},
+    ai_providers::*,
     value_objects::*,
 };
 use std::collections::HashMap;
