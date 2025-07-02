@@ -5,7 +5,7 @@
 
 use bevy::prelude::*;
 use crate::components::{AgentEntity, AgentCapabilities};
-use crate::events::PermissionsChangedEvent;
+use crate::events::AgentPermissionsChanged;
 use crate::value_objects::{AgentId, Permission, PermissionScope, AccessLevel};
 use crate::systems::authentication::AuthenticationState;
 use std::collections::HashSet;

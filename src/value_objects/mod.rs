@@ -34,7 +34,7 @@ pub use constraint::AgentConstraint;
 pub use context::AgentContext;
 pub use execution_result::ExecutionResult;
 pub use performance_metrics::PerformanceMetrics;
-pub use permission::{Permission, PermissionScope};
+pub use permission::{Permission, PermissionScope, AccessLevel};
 pub use authentication::{AuthToken, SessionId};
 
 // Re-export commonly used types

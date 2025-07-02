@@ -5,7 +5,7 @@
 
 use bevy::prelude::*;
 use crate::components::{AgentEntity, AgentCapabilities};
-use crate::events::ToolsChangedEvent;
+use crate::events::AgentToolsChanged;
 use crate::value_objects::{
     AgentId, Tool, ToolCategory, ToolPermission, ToolUsage,
     ExecutionResult, ToolAccess, ToolType, ToolConfig

@@ -5,7 +5,7 @@
 
 use bevy::prelude::*;
 use crate::components::{AgentEntity, AgentStatus, AgentCapabilities};
-use crate::events::AgentEvent;
+
 use crate::value_objects::{AgentId, PerformanceMetrics};
 use crate::systems::tools::ToolsComponent;
 use crate::systems::authentication::AuthenticationState;
@@ -274,37 +274,30 @@ pub fn perform_health_checks(
 /// System to track agent activities
 pub fn track_agent_activities(
     mut query: Query<(&AgentEntity, &mut ActivityHistoryComponent)>,
-    mut tool_events: EventReader<crate::events::ToolsChangedEvent>,
+    mut tool_events: EventReader<crate::events::AgentToolsChanged>,
     mut auth_events: EventReader<crate::events::AuthenticationEvent>,
 ) {
     // Track tool events
     for event in tool_events.read() {
-        match event {
-            crate::events::ToolsChangedEvent::ToolExecuted { agent_id, tool_name } => {
-                if let Some((_, mut history)) = query.iter_mut()
-                    .find(|(a, _)| a.agent_id == *agent_id)
-                {
-                    add_activity_record(
-                        &mut history,
-                        ActivityType::ToolExecution,
-                        format!("Executed tool: {}", tool_name),
-                        true,
-                    );
-                }
+        if let Some((_, mut history)) = query.iter_mut()
+            .find(|(a, _)| a.agent_id == event.agent_id)
+        {
+            if !event.enabled.is_empty() {
+                add_activity_record(
+                    &mut history,
+                    ActivityType::PermissionChange,
+                    format!("Tools enabled: {} tools", event.enabled.len()),
+                    true,
+                );
             }
-            crate::events::ToolsChangedEvent::ToolAssigned { agent_id, tool_name } => {
-                if let Some((_, mut history)) = query.iter_mut()
-                    .find(|(a, _)| a.agent_id == *agent_id)
-                {
-                    add_activity_record(
-                        &mut history,
-                        ActivityType::PermissionChange,
-                        format!("Tool assigned: {}", tool_name),
-                        true,
-                    );
-                }
+            if !event.disabled.is_empty() {
+                add_activity_record(
+                    &mut history,
+                    ActivityType::PermissionChange,
+                    format!("Tools disabled: {} tools", event.disabled.len()),
+                    true,
+                );
             }
-            _ => {}
         }
     }
     

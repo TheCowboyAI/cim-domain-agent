@@ -1,10 +1,11 @@
 //! Authentication-related events for the agent domain
 
 use serde::{Deserialize, Serialize};
+use bevy_ecs::prelude::Event;
 use crate::value_objects::{AgentId, SessionId};
 
 /// Events related to agent authentication
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Event)]
 pub enum AuthenticationEvent {
     /// Agent successfully authenticated
     Authenticated {

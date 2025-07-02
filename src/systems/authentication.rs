@@ -5,7 +5,7 @@
 
 use bevy::prelude::*;
 use crate::components::{AgentEntity, AgentStatus, AgentCapabilities};
-use crate::events::{AgentEvent, AuthenticationEvent};
+use crate::events::AuthenticationEvent;
 use crate::value_objects::{AgentId, AuthToken, SessionId};
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -65,7 +65,7 @@ pub fn handle_authentication_requests(
         // Find the agent entity
         let agent_entity = agent_query
             .iter_mut()
-            .find(|(_, agent, _)| agent.agent_id == request.agent_id);
+            .find(|(_, agent, _)| AgentId::from_uuid(agent.agent_id) == request.agent_id);
 
         if let Some((entity, agent, mut auth_state)) = agent_entity {
             // Validate token (simplified for now)
@@ -88,10 +88,10 @@ pub fn handle_authentication_requests(
                 auth_manager.tokens.insert(request.token.clone(), session_id.clone());
 
                 // Send success response
-                auth_responses.send(AuthenticationResponse {
+                auth_responses.write(AuthenticationResponse {
                     agent_id: request.agent_id.clone(),
                     success: true,
-                    session_id: Some(session_id),
+                    session_id: Some(session_id.clone()),
                     message: "Authentication successful".to_string(),
                 });
 
@@ -102,7 +102,7 @@ pub fn handle_authentication_requests(
                 });
             } else {
                 // Send failure response
-                auth_responses.send(AuthenticationResponse {
+                auth_responses.write(AuthenticationResponse {
                     agent_id: request.agent_id.clone(),
                     success: false,
                     session_id: None,
@@ -116,7 +116,7 @@ pub fn handle_authentication_requests(
             }
         } else {
             // Agent not found
-            auth_responses.send(AuthenticationResponse {
+            auth_responses.write(AuthenticationResponse {
                 agent_id: request.agent_id.clone(),
                 success: false,
                 session_id: None,
@@ -156,7 +156,7 @@ pub fn check_authentication_expiry(
 
                 // Send expiry event
                 commands.trigger(AuthenticationEvent::SessionExpired {
-                    agent_id: agent.agent_id.clone(),
+                    agent_id: AgentId::from_uuid(agent.agent_id),
                 });
             }
         }
@@ -173,7 +173,7 @@ pub fn handle_logout_requests(
     for logout in logout_events.read() {
         if let Some((agent, mut auth_state)) = query
             .iter_mut()
-            .find(|(a, _)| a.agent_id == logout.agent_id)
+            .find(|(a, _)| AgentId::from_uuid(a.agent_id) == logout.agent_id)
         {
             if auth_state.is_authenticated {
                 // Clear authentication
@@ -193,7 +193,7 @@ pub fn handle_logout_requests(
 
                 // Send logout event
                 commands.trigger(AuthenticationEvent::LoggedOut {
-                    agent_id: agent.agent_id.clone(),
+                    agent_id: AgentId::from_uuid(agent.agent_id),
                 });
             }
         }
@@ -214,12 +214,14 @@ pub fn sync_auth_with_capabilities(
         // Update capabilities based on authentication state
         if auth_state.is_authenticated {
             // Enable authenticated capabilities
-            capabilities.can_execute_tools = true;
-            capabilities.can_access_knowledge = true;
+            capabilities.add("capability.execute".to_string());
+            capabilities.add("capability.read".to_string());
+            capabilities.add("capability.write".to_string());
         } else {
             // Disable capabilities that require authentication
-            capabilities.can_execute_tools = false;
-            capabilities.can_access_knowledge = false;
+            capabilities.remove("capability.execute");
+            capabilities.remove("capability.read");
+            capabilities.remove("capability.write");
         }
     }
 }
