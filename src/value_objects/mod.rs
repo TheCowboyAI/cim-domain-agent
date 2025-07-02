@@ -14,6 +14,7 @@ pub mod context;
 pub mod execution_result;
 pub mod performance_metrics;
 pub mod permission;
+pub mod authentication;
 
 // Re-export types
 pub use agent_id::AgentId;
@@ -34,6 +35,7 @@ pub use context::AgentContext;
 pub use execution_result::ExecutionResult;
 pub use performance_metrics::PerformanceMetrics;
 pub use permission::{Permission, PermissionScope};
+pub use authentication::{AuthToken, SessionId};
 
 // Re-export commonly used types
 pub use agent_type::{AgentCapability, AgentPermission};

@@ -4,15 +4,11 @@
 //! similarity analysis, and knowledge representation.
 
 use crate::{
-    value_objects::{AgentId, AICapabilities, AnalysisCapability, AnalysisResult, analysis_result::Recommendation},
-    commands::RequestGraphAnalysis,
-    events::GraphAnalysisCompleted,
+    value_objects::{AgentId, AnalysisCapability, AnalysisResult, analysis_result::Recommendation},
 };
 use cim_domain_conceptualspaces::{
-    ConceptualSpace, ConceptualSpaceId, ConceptualPoint,
-    QualityDimension, DimensionType, DistanceMetric,
-    commands::{CreateConceptualSpace, AddConcept},
-    queries::{FindSimilarConcepts, SimilarConcepts},
+    ConceptualPoint,
+    DistanceMetric,
     similarity::SimilarityEngine,
 };
 use cim_domain_graph::GraphId;
@@ -75,7 +71,7 @@ impl ConceptualReasoningCapability {
         &self,
         graph_id: GraphId,
         graph_point: ConceptualPoint,
-        capability: AnalysisCapability,
+        _capability: AnalysisCapability,
     ) -> Result<ConceptualAnalysis, Box<dyn std::error::Error>> {
         // Implementation would:
         // 1. Map graph to conceptual space

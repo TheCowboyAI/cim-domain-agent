@@ -1,0 +1,460 @@
+//! Monitoring and observability systems for agents
+//!
+//! This module provides ECS systems for monitoring agent health,
+//! performance, and behavior.
+
+use bevy::prelude::*;
+use crate::components::{AgentEntity, AgentStatus, AgentCapabilities};
+use crate::events::AgentEvent;
+use crate::value_objects::{AgentId, PerformanceMetrics};
+use crate::systems::tools::ToolsComponent;
+use crate::systems::authentication::AuthenticationState;
+use std::collections::VecDeque;
+use std::time::{Duration, Instant, SystemTime};
+
+/// Component for tracking agent metrics
+#[derive(Component, Debug, Clone)]
+pub struct MetricsComponent {
+    pub performance: PerformanceMetrics,
+    pub health_score: f32,
+    pub error_count: u32,
+    pub warning_count: u32,
+    pub last_activity: SystemTime,
+    pub uptime: Duration,
+    pub startup_time: Instant,
+}
+
+impl Default for MetricsComponent {
+    fn default() -> Self {
+        Self {
+            performance: PerformanceMetrics::default(),
+            health_score: 100.0,
+            error_count: 0,
+            warning_count: 0,
+            last_activity: SystemTime::now(),
+            uptime: Duration::from_secs(0),
+            startup_time: Instant::now(),
+        }
+    }
+}
+
+/// Component for tracking agent activity history
+#[derive(Component, Debug)]
+pub struct ActivityHistoryComponent {
+    pub recent_activities: VecDeque<ActivityRecord>,
+    pub max_history_size: usize,
+}
+
+impl Default for ActivityHistoryComponent {
+    fn default() -> Self {
+        Self {
+            recent_activities: VecDeque::new(),
+            max_history_size: 1000,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ActivityRecord {
+    pub timestamp: SystemTime,
+    pub activity_type: ActivityType,
+    pub details: String,
+    pub success: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ActivityType {
+    ToolExecution,
+    Authentication,
+    PermissionChange,
+    StatusChange,
+    Error,
+    Warning,
+}
+
+/// Resource for system-wide monitoring configuration
+#[derive(Resource, Debug)]
+pub struct MonitoringConfig {
+    pub metrics_update_interval: Duration,
+    pub health_check_interval: Duration,
+    pub alert_thresholds: AlertThresholds,
+}
+
+impl Default for MonitoringConfig {
+    fn default() -> Self {
+        Self {
+            metrics_update_interval: Duration::from_secs(5),
+            health_check_interval: Duration::from_secs(30),
+            alert_thresholds: AlertThresholds::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct AlertThresholds {
+    pub error_rate_threshold: f32,
+    pub response_time_threshold: Duration,
+    pub memory_usage_threshold: f32,
+    pub cpu_usage_threshold: f32,
+}
+
+impl Default for AlertThresholds {
+    fn default() -> Self {
+        Self {
+            error_rate_threshold: 0.1, // 10% error rate
+            response_time_threshold: Duration::from_secs(5),
+            memory_usage_threshold: 0.9, // 90% memory usage
+            cpu_usage_threshold: 0.8, // 80% CPU usage
+        }
+    }
+}
+
+/// Event for monitoring alerts
+#[derive(Event, Debug, Clone)]
+pub struct MonitoringAlert {
+    pub agent_id: AgentId,
+    pub alert_type: AlertType,
+    pub severity: AlertSeverity,
+    pub message: String,
+    pub timestamp: SystemTime,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum AlertType {
+    HighErrorRate,
+    SlowResponse,
+    HighMemoryUsage,
+    HighCpuUsage,
+    HealthDegraded,
+    AuthenticationFailure,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum AlertSeverity {
+    Info,
+    Warning,
+    Error,
+    Critical,
+}
+
+/// System to update agent metrics
+pub fn update_agent_metrics(
+    mut query: Query<(
+        &AgentEntity,
+        &mut MetricsComponent,
+        &ToolsComponent,
+        &AuthenticationState,
+    )>,
+    time: Res<Time>,
+) {
+    for (agent, mut metrics, tools, auth_state) in &mut query {
+        // Update uptime
+        metrics.uptime = metrics.startup_time.elapsed();
+        
+        // Update performance metrics based on tool usage
+        let mut total_executions = 0;
+        let mut total_errors = 0;
+        let mut total_time = Duration::from_secs(0);
+        
+        for usage in tools.tool_usage.values() {
+            total_executions += usage.total_uses;
+            total_errors += usage.failed_uses;
+            total_time += usage.average_execution_time * usage.total_uses as u32;
+        }
+        
+        if total_executions > 0 {
+            metrics.performance.error_rate = total_errors as f32 / total_executions as f32;
+            metrics.performance.average_response_time = total_time / total_executions as u32;
+        }
+        
+        // Update task metrics
+        metrics.performance.tasks_completed = tools.tool_usage.values()
+            .map(|u| u.successful_uses)
+            .sum();
+        metrics.performance.tasks_failed = total_errors;
+        
+        // Simulate resource usage (in real implementation, would get actual metrics)
+        metrics.performance.memory_usage = 0.3 + (tools.active_executions.len() as f32 * 0.1);
+        metrics.performance.cpu_usage = 0.2 + (tools.active_executions.len() as f32 * 0.15);
+    }
+}
+
+/// System to perform health checks
+pub fn perform_health_checks(
+    mut commands: Commands,
+    mut query: Query<(&AgentEntity, &mut MetricsComponent, &AgentStatus)>,
+    config: Res<MonitoringConfig>,
+    mut alerts: EventWriter<MonitoringAlert>,
+) {
+    for (agent, mut metrics, status) in &mut query {
+        let mut health_score = 100.0;
+        
+        // Check error rate
+        if metrics.performance.error_rate > config.alert_thresholds.error_rate_threshold {
+            health_score -= 20.0;
+            alerts.send(MonitoringAlert {
+                agent_id: agent.agent_id.clone(),
+                alert_type: AlertType::HighErrorRate,
+                severity: AlertSeverity::Warning,
+                message: format!(
+                    "Error rate {:.1}% exceeds threshold",
+                    metrics.performance.error_rate * 100.0
+                ),
+                timestamp: SystemTime::now(),
+            });
+        }
+        
+        // Check response time
+        if metrics.performance.average_response_time > config.alert_thresholds.response_time_threshold {
+            health_score -= 15.0;
+            alerts.send(MonitoringAlert {
+                agent_id: agent.agent_id.clone(),
+                alert_type: AlertType::SlowResponse,
+                severity: AlertSeverity::Warning,
+                message: format!(
+                    "Average response time {:?} exceeds threshold",
+                    metrics.performance.average_response_time
+                ),
+                timestamp: SystemTime::now(),
+            });
+        }
+        
+        // Check resource usage
+        if metrics.performance.memory_usage > config.alert_thresholds.memory_usage_threshold {
+            health_score -= 25.0;
+            alerts.send(MonitoringAlert {
+                agent_id: agent.agent_id.clone(),
+                alert_type: AlertType::HighMemoryUsage,
+                severity: AlertSeverity::Error,
+                message: format!(
+                    "Memory usage {:.1}% exceeds threshold",
+                    metrics.performance.memory_usage * 100.0
+                ),
+                timestamp: SystemTime::now(),
+            });
+        }
+        
+        if metrics.performance.cpu_usage > config.alert_thresholds.cpu_usage_threshold {
+            health_score -= 20.0;
+            alerts.send(MonitoringAlert {
+                agent_id: agent.agent_id.clone(),
+                alert_type: AlertType::HighCpuUsage,
+                severity: AlertSeverity::Warning,
+                message: format!(
+                    "CPU usage {:.1}% exceeds threshold",
+                    metrics.performance.cpu_usage * 100.0
+                ),
+                timestamp: SystemTime::now(),
+            });
+        }
+        
+        // Check agent status
+        match status {
+            AgentStatus::Offline | AgentStatus::Failed => health_score = 0.0,
+            AgentStatus::Suspended => health_score *= 0.5,
+            _ => {}
+        }
+        
+        // Update health score
+        metrics.health_score = health_score.max(0.0);
+        
+        // Send critical alert if health is very low
+        if metrics.health_score < 25.0 {
+            alerts.send(MonitoringAlert {
+                agent_id: agent.agent_id.clone(),
+                alert_type: AlertType::HealthDegraded,
+                severity: AlertSeverity::Critical,
+                message: format!("Agent health critically low: {:.1}", metrics.health_score),
+                timestamp: SystemTime::now(),
+            });
+        }
+    }
+}
+
+/// System to track agent activities
+pub fn track_agent_activities(
+    mut query: Query<(&AgentEntity, &mut ActivityHistoryComponent)>,
+    mut tool_events: EventReader<crate::events::ToolsChangedEvent>,
+    mut auth_events: EventReader<crate::events::AuthenticationEvent>,
+) {
+    // Track tool events
+    for event in tool_events.read() {
+        match event {
+            crate::events::ToolsChangedEvent::ToolExecuted { agent_id, tool_name } => {
+                if let Some((_, mut history)) = query.iter_mut()
+                    .find(|(a, _)| a.agent_id == *agent_id)
+                {
+                    add_activity_record(
+                        &mut history,
+                        ActivityType::ToolExecution,
+                        format!("Executed tool: {}", tool_name),
+                        true,
+                    );
+                }
+            }
+            crate::events::ToolsChangedEvent::ToolAssigned { agent_id, tool_name } => {
+                if let Some((_, mut history)) = query.iter_mut()
+                    .find(|(a, _)| a.agent_id == *agent_id)
+                {
+                    add_activity_record(
+                        &mut history,
+                        ActivityType::PermissionChange,
+                        format!("Tool assigned: {}", tool_name),
+                        true,
+                    );
+                }
+            }
+            _ => {}
+        }
+    }
+    
+    // Track authentication events
+    for event in auth_events.read() {
+        let agent_id = event.agent_id();
+        if let Some((_, mut history)) = query.iter_mut()
+            .find(|(a, _)| a.agent_id == *agent_id)
+        {
+            match event {
+                crate::events::AuthenticationEvent::Authenticated { .. } => {
+                    add_activity_record(
+                        &mut history,
+                        ActivityType::Authentication,
+                        "Agent authenticated successfully".to_string(),
+                        true,
+                    );
+                }
+                crate::events::AuthenticationEvent::AuthenticationFailed { reason, .. } => {
+                    add_activity_record(
+                        &mut history,
+                        ActivityType::Authentication,
+                        format!("Authentication failed: {}", reason),
+                        false,
+                    );
+                }
+                _ => {}
+            }
+        }
+    }
+}
+
+/// Helper function to add activity record
+fn add_activity_record(
+    history: &mut ActivityHistoryComponent,
+    activity_type: ActivityType,
+    details: String,
+    success: bool,
+) {
+    let record = ActivityRecord {
+        timestamp: SystemTime::now(),
+        activity_type,
+        details,
+        success,
+    };
+    
+    history.recent_activities.push_back(record);
+    
+    // Trim history if it exceeds max size
+    while history.recent_activities.len() > history.max_history_size {
+        history.recent_activities.pop_front();
+    }
+}
+
+/// System to generate monitoring reports
+pub fn generate_monitoring_reports(
+    query: Query<(&AgentEntity, &MetricsComponent, &ActivityHistoryComponent)>,
+    mut report_requests: EventReader<GenerateReportRequest>,
+    mut report_responses: EventWriter<MonitoringReport>,
+) {
+    for request in report_requests.read() {
+        if let Some((agent, metrics, history)) = query.iter()
+            .find(|(a, _, _)| a.agent_id == request.agent_id)
+        {
+            let report = MonitoringReport {
+                agent_id: agent.agent_id.clone(),
+                timestamp: SystemTime::now(),
+                health_score: metrics.health_score,
+                performance_summary: metrics.performance.clone(),
+                error_count: metrics.error_count,
+                warning_count: metrics.warning_count,
+                uptime: metrics.uptime,
+                recent_activities: history.recent_activities.iter()
+                    .rev()
+                    .take(request.activity_count.unwrap_or(10))
+                    .cloned()
+                    .collect(),
+            };
+            
+            report_responses.send(report);
+        }
+    }
+}
+
+/// Event to request monitoring report
+#[derive(Event, Debug, Clone)]
+pub struct GenerateReportRequest {
+    pub agent_id: AgentId,
+    pub activity_count: Option<usize>,
+}
+
+/// Monitoring report
+#[derive(Event, Debug, Clone)]
+pub struct MonitoringReport {
+    pub agent_id: AgentId,
+    pub timestamp: SystemTime,
+    pub health_score: f32,
+    pub performance_summary: PerformanceMetrics,
+    pub error_count: u32,
+    pub warning_count: u32,
+    pub uptime: Duration,
+    pub recent_activities: Vec<ActivityRecord>,
+}
+
+/// Plugin to register monitoring systems
+pub struct MonitoringPlugin;
+
+impl Plugin for MonitoringPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .init_resource::<MonitoringConfig>()
+            .add_event::<MonitoringAlert>()
+            .add_event::<GenerateReportRequest>()
+            .add_event::<MonitoringReport>()
+            .add_systems(
+                Update,
+                (
+                    update_agent_metrics,
+                    perform_health_checks,
+                    track_agent_activities,
+                    generate_monitoring_reports,
+                )
+                    .chain(),
+            );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_metrics_component_default() {
+        let metrics = MetricsComponent::default();
+        assert_eq!(metrics.health_score, 100.0);
+        assert_eq!(metrics.error_count, 0);
+        assert_eq!(metrics.warning_count, 0);
+    }
+    
+    #[test]
+    fn test_activity_history_default() {
+        let history = ActivityHistoryComponent::default();
+        assert!(history.recent_activities.is_empty());
+        assert_eq!(history.max_history_size, 1000);
+    }
+    
+    #[test]
+    fn test_monitoring_config_default() {
+        let config = MonitoringConfig::default();
+        assert_eq!(config.metrics_update_interval, Duration::from_secs(5));
+        assert_eq!(config.health_check_interval, Duration::from_secs(30));
+    }
+}

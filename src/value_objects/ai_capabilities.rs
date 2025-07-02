@@ -3,7 +3,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
-use serde_json::Value;
 
 /// Represents the AI capabilities of an agent
 #[derive(Debug, Clone, Serialize, Deserialize)]

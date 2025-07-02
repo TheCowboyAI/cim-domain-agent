@@ -8,8 +8,7 @@ use std::collections::HashMap;
 use serde_json::{json, Value};
 use thiserror::Error;
 use crate::value_objects::{
-    AICapabilities, AnalysisCapability, ModelParameters,
-    AnalysisResult, TransformationSuggestion,
+    AnalysisCapability, AnalysisResult, TransformationSuggestion,
 };
 
 pub mod mock;
@@ -17,6 +16,9 @@ pub mod openai;
 pub mod anthropic;
 pub mod ollama;
 pub mod config;
+
+// Re-export commonly used types
+pub use config::{create_provider_config, ProviderType};
 
 /// Errors that can occur during AI provider operations
 #[derive(Debug, Error)]
@@ -195,30 +197,38 @@ pub enum ProviderConfig {
     },
 }
 
-/// Helper function to convert graph data to a prompt-friendly format
-pub fn graph_to_prompt(graph_data: &GraphData) -> String {
+/// Convert graph data to a text representation for AI providers
+pub fn graph_to_prompt(graph: &GraphData) -> String {
     let mut prompt = String::new();
     
-    // Add graph metadata
-    prompt.push_str(&format!("Graph ID: {}\n", graph_data.graph_id));
-    prompt.push_str(&format!("Nodes: {}\n", graph_data.nodes.len()));
-    prompt.push_str(&format!("Edges: {}\n\n", graph_data.edges.len()));
-    
-    // Add nodes
-    prompt.push_str("Nodes:\n");
-    for node in &graph_data.nodes {
-        prompt.push_str(&format!("- {} ({}): {}\n", node.id, node.node_type, node.label));
-        if !node.properties.is_empty() {
-            prompt.push_str(&format!("  Properties: {:?}\n", node.properties));
+    // Graph metadata
+    prompt.push_str(&format!("Graph ID: {}\n", graph.graph_id));
+    if !graph.metadata.is_empty() {
+        prompt.push_str("Metadata:\n");
+        for (key, value) in &graph.metadata {
+            prompt.push_str(&format!("  {}: {}\n", key, value));
         }
     }
     
-    // Add edges
-    prompt.push_str("\nEdges:\n");
-    for edge in &graph_data.edges {
-        prompt.push_str(&format!("- {} -> {} ({})\n", edge.source, edge.target, edge.edge_type));
+    // Nodes
+    prompt.push_str(&format!("\nNodes ({}):\n", graph.nodes.len()));
+    for node in &graph.nodes {
+        prompt.push_str(&format!("- {} [{}]: {}\n", node.id, node.node_type, node.label));
+        if !node.properties.is_empty() {
+            for (key, value) in &node.properties {
+                prompt.push_str(&format!("    {}: {}\n", key, value));
+            }
+        }
+    }
+    
+    // Edges
+    prompt.push_str(&format!("\nEdges ({}):\n", graph.edges.len()));
+    for edge in &graph.edges {
+        prompt.push_str(&format!("- {} -> {} [{}]\n", edge.source, edge.target, edge.edge_type));
         if !edge.properties.is_empty() {
-            prompt.push_str(&format!("  Properties: {:?}\n", edge.properties));
+            for (key, value) in &edge.properties {
+                prompt.push_str(&format!("    {}: {}\n", key, value));
+            }
         }
     }
     

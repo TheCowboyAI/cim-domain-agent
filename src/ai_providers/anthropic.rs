@@ -10,9 +10,10 @@ use serde::{Deserialize, Serialize};
 
 /// Anthropic Claude API provider
 pub struct AnthropicProvider {
-    client: Client,
+    #[allow(dead_code)]
     api_key: String,
     model: String,
+    client: Client,
     base_url: String,
 }
 
@@ -75,7 +76,6 @@ impl AnthropicProvider {
         let content = response.content.first()
             .and_then(|c| match c {
                 ContentBlock::Text { text } => Some(text),
-                _ => None,
             })
             .ok_or_else(|| AIProviderError::InvalidResponse("No text content in response".to_string()))?;
         
@@ -329,7 +329,6 @@ impl GraphAnalysisProvider for AnthropicProvider {
         let content = message_response.content.first()
             .and_then(|c| match c {
                 ContentBlock::Text { text } => Some(text),
-                _ => None,
             })
             .ok_or_else(|| AIProviderError::InvalidResponse("No text content in response".to_string()))?;
         
@@ -360,7 +359,14 @@ impl GraphAnalysisProvider for AnthropicProvider {
     
     fn supports_capability(&self, capability: &AnalysisCapability) -> bool {
         // Claude supports all capabilities through prompting
-        true
+        match capability {
+            AnalysisCapability::GraphAnalysis => true,
+            AnalysisCapability::WorkflowOptimization => true,
+            AnalysisCapability::SemanticAnalysis => true,
+            AnalysisCapability::PatternDetection => true,
+            AnalysisCapability::TransformationSuggestion => true,
+            AnalysisCapability::Custom(_) => true, // Support custom prompts
+        }
     }
     
     fn get_metadata(&self) -> ProviderMetadata {
@@ -411,13 +417,17 @@ enum ContentBlock {
 
 #[derive(Debug, Deserialize)]
 struct MessageResponse {
+    #[allow(dead_code)]
     id: String,
     content: Vec<ContentBlock>,
+    #[allow(dead_code)]
     model: String,
+    #[allow(dead_code)]
     usage: Usage,
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct Usage {
     input_tokens: u32,
     output_tokens: u32,

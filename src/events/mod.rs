@@ -9,6 +9,7 @@ pub mod capabilities_changed;
 pub mod permissions_changed;
 pub mod tools_changed;
 pub mod ai_events;
+pub mod authentication_events;
 
 // Re-export all events
 pub use agent_deployed::*;
@@ -20,3 +21,4 @@ pub use capabilities_changed::*;
 pub use permissions_changed::*;
 pub use tools_changed::*;
 pub use ai_events::*;
+pub use authentication_events::*;

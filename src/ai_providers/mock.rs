@@ -105,6 +105,12 @@ impl GraphAnalysisProvider for MockAIProvider {
             },
         ];
 
+        let mut metadata = HashMap::new();
+        metadata.insert("mock".to_string(), json!(true));
+        metadata.insert("analysis_type".to_string(), json!(format!("{:?}", analysis_type)));
+        metadata.insert("node_count".to_string(), json!(graph_data.nodes.len()));
+        metadata.insert("edge_count".to_string(), json!(graph_data.edges.len()));
+
         Ok(AnalysisResult {
             id: Uuid::new_v4(),
             confidence_score: 0.75,
@@ -114,7 +120,7 @@ impl GraphAnalysisProvider for MockAIProvider {
             ),
             recommendations,
             insights,
-            metadata: HashMap::new(),
+            metadata,
             timestamp: std::time::SystemTime::now(),
         })
     }
@@ -133,19 +139,22 @@ impl GraphAnalysisProvider for MockAIProvider {
             .map(|(i, goal)| TransformationSuggestion {
                 id: format!("MOCK-T{:03}", i + 1),
                 suggestion_type: "optimization".to_string(),
-                description: format!("Optimize graph for: {}", goal),
-                rationale: format!("Mock analysis suggests this would improve {}", goal),
-                expected_benefit: "20-30% improvement".to_string(),
+                description: format!("Optimize graph for: {} (current nodes: {})", goal, graph_data.nodes.len()),
+                rationale: format!("Mock analysis of {} nodes suggests this would improve {}", graph_data.nodes.len(), goal),
+                expected_benefit: format!("20-30% improvement for {} nodes", graph_data.nodes.len()),
                 transformation_steps: vec![
                     json!({
                         "action": "reorganize",
                         "target": "workflow",
                         "goal": goal,
+                        "node_count": graph_data.nodes.len(),
+                        "edge_count": graph_data.edges.len(),
                     }),
                 ],
                 risk_assessment: Some(json!({
-                    "risk_level": "low",
+                    "risk_level": if graph_data.nodes.len() > 10 { "medium" } else { "low" },
                     "mitigation": "Create backup before transformation",
+                    "complexity": format!("{} nodes, {} edges", graph_data.nodes.len(), graph_data.edges.len()),
                 })),
             })
             .collect();

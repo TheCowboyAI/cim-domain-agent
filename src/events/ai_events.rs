@@ -8,7 +8,6 @@ use crate::value_objects::ai_capabilities::AnalysisCapability;
 use bevy::prelude::Event;
 use cim_domain::DomainEvent;
 use std::collections::HashMap;
-use serde_json::Value;
 
 /// AI capabilities configured for an agent
 #[derive(Debug, Clone, Serialize, Deserialize, Event)]

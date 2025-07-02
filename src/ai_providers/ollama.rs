@@ -216,7 +216,7 @@ impl OllamaProvider {
             .map(|recommendations| {
                 recommendations.iter()
                     .enumerate()
-                    .filter_map(|(i, r)| {
+                    .filter_map(|(_i, r)| {
                         Some(Recommendation {
                             id: uuid::Uuid::new_v4(),
                             title: r.get("title")
@@ -445,7 +445,14 @@ impl GraphAnalysisProvider for OllamaProvider {
     
     fn supports_capability(&self, capability: &AnalysisCapability) -> bool {
         // Ollama supports all capabilities through prompting
-        true
+        match capability {
+            AnalysisCapability::GraphAnalysis => true,
+            AnalysisCapability::WorkflowOptimization => true,
+            AnalysisCapability::SemanticAnalysis => true,
+            AnalysisCapability::PatternDetection => true,
+            AnalysisCapability::TransformationSuggestion => true,
+            AnalysisCapability::Custom(_) => true, // Support custom prompts
+        }
     }
     
     fn get_metadata(&self) -> ProviderMetadata {
@@ -484,14 +491,21 @@ struct GenerateOptions {
 /// Ollama generate response
 #[derive(Debug, Deserialize)]
 struct GenerateResponse {
+    #[allow(dead_code)]
     model: String,
     response: String,
+    #[allow(dead_code)]
     done: bool,
+    #[allow(dead_code)]
     #[serde(default)]
     context: Vec<i32>,
+    #[allow(dead_code)]
     total_duration: Option<u64>,
+    #[allow(dead_code)]
     load_duration: Option<u64>,
+    #[allow(dead_code)]
     prompt_eval_duration: Option<u64>,
+    #[allow(dead_code)]
     eval_duration: Option<u64>,
 }
 
@@ -504,7 +518,9 @@ struct ModelList {
 #[derive(Debug, Deserialize)]
 struct Model {
     name: String,
+    #[allow(dead_code)]
     modified_at: String,
+    #[allow(dead_code)]
     size: u64,
 }
 

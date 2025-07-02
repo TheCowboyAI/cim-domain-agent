@@ -13,6 +13,7 @@ pub mod systems;
 pub mod value_objects;
 pub mod integration;
 pub mod ai_providers;
+pub mod semantic_search;
 
 // Re-export commonly used types
 pub use aggregate::{Agent, AgentStatus, AgentType};

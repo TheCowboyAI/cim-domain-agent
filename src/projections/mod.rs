@@ -3,8 +3,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::collections::{HashMap, HashSet};
-use crate::aggregate::{Agent, AgentId, AgentType, AgentStatus};
-use crate::events::*;
+use crate::aggregate::{AgentId, AgentType, AgentStatus};
 use chrono::{DateTime, Utc};
 
 /// Read model view of an agent

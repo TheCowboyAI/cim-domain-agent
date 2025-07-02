@@ -8,7 +8,7 @@ use crate::components::{
     LifecycleEventType, CheckStatus, AuthenticationStatus
 };
 use crate::events::{AgentDeployed, AgentActivated, AgentSuspended, AgentDecommissioned, AgentWentOffline};
-use crate::aggregate::{AgentMarker, CapabilitiesComponent};
+
 
 use uuid::Uuid;
 
@@ -322,24 +322,24 @@ pub fn update_agent_readiness_system(
 
 /// System to update agent status based on events
 pub fn update_agent_status(
-    mut commands: Commands,
+    mut _commands: Commands,
     mut agent_events: EventReader<AgentDeployed>,
     mut decommission_events: EventReader<AgentDecommissioned>,
     mut query: Query<(Entity, &mut AgentStatus)>,
 ) {
     // Handle deployed agents
-    for event in agent_events.read() {
+    for _event in agent_events.read() {
         // Find the agent entity and update its status
-        for (entity, mut status) in query.iter_mut() {
+        for (_entity, mut status) in query.iter_mut() {
             // Update status based on deployment
             status.transition_to(AgentState::Active);
         }
     }
 
     // Handle decommissioned agents
-    for event in decommission_events.read() {
+    for _event in decommission_events.read() {
         // Find the agent entity and update its status
-        for (entity, mut status) in query.iter_mut() {
+        for (_entity, mut status) in query.iter_mut() {
             // Update status to decommissioned
             status.transition_to(AgentState::Decommissioned);
         }

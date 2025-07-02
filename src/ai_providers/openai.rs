@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 /// OpenAI API provider
 pub struct OpenAIProvider {
     client: Client,
+    #[allow(dead_code)]
     api_key: String,
     model: String,
     base_url: String,
@@ -358,7 +359,14 @@ impl GraphAnalysisProvider for OpenAIProvider {
     
     fn supports_capability(&self, capability: &AnalysisCapability) -> bool {
         // OpenAI supports all capabilities through prompting
-        true
+        match capability {
+            AnalysisCapability::GraphAnalysis => true,
+            AnalysisCapability::WorkflowOptimization => true,
+            AnalysisCapability::SemanticAnalysis => true,
+            AnalysisCapability::PatternDetection => true,
+            AnalysisCapability::TransformationSuggestion => true,
+            AnalysisCapability::Custom(_) => true, // Support custom prompts
+        }
     }
     
     fn get_metadata(&self) -> ProviderMetadata {
@@ -411,16 +419,19 @@ struct ChatMessage {
 #[derive(Debug, Deserialize)]
 struct ChatResponse {
     choices: Vec<Choice>,
+    #[allow(dead_code)]
     usage: Option<Usage>,
 }
 
 #[derive(Debug, Deserialize)]
 struct Choice {
     message: ChatMessage,
+    #[allow(dead_code)]
     finish_reason: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct Usage {
     prompt_tokens: u32,
     completion_tokens: u32,
