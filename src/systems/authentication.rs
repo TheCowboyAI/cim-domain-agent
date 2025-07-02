@@ -248,8 +248,7 @@ impl Plugin for AuthenticationPlugin {
                     check_authentication_expiry,
                     handle_logout_requests,
                     sync_auth_with_capabilities,
-                )
-                    .chain(),
+                ),
             );
     }
 }

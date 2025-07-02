@@ -272,8 +272,7 @@ impl Plugin for PermissionsPlugin {
                     handle_permission_changes,
                     sync_permissions_with_capabilities,
                     check_permission_requirements,
-                )
-                    .chain(),
+                ),
             );
     }
 }

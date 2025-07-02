@@ -352,8 +352,7 @@ impl Plugin for ToolsPlugin {
                     assign_tools_to_agents,
                     handle_tool_execution,
                     handle_tool_removal,
-                )
-                    .chain(),
+                ),
             );
     }
 }

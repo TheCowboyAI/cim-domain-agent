@@ -426,8 +426,7 @@ impl Plugin for MonitoringPlugin {
                     perform_health_checks,
                     track_agent_activities,
                     generate_monitoring_reports,
-                )
-                    .chain(),
+                ),
             );
     }
 }
