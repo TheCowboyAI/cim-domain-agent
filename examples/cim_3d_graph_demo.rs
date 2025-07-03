@@ -170,22 +170,22 @@ fn main() {
                         if !result.insights.is_empty() {
                             text.push_str("📊 Insights:\n");
                             for (i, insight) in result.insights.iter().take(3).enumerate() {
-                                text.push_str(&format!("  {}. {}\n", i + 1, insight.description));
+                                text.push_str(&format!("  {i + 1}. {insight.description}\n"));
                             }
                         }
                         
                         if !result.recommendations.is_empty() {
                             text.push_str("\n💡 Recommendations:\n");
                             for (i, rec) in result.recommendations.iter().take(3).enumerate() {
-                                text.push_str(&format!("  {}. {}\n", i + 1, rec.title));
-                                text.push_str(&format!("     {}\n", rec.description));
+                                text.push_str(&format!("  {i + 1}. {rec.title}\n"));
+                                text.push_str(&format!("     {rec.description}\n"));
                             }
                         }
                         
                         AnalysisResponse { text, success: true }
                     }
                     Err(e) => AnalysisResponse {
-                        text: format!("❌ Analysis failed: {}", e),
+                        text: format!("❌ Analysis failed: {e}"),
                         success: false,
                     }
                 };
@@ -443,7 +443,7 @@ fn setup(
                 // Add node type subtitle
                 if let Some(role) = node.properties.get("role") {
                     label_parent.spawn((
-                        Text::new(format!("\n{}", role.as_str().unwrap_or(""))),
+                        Text::new(format!("\n{role.as_str(}").unwrap_or(""))),
                         TextFont {
                             font_size: 14.0,
                             ..default()
@@ -616,7 +616,7 @@ fn setup(
                     TextColor(Color::WHITE),
                 ));
                 entry.spawn((
-                    Text::new(format!("  {}", desc)),
+                    Text::new(format!("  {desc}")),
                     TextFont {
                         font_size: 16.0,
                         ..default()

@@ -246,8 +246,7 @@ impl GraphAnalysisProvider for AnthropicProvider {
         parameters: HashMap<String, Value>,
     ) -> AIProviderResult<AnalysisResult> {
         let system_prompt = self.create_analysis_prompt(&analysis_type);
-        let user_prompt = format!(
-            "Please analyze this graph:\n\n{}\n\nParameters: {:?}\n\nProvide your analysis in JSON format.",
+        let user_prompt = format!("Please analyze this graph:\n\n{}\n\nParameters: {:?}\n\nProvide your analysis in JSON format.",
             graph_to_prompt(&graph_data),
             parameters
         );
@@ -291,8 +290,7 @@ impl GraphAnalysisProvider for AnthropicProvider {
     ) -> AIProviderResult<Vec<TransformationSuggestion>> {
         let system_prompt = "You are a graph transformation expert. Suggest specific transformations to optimize the graph for the given goals while respecting constraints. Structure your response as JSON with a 'transformations' array.";
         
-        let user_prompt = format!(
-            "Graph:\n{}\n\nOptimization Goals:\n- {}\n\nConstraints:\n{:?}\n\nProvide transformation suggestions in JSON format.",
+        let user_prompt = format!("Graph:\n{}\n\nOptimization Goals:\n- {}\n\nConstraints:\n{:?}\n\nProvide transformation suggestions in JSON format.",
             graph_to_prompt(&graph_data),
             optimization_goals.join("\n- "),
             constraints

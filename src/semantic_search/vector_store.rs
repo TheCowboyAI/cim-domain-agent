@@ -137,7 +137,7 @@ impl VectorStore for InMemoryVectorStore {
         
         embeddings.get(id)
             .cloned()
-            .ok_or_else(|| SemanticSearchError::NotFound(format!("Embedding {} not found", id)))
+            .ok_or_else(|| SemanticSearchError::NotFound(format!("Embedding {id} not found")))
     }
     
     async fn search(

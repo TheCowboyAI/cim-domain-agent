@@ -107,37 +107,37 @@ impl CqrsQueryHandler<AgentQuery> for AgentQueryHandler {
             AgentQuery::GetById(id) => {
                 match self.read_model.get_by_id(id) {
                     Ok(agent) => serde_json::to_value(AgentQueryResponse::Agent(agent)),
-                    Err(e) => serde_json::to_value(format!("Error: {}", e)),
+                    Err(e) => serde_json::to_value(format!("Error: {e}")),
                 }
             }
             AgentQuery::GetAll => {
                 match self.read_model.get_all() {
                     Ok(agents) => serde_json::to_value(AgentQueryResponse::Agents(agents)),
-                    Err(e) => serde_json::to_value(format!("Error: {}", e)),
+                    Err(e) => serde_json::to_value(format!("Error: {e}")),
                 }
             }
             AgentQuery::GetByStatus(status) => {
                 match self.read_model.get_by_status(status) {
                     Ok(agents) => serde_json::to_value(AgentQueryResponse::Agents(agents)),
-                    Err(e) => serde_json::to_value(format!("Error: {}", e)),
+                    Err(e) => serde_json::to_value(format!("Error: {e}")),
                 }
             }
             AgentQuery::GetByType(agent_type) => {
                 match self.read_model.get_by_type(agent_type) {
                     Ok(agents) => serde_json::to_value(AgentQueryResponse::Agents(agents)),
-                    Err(e) => serde_json::to_value(format!("Error: {}", e)),
+                    Err(e) => serde_json::to_value(format!("Error: {e}")),
                 }
             }
             AgentQuery::GetByOwner(owner_id) => {
                 match self.read_model.get_by_owner(owner_id) {
                     Ok(agents) => serde_json::to_value(AgentQueryResponse::Agents(agents)),
-                    Err(e) => serde_json::to_value(format!("Error: {}", e)),
+                    Err(e) => serde_json::to_value(format!("Error: {e}")),
                 }
             }
             AgentQuery::GetByCapability(capability) => {
                 match self.read_model.get_by_capability(capability) {
                     Ok(agents) => serde_json::to_value(AgentQueryResponse::Agents(agents)),
-                    Err(e) => serde_json::to_value(format!("Error: {}", e)),
+                    Err(e) => serde_json::to_value(format!("Error: {e}")),
                 }
             }
         };

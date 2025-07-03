@@ -28,8 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Step 2: Create a sample graph for analysis
     println!("\n2. Creating sample workflow graph...");
     let graph_data = create_sample_workflow_graph();
-    println!("  Created graph with {} nodes and {} edges", 
-        graph_data.nodes.len(), 
+    println!("  Created graph with {graph_data.nodes.len(} nodes and {} edges"), 
         graph_data.edges.len()
     );
     
@@ -37,8 +36,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n3. Setting up AI provider...");
     let provider = create_ai_provider().await?;
     let metadata = provider.get_metadata();
-    println!("  Provider: {}", metadata.name);
-    println!("  Model: {}", metadata.model);
+    println!("  Provider: {metadata.name}");
+    println!("  Model: {metadata.model}");
     
     // Step 4: Analyze the graph
     println!("\n4. Analyzing graph for workflow optimization...");
@@ -53,20 +52,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     println!("  Analysis complete!");
     println!("  Confidence: {:.2}", analysis_result.confidence_score);
-    println!("  Summary: {}", analysis_result.summary);
-    println!("  Found {} insights and {} recommendations", 
-        analysis_result.insights.len(),
+    println!("  Summary: {analysis_result.summary}");
+    println!("  Found {analysis_result.insights.len(} insights and {} recommendations"),
         analysis_result.recommendations.len()
     );
     
     // Step 5: Display insights
     println!("\n5. Key Insights:");
     for (i, insight) in analysis_result.insights.iter().enumerate() {
-        println!("  {}. [{}] {}", 
-            i + 1, 
-            insight.category, 
-            insight.description
-        );
+        println!("  {i + 1}. [{insight.category}] {insight.description}");
         println!("     Impact: {:?}, Confidence: {:.2}", 
             insight.impact, 
             insight.confidence
@@ -76,18 +70,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Step 6: Display recommendations
     println!("\n6. Recommendations:");
     for (i, rec) in analysis_result.recommendations.iter().enumerate() {
-        println!("  {}. {}", i + 1, rec.title);
-        println!("     {}", rec.description);
+        println!("  {i + 1}. {rec.title}");
+        println!("     {rec.description}");
         println!("     Priority: {:?}, Effort: {:?}", 
             rec.priority, 
             rec.effort_level
         );
-        println!("     Expected Impact: {}", rec.expected_impact);
+        println!("     Expected Impact: {rec.expected_impact}");
         
         if !rec.actions.is_empty() {
             println!("     Actions:");
             for (j, action) in rec.actions.iter().enumerate() {
-                println!("       {}.{} {}", i + 1, j + 1, action.description);
+                println!("       {i + 1}.{j + 1} {action.description}");
             }
         }
     }
@@ -109,20 +103,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ]),
     ).await?;
     
-    println!("  Generated {} transformation suggestions:", transformations.len());
+    println!("  Generated {transformations.len(} transformation suggestions:"));
     for (i, transform) in transformations.iter().enumerate() {
-        println!("\n  Transformation {}: {}", i + 1, transform.description);
-        println!("    Type: {}", transform.suggestion_type);
-        println!("    Rationale: {}", transform.rationale);
-        println!("    Expected Benefit: {}", transform.expected_benefit);
+        println!("\n  Transformation {i + 1}: {transform.description}");
+        println!("    Type: {transform.suggestion_type}");
+        println!("    Rationale: {transform.rationale}");
+        println!("    Expected Benefit: {transform.expected_benefit}");
         
         if !transform.transformation_steps.is_empty() {
-            println!("    Steps: {} steps defined", transform.transformation_steps.len());
+            println!("    Steps: {transform.transformation_steps.len(} steps defined"));
         }
         
         if let Some(risk) = &transform.risk_assessment {
-            println!("    Risk Assessment: {}", 
-                risk.get("risk_level")
+            println!("    Risk Assessment: {risk.get("risk_level"}")
                     .and_then(|v| v.as_str())
                     .unwrap_or("unknown")
             );
@@ -141,9 +134,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     println!("\n  Pattern Detection Results:");
     println!("    Confidence: {:.2}", pattern_analysis.confidence_score);
-    println!("    Patterns found: {}", 
-        pattern_analysis.insights
-            .iter()
+    println!("    Patterns found: {pattern_analysis.insights
+            .iter(}")
             .filter(|i| i.category == "pattern")
             .count()
     );
@@ -159,7 +151,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     println!("\n  Custom Security Analysis:");
     println!("    Analysis type: Custom");
-    println!("    Results: {}", custom_analysis.summary);
+    println!("    Results: {custom_analysis.summary}");
     
     println!("\n=== Demo Complete ===");
     
@@ -300,39 +292,39 @@ fn create_pattern_graph() -> GraphData {
     for i in 0..3 {
         let base = i * 3;
         nodes.push(NodeData {
-            id: format!("input{}", i),
+            id: format!("input{i}"),
             node_type: "input".to_string(),
-            label: format!("Input {}", i),
+            label: format!("Input {i}"),
             properties: HashMap::new(),
             position: Some((base as f32 * 100.0, 0.0, 0.0)),
         });
         nodes.push(NodeData {
-            id: format!("process{}", i),
+            id: format!("process{i}"),
             node_type: "process".to_string(),
-            label: format!("Process {}", i),
+            label: format!("Process {i}"),
             properties: HashMap::new(),
             position: Some((base as f32 * 100.0 + 50.0, 0.0, 0.0)),
         });
         nodes.push(NodeData {
-            id: format!("output{}", i),
+            id: format!("output{i}"),
             node_type: "output".to_string(),
-            label: format!("Output {}", i),
+            label: format!("Output {i}"),
             properties: HashMap::new(),
             position: Some((base as f32 * 100.0 + 100.0, 0.0, 0.0)),
         });
         
         // Connect them
         edges.push(EdgeData {
-            id: format!("e{}_1", i),
-            source: format!("input{}", i),
-            target: format!("process{}", i),
+            id: format!("e{i}_1"),
+            source: format!("input{i}"),
+            target: format!("process{i}"),
             edge_type: "data_flow".to_string(),
             properties: HashMap::new(),
         });
         edges.push(EdgeData {
-            id: format!("e{}_2", i),
-            source: format!("process{}", i),
-            target: format!("output{}", i),
+            id: format!("e{i}_2"),
+            source: format!("process{i}"),
+            target: format!("output{i}"),
             edge_type: "data_flow".to_string(),
             properties: HashMap::new(),
         });

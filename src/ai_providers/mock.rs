@@ -115,7 +115,7 @@ impl GraphAnalysisProvider for MockAIProvider {
             id: Uuid::new_v4(),
             confidence_score: 0.75,
             summary: format!("Mock analysis of graph with {} nodes and {} edges", 
-                graph_data.nodes.len(), 
+                graph_data.nodes.len(),
                 graph_data.edges.len()
             ),
             recommendations,

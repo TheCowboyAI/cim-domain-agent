@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_max_level(Level::INFO)
         .init();
 
-    println!("{}", "=== Real AI Provider Integration Demo ===".bright_blue().bold());
+    println!("{"=== Real AI Provider Integration Demo ===".bright_blue(}").bold());
     println!();
 
     // Create provider manager
@@ -50,11 +50,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Show available providers
-    println!("{}", "Available AI Providers:".green().bold());
+    println!("{"Available AI Providers:".green(}").bold());
     let providers = manager.get_available_providers();
     
     if providers.is_empty() {
-        println!("{}", "No AI providers available!".red());
+        println!("{"No AI providers available!".red(}"));
         println!("Please set environment variables for at least one provider:");
         println!("  - OPENAI_API_KEY");
         println!("  - ANTHROPIC_API_KEY");
@@ -63,11 +63,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     for (id, metadata) in &providers {
-        println!("  {} {}", "•".bright_yellow(), id.bright_cyan());
-        println!("    Model: {}", metadata.model);
-        println!("    Capabilities: {} supported", metadata.capabilities.len());
+        println!("  {"•".bright_yellow(} {}"), id.bright_cyan());
+        println!("    Model: {metadata.model}");
+        println!("    Capabilities: {metadata.capabilities.len(} supported"));
         if let Some(limits) = &metadata.rate_limits {
-            println!("    Rate limits: {} RPM", limits.requests_per_minute);
+            println!("    Rate limits: {limits.requests_per_minute} RPM");
         }
     }
     println!();
@@ -81,12 +81,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             continue; // Skip mock provider in this demo
         }
         
-        println!("{}", format!("\n--- Testing {} ---", provider_id).bright_green().bold());
+        println!("{println!("\n--- Testing {provider_id} ---"}").bright_green().bold());
         
         // Test graph analysis
         match test_provider_analysis(&manager, &graph_data, &provider_id).await {
-            Ok(_) => println!("{}", format!("✓ {} analysis successful", provider_id).green()),
-            Err(e) => println!("{}", format!("✗ {} analysis failed: {}", provider_id, e).red()),
+            Ok(_) => println!("{println!("✓ {provider_id} analysis successful"}").green()),
+            Err(e) => println!("{println!("✗ {provider_id} analysis failed: {e}"}").red()),
         }
         
         // Small delay between providers to avoid rate limits
@@ -94,10 +94,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Demonstrate provider selection strategies
-    println!("\n{}", "=== Provider Selection Strategies ===".bright_blue().bold());
+    println!("\n{"=== Provider Selection Strategies ===".bright_blue(}").bold());
     demonstrate_selection_strategies(&manager, &graph_data).await?;
 
-    println!("\n{}", "Demo completed!".bright_green().bold());
+    println!("\n{"Demo completed!".bright_green(}").bold());
     Ok(())
 }
 
@@ -257,7 +257,7 @@ async fn test_provider_analysis(
     graph_data: &GraphData,
     provider_id: &str,
 ) -> Result<(), AIProviderError> {
-    println!("\nAnalyzing workflow graph with {}...", provider_id);
+    println!("\nAnalyzing workflow graph with {provider_id}...");
     
     let parameters = HashMap::from([
         ("focus".to_string(), json!("bottlenecks and optimization")),
@@ -271,31 +271,23 @@ async fn test_provider_analysis(
     ).await?;
 
     // Display results
-    println!("\n{}", "Analysis Results:".bright_cyan());
+    println!("\n{"Analysis Results:".bright_cyan(}"));
     println!("Confidence: {:.2}", result.confidence_score);
-    println!("Summary: {}", result.summary);
+    println!("Summary: {result.summary}");
 
     if !result.insights.is_empty() {
-        println!("\n{}", "Insights:".bright_yellow());
+        println!("\n{"Insights:".bright_yellow(}"));
         for (i, insight) in result.insights.iter().enumerate().take(3) {
-            println!("  {}. {} (confidence: {:.2})", 
-                i + 1, 
-                insight.description, 
-                insight.confidence
-            );
+            println!("  {i + 1}. {insight.description} (confidence: {:.2})", insight.confidence);
         }
     }
 
     if !result.recommendations.is_empty() {
-        println!("\n{}", "Recommendations:".bright_yellow());
+        println!("\n{"Recommendations:".bright_yellow(}"));
         for (i, rec) in result.recommendations.iter().enumerate().take(3) {
-            println!("  {}. {} (priority: {:?})", 
-                i + 1, 
-                rec.title, 
-                rec.priority
-            );
+            println!("  {i + 1}. {rec.title} (priority: {:?})", rec.priority);
             if !rec.description.is_empty() {
-                println!("     {}", rec.description.dimmed());
+                println!("     {rec.description.dimmed(}"));
             }
         }
     }
@@ -308,7 +300,7 @@ async fn demonstrate_selection_strategies(
     manager: &AIProviderManager,
     graph_data: &GraphData,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    println!("\n{}", "Testing Semantic Analysis Capability:".bright_cyan());
+    println!("\n{"Testing Semantic Analysis Capability:".bright_cyan(}"));
     
     let result = manager.analyze_graph(
         graph_data.clone(),
@@ -320,7 +312,7 @@ async fn demonstrate_selection_strategies(
     println!("Analysis confidence: {:.2}", result.confidence_score);
 
     // Test custom analysis
-    println!("\n{}", "Testing Custom Analysis:".bright_cyan());
+    println!("\n{"Testing Custom Analysis:".bright_cyan(}"));
     
     let custom_result = manager.analyze_graph(
         graph_data.clone(),
@@ -331,7 +323,7 @@ async fn demonstrate_selection_strategies(
     ).await?;
 
     println!("Custom analysis completed");
-    println!("Found {} insights", custom_result.insights.len());
+    println!("Found {custom_result.insights.len(} insights"));
 
     Ok(())
 }

@@ -240,7 +240,7 @@ impl GraphConceptualMapper {
             coordinates.push(node_metrics.degree as f64 / node_metrics.max_degree.max(1) as f64);
         }
         
-        // Semantic analysis of content
+        // Map semantic analysis of content
         let full_content = format!("{} {}", node_content.title, node_content.description);
         let semantic_scores = self.semantic_analyzer.analyze_content(&full_content);
         let coherence = self.semantic_analyzer.calculate_coherence(&semantic_scores);

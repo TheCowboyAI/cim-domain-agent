@@ -67,44 +67,36 @@ struct AnalysisResults {
 
 /// System to display the graph structure
 fn display_graph_system(world: &mut World) {
-    println!("\n{}", "=== Graph Visualization ===".blue().bold());
+    println!("\n{"=== Graph Visualization ===".blue(}").bold());
     
     // Display nodes
-    println!("\n{}", "Nodes:".yellow());
+    println!("\n{"Nodes:".yellow(}"));
     let mut node_query = world.query::<(&GraphNode, Option<&Highlighted>)>();
     for (node, highlight) in node_query.iter(world) {
-        let node_str = format!("  [{}] {} ({})", 
-            node.node_id, 
-            node.label, 
-            node.node_type
-        );
+        let node_str = format!("  [{node.node_id}] {node.label} ({node.node_type})");
         
         if let Some(h) = highlight {
-            println!("{} {} (confidence: {:.2})", 
-                node_str.bright_yellow().bold(),
-                format!("- {}", h.reason).yellow(),
+            println!("{node_str.bright_yellow(} {} (confidence: {:.2})").bold(),
+                format!("- {h.reason}").yellow(),
                 h.confidence
             );
         } else {
-            println!("{}", node_str);
+            println!("{node_str}");
         }
     }
     
     // Display edges
-    println!("\n{}", "Edges:".cyan());
+    println!("\n{"Edges:".cyan(}"));
     let mut edge_query = world.query::<&GraphEdge>();
     for edge in edge_query.iter(world) {
-        println!("  {} → {} ({})", 
-            edge.source, 
-            edge.target, 
-            edge.edge_type.dimmed()
+        println!("  {edge.source} → {edge.target} ({edge.edge_type.dimmed(})")
         );
     }
 }
 
 /// System to run AI analysis
 async fn run_analysis_system(world: &mut World) {
-    println!("\n{}", "Running AI Analysis...".green().bold());
+    println!("\n{"Running AI Analysis...".green(}").bold());
     
     // Run different types of analysis
     let analyses = vec![
@@ -114,7 +106,7 @@ async fn run_analysis_system(world: &mut World) {
     ];
     
     for (capability, name) in analyses {
-        println!("\n{}", format!("=== {} ===", name).cyan().bold());
+        println!("\n{println!("=== {name} ==="}").cyan().bold());
         
         // Clone necessary data to avoid borrow conflicts
         let (graph_data, provider_config) = {
@@ -141,22 +133,19 @@ async fn run_analysis_system(world: &mut World) {
         // For demo purposes, we'll use await
         match future.await {
             Ok(result) => {
-                println!("{}", result.summary);
+                println!("{result.summary}");
                 
                 if !result.insights.is_empty() {
-                    println!("\n{}:", "Insights:".yellow());
+                    println!("\n{"Insights:".yellow(}:"));
                     for insight in &result.insights {
-                        println!("  • {} (confidence: {:.2})", 
-                            insight.description, 
-                            insight.confidence
-                        );
+                        println!("  • {insight.description} (confidence: {:.2})", insight.confidence);
                     }
                 }
                 
                 if !result.recommendations.is_empty() {
-                    println!("\n{}:", "Recommendations:".green());
+                    println!("\n{"Recommendations:".green(}:"));
                     for rec in &result.recommendations {
-                        println!("  • {}: {}", rec.title.bold(), rec.description);
+                        println!("  • {rec.title.bold(}: {}"), rec.description);
                     }
                 }
                 
@@ -164,7 +153,7 @@ async fn run_analysis_system(world: &mut World) {
                 update_highlights_from_analysis(world, &result);
             }
             Err(e) => {
-                println!("{}", format!("Analysis failed: {}", e).red());
+                println!("{println!("Analysis failed: {e}"}").red());
             }
         }
         
@@ -204,8 +193,8 @@ fn update_highlights_from_analysis(world: &mut World, result: &AnalysisResult) {
 
 #[tokio::main]
 async fn main() {
-    println!("{}", "CIM AI Visual Demo (ECS Version)".green().bold());
-    println!("{}", "=================================".green());
+    println!("{"CIM AI Visual Demo (ECS Version}")".green().bold());
+    println!("{"=================================".green(}"));
     
     // Initialize world
     let mut world = World::new();
@@ -224,7 +213,7 @@ async fn main() {
                     })
                 },
                 _ => {
-                    println!("{}", "Note: Using mock provider (set ANTHROPIC_API_KEY for Claude)".yellow());
+                    println!("{"Note: Using mock provider (set ANTHROPIC_API_KEY for Claude}")".yellow());
                     ("Mock AI", ProviderConfig::Mock)
                 }
             }
@@ -235,7 +224,7 @@ async fn main() {
     let provider = AIProviderFactory::create_provider(&config)
         .expect("Failed to create AI provider");
     
-    println!("AI Provider: {}", provider_name.cyan());
+    println!("AI Provider: {provider_name.cyan(}"));
     
     world.insert_resource(AIProvider {
         provider,
@@ -272,17 +261,17 @@ async fn main() {
     }
     
     // Run systems
-    println!("\n{}", "Initial Graph State:".blue().bold());
+    println!("\n{"Initial Graph State:".blue(}").bold());
     display_graph_system(&mut world);
     
     // Run AI analysis
     run_analysis_system(&mut world).await;
     
     // Display final state with highlights
-    println!("\n{}", "Final Graph State with AI Insights:".green().bold());
+    println!("\n{"Final Graph State with AI Insights:".green(}").bold());
     display_graph_system(&mut world);
     
-    println!("\n{}", "Demo completed!".green().bold());
+    println!("\n{"Demo completed!".green(}").bold());
 }
 
 fn create_sample_workflow() -> GraphData {

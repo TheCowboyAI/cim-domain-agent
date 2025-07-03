@@ -212,23 +212,23 @@ fn ui_system(
             ui.separator();
 
             let graph = app_state.graph_data.lock().unwrap();
-            ui.label(format!("Nodes: {}", graph.nodes.len()));
-            ui.label(format!("Edges: {}", graph.edges.len()));
+            ui.label(format!("Nodes: {graph.nodes.len(}")));
+            ui.label(format!("Edges: {graph.edges.len(}")));
             
             ui.separator();
             ui.heading("Selected Node");
             
             if let Some(node_id) = &app_state.selected_node {
                 if let Some(node) = graph.nodes.iter().find(|n| &n.id == node_id) {
-                    ui.label(format!("ID: {}", node.id));
-                    ui.label(format!("Type: {}", node.node_type));
-                    ui.label(format!("Label: {}", node.label));
+                    ui.label(format!("ID: {node.id}"));
+                    ui.label(format!("Type: {node.node_type}"));
+                    ui.label(format!("Label: {node.label}"));
                     
                     if !node.properties.is_empty() {
                         ui.separator();
                         ui.label("Properties:");
                         for (key, value) in &node.properties {
-                            ui.label(format!("  {}: {}", key, value));
+                            ui.label(format!("  {key}: {value}"));
                         }
                     }
                 }
@@ -471,20 +471,20 @@ async fn analyze_graph(
             if !analysis.insights.is_empty() {
                 response.push_str("Key Insights:\n");
                 for (i, insight) in analysis.insights.iter().take(3).enumerate() {
-                    response.push_str(&format!("{}. {}\n", i + 1, insight.description));
+                    response.push_str(&format!("{i + 1}. {insight.description}\n"));
                 }
             }
             
             if !analysis.recommendations.is_empty() {
                 response.push_str("\nRecommendations:\n");
                 for (i, rec) in analysis.recommendations.iter().take(3).enumerate() {
-                    response.push_str(&format!("{}. {}\n", i + 1, rec.title));
+                    response.push_str(&format!("{i + 1}. {rec.title}\n"));
                 }
             }
             
             response
         }
-        Err(e) => format!("Analysis failed: {}", e),
+        Err(e) => format!("Analysis failed: {e}"),
     }
 }
 
@@ -507,17 +507,12 @@ async fn suggest_improvements(
             let mut response = "Improvement suggestions:\n\n".to_string();
             
             for (i, suggestion) in suggestions.iter().take(3).enumerate() {
-                response.push_str(&format!("{}. {}\n   Rationale: {}\n   Benefit: {}\n\n",
-                    i + 1,
-                    suggestion.description,
-                    suggestion.rationale,
-                    suggestion.expected_benefit
-                ));
+                response.push_str(&format!("{i + 1}. {suggestion.description}\n   Rationale: {suggestion.rationale}\n   Benefit: {suggestion.expected_benefit}\n\n"));
             }
             
             response
         }
-        Err(e) => format!("Failed to generate suggestions: {}", e),
+        Err(e) => format!("Failed to generate suggestions: {e}"),
     }
 }
 
@@ -540,14 +535,14 @@ async fn analyze_custom(
                 analysis.summary
             }
         }
-        Err(e) => format!("I couldn't process that request: {}", e),
+        Err(e) => format!("I couldn't process that request: {e}"),
     }
 }
 
 fn add_node(graph_data: Arc<Mutex<GraphData>>, name: String) -> String {
     let mut graph = graph_data.lock().unwrap();
     
-    let node_id = format!("node_{}", graph.nodes.len() + 1);
+    let node_id = format!("node_{graph.nodes.len(}") + 1);
     let position = (
         (graph.nodes.len() as f32 * 100.0) % 400.0 - 200.0,
         ((graph.nodes.len() / 4) as f32 * 100.0) - 200.0,
@@ -562,7 +557,7 @@ fn add_node(graph_data: Arc<Mutex<GraphData>>, name: String) -> String {
         position: Some(position),
     });
     
-    format!("Added node '{}' at position ({:.0}, {:.0})", node_id, position.0, position.1)
+    format!("Added node '{node_id}' at position ({:.0}, {:.0})", position.0, position.1)
 }
 
 fn connect_nodes(graph_data: Arc<Mutex<GraphData>>, source: String, target: String) -> String {
@@ -576,7 +571,7 @@ fn connect_nodes(graph_data: Arc<Mutex<GraphData>>, source: String, target: Stri
         return format!("Error: One or both nodes don't exist");
     }
     
-    let edge_id = format!("edge_{}_{}", source, target);
+    let edge_id = format!("edge_{source}_{target}");
     graph.edges.push(EdgeData {
         id: edge_id,
         source: source.clone(),
@@ -585,7 +580,7 @@ fn connect_nodes(graph_data: Arc<Mutex<GraphData>>, source: String, target: Stri
         properties: HashMap::new(),
     });
     
-    format!("Connected {} -> {}", source, target)
+    format!("Connected {source} -> {target}")
 }
 
 fn create_initial_graph() -> GraphData {

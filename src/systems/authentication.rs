@@ -33,6 +33,12 @@ impl Default for AuthenticationState {
     }
 }
 
+/// Marker component for authenticated agents
+#[derive(Component, Debug, Clone)]
+pub struct AuthenticatedAgent {
+    pub authenticated_at: std::time::SystemTime,
+}
+
 /// Resource for managing authentication sessions
 #[derive(Resource, Debug, Default)]
 pub struct AuthenticationManager {
@@ -90,6 +96,14 @@ pub fn handle_authentication_requests(
                 auth_manager.sessions.insert(session_id.clone(), request.agent_id.clone());
                 auth_manager.tokens.insert(request.token.clone(), session_id.clone());
 
+                // Log authentication for this specific entity
+                info!("Agent {:?} authenticated with entity {:?}", agent.agent_id, entity);
+
+                // Add marker component to entity for authenticated agents
+                commands.entity(entity).insert(AuthenticatedAgent {
+                    authenticated_at: std::time::SystemTime::now(),
+                });
+
                 // Send success response
                 auth_responses.write(AuthenticationResponse {
                     agent_id: request.agent_id.clone(),
@@ -104,6 +118,9 @@ pub fn handle_authentication_requests(
                     session_id,
                 });
             } else {
+                // Log failed authentication attempt for this entity
+                warn!("Failed authentication attempt for agent {:?} on entity {:?}", agent.agent_id, entity);
+
                 // Send failure response
                 auth_responses.write(AuthenticationResponse {
                     agent_id: request.agent_id.clone(),
@@ -137,12 +154,26 @@ pub fn check_authentication_expiry(
     mut auth_manager: ResMut<AuthenticationManager>,
 ) {
     let current_time = std::time::SystemTime::now();
+    let delta_time = time.delta();
+
+    // Log periodic authentication status check
+    debug!("Checking authentication expiry - delta time: {:?}", delta_time);
 
     for (entity, agent, mut auth_state) in &mut query {
         if let Some(expires_at) = auth_state.expires_at {
             if current_time > expires_at && auth_state.is_authenticated {
                 // Session expired
                 auth_state.is_authenticated = false;
+                
+                // Calculate how long the session was active
+                let session_duration = current_time.duration_since(
+                    expires_at - std::time::Duration::from_secs(3600)
+                ).unwrap_or_default();
+                
+                info!("Session expired for agent {:?} after {:?}", 
+                    AgentId::from_uuid(agent.agent_id), 
+                    session_duration
+                );
                 
                 if let Some(session_id) = &auth_state.session_id {
                     // Remove from manager
@@ -156,6 +187,9 @@ pub fn check_authentication_expiry(
                 auth_state.session_id = None;
                 auth_state.token = None;
                 auth_state.expires_at = None;
+
+                // Remove authenticated marker component
+                commands.entity(entity).remove::<AuthenticatedAgent>();
 
                 // Send expiry event
                 commands.trigger(AuthenticationEvent::SessionExpired {

@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let (provider_name, config) = match provider_type.as_str() {
         "mock" => {
-            println!("{}", "Using mock AI provider for demo...".yellow());
+            println!("{"Using mock AI provider for demo...".yellow(}"));
             ("Mock AI", ProviderConfig::Mock)
         },
         _ => {
@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let api_key = match std::env::var("ANTHROPIC_API_KEY") {
                 Ok(key) => key,
                 Err(_) => {
-                    println!("{}", "Error: ANTHROPIC_API_KEY not set!".red());
+                    println!("{"Error: ANTHROPIC_API_KEY not set!".red(}"));
                     println!("Please set your Anthropic API key:");
                     println!("  export ANTHROPIC_API_KEY=sk-ant-...");
                     println!();
@@ -67,13 +67,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     clear_screen();
     print_header();
     
-    println!("{}", format!("Hello! I'm {}, your AI workflow analyst.", provider_name).cyan());
-    println!("{}", "I've loaded a sample e-commerce order processing workflow.".cyan());
+    println!("{println!("Hello! I'm {provider_name}, your AI workflow analyst."}").cyan());
+    println!("{"I've loaded a sample e-commerce order processing workflow.".cyan(}"));
     println!();
     print_workflow_summary(&workflow);
     println!();
-    println!("{}", "What would you like to know about this workflow?".cyan());
-    println!("{}", "(Type 'help' for options or 'quit' to exit)".dimmed());
+    println!("{"What would you like to know about this workflow?".cyan(}"));
+    println!("{"(Type 'help' for options or 'quit' to exit}")".dimmed());
     println!();
     
     // Main conversation loop
@@ -92,7 +92,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match input.to_lowercase().as_str() {
             "quit" | "exit" => {
                 println!();
-                println!("{}", "Thanks for chatting! Goodbye! 👋".cyan());
+                println!("{"Thanks for chatting! Goodbye! 👋".cyan(}"));
                 break;
             }
             "help" => {
@@ -133,43 +133,43 @@ fn clear_screen() {
 }
 
 fn print_header() {
-    println!("{}", "╔══════════════════════════════════════════════════════════╗".blue());
-    println!("{}", "║        🤖 Claude AI Workflow Analysis Demo 🤖            ║".blue());
-    println!("{}", "╚══════════════════════════════════════════════════════════╝".blue());
+    println!("{"╔══════════════════════════════════════════════════════════╗".blue(}"));
+    println!("{"║        🤖 Claude AI Workflow Analysis Demo 🤖            ║".blue(}"));
+    println!("{"╚══════════════════════════════════════════════════════════╝".blue(}"));
     println!();
 }
 
 fn print_help() {
     println!();
-    println!("{}", "Available commands:".yellow());
-    println!("  {} - Show detailed workflow structure", "show".bold());
-    println!("  {} - Run general workflow analysis", "analyze".bold());
-    println!("  {} - Get optimization suggestions", "optimize".bold());
-    println!("  {} - Find workflow bottlenecks", "bottlenecks".bold());
-    println!("  {} - Detect workflow patterns", "patterns".bold());
-    println!("  {} - Get transformation suggestions", "transform".bold());
-    println!("  {} - Show this help message", "help".bold());
-    println!("  {} - Exit the demo", "quit".bold());
+    println!("{"Available commands:".yellow(}"));
+    println!("  {"show".bold(} - Show detailed workflow structure"));
+    println!("  {"analyze".bold(} - Run general workflow analysis"));
+    println!("  {"optimize".bold(} - Get optimization suggestions"));
+    println!("  {"bottlenecks".bold(} - Find workflow bottlenecks"));
+    println!("  {"patterns".bold(} - Detect workflow patterns"));
+    println!("  {"transform".bold(} - Get transformation suggestions"));
+    println!("  {"help".bold(} - Show this help message"));
+    println!("  {"quit".bold(} - Exit the demo"));
     println!();
-    println!("{}", "Or ask any question about the workflow!".dimmed());
+    println!("{"Or ask any question about the workflow!".dimmed(}"));
 }
 
 fn print_workflow_summary(workflow: &GraphData) {
-    println!("{}", "📊 Workflow Summary:".yellow());
-    println!("   Name: {}", workflow.metadata.get("name")
+    println!("{"📊 Workflow Summary:".yellow(}"));
+    println!("   Name: {workflow.metadata.get("name"}")
         .and_then(|v| v.as_str())
         .unwrap_or("Unknown").bold());
-    println!("   Nodes: {}", workflow.nodes.len().to_string().bold());
-    println!("   Edges: {}", workflow.edges.len().to_string().bold());
-    println!("   Type: {}", "E-commerce Order Processing".bold());
+    println!("   Nodes: {workflow.nodes.len(}").to_string().bold());
+    println!("   Edges: {workflow.edges.len(}").to_string().bold());
+    println!("   Type: {"E-commerce Order Processing".bold(}"));
 }
 
 fn print_workflow_details(workflow: &GraphData) {
     println!();
-    println!("{}", "📋 Detailed Workflow Structure:".yellow());
+    println!("{"📋 Detailed Workflow Structure:".yellow(}"));
     println!();
     
-    println!("{}", "Nodes:".cyan());
+    println!("{"Nodes:".cyan(}"));
     for node in &workflow.nodes {
         let icon = match node.node_type.as_str() {
             "start" => "🟢",
@@ -179,17 +179,17 @@ fn print_workflow_details(workflow: &GraphData) {
             "parallel" => "🔄",
             _ => "📦",
         };
-        println!("  {} {} ({})", icon, node.label.bold(), node.node_type);
+        println!("  {icon} {node.label.bold(} ({})"), node.node_type);
         
         if !node.properties.is_empty() {
             for (key, value) in &node.properties {
-                println!("      {}: {}", key.dimmed(), value);
+                println!("      {key.dimmed(}: {}"), value);
             }
         }
     }
     
     println!();
-    println!("{}", "Edges:".cyan());
+    println!("{"Edges:".cyan(}"));
     for edge in &workflow.edges {
         let arrow = match edge.edge_type.as_str() {
             "parallel" => "⇉",
@@ -207,11 +207,7 @@ fn print_workflow_details(workflow: &GraphData) {
             .map(|n| &n.label)
             .unwrap_or(&edge.target);
             
-        println!("  {} {} {} ({})", 
-            source_label, 
-            arrow, 
-            target_label,
-            edge.edge_type.dimmed()
+        println!("  {source_label} {arrow} {target_label} ({edge.edge_type.dimmed(})")
         );
     }
 }
@@ -229,32 +225,26 @@ async fn analyze_workflow(
         HashMap::new(),
     ).await?;
     
-    println!("{}", "Claude:".cyan().bold());
-    println!("{}", result.summary.cyan());
+    println!("{"Claude:".cyan(}").bold());
+    println!("{result.summary.cyan(}"));
     println!();
     
     if !result.insights.is_empty() {
-        println!("{}", "Key Insights:".yellow());
+        println!("{"Key Insights:".yellow(}"));
         for (i, insight) in result.insights.iter().enumerate() {
-            println!("  {}. {} (confidence: {:.0}%)", 
-                i + 1, 
-                insight.description,
-                insight.confidence * 100.0
-            );
+            println!("  {i + 1}. {insight.description} (confidence: {:.0}%)", insight.confidence * 100.0);
         }
     }
     
     if !result.recommendations.is_empty() {
         println!();
-        println!("{}", "Recommendations:".yellow());
+        println!("{"Recommendations:".yellow(}"));
         for (i, rec) in result.recommendations.iter().enumerate() {
-            println!("  {}. {} ({})", 
-                i + 1, 
-                rec.title.bold(),
+            println!("  {i + 1}. {rec.title.bold(} ({})"),
                 format!("{:?}", rec.priority).to_lowercase()
             );
             if !rec.description.is_empty() {
-                println!("     {}", rec.description.dimmed());
+                println!("     {rec.description.dimmed(}"));
             }
         }
     }
@@ -280,12 +270,12 @@ async fn optimize_workflow(
         params,
     ).await?;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     println!("I've analyzed your workflow for optimization opportunities.");
     println!();
     
     if !result.recommendations.is_empty() {
-        println!("{}", "Here are my optimization suggestions:".cyan());
+        println!("{"Here are my optimization suggestions:".cyan(}"));
         for (i, rec) in result.recommendations.iter().enumerate() {
             let icon = match rec.priority {
                 cim_domain_agent::value_objects::Priority::Critical => "🚨",
@@ -295,18 +285,15 @@ async fn optimize_workflow(
             };
             
             println!();
-            println!("{}. {} {} {}", 
-                i + 1, 
-                icon,
-                rec.title.bold(),
-                format!("[{}]", rec.expected_impact).green()
+            println!("{i + 1}. {icon} {rec.title.bold(} {}"),
+                format!("[{rec.expected_impact}]").green()
             );
-            println!("   {}", rec.description);
+            println!("   {rec.description}");
             
             if !rec.actions.is_empty() {
-                println!("   {}", "Steps:".dimmed());
+                println!("   {"Steps:".dimmed(}"));
                 for action in &rec.actions {
-                    println!("   - {}", action.description);
+                    println!("   - {action.description}");
                 }
             }
         }
@@ -332,7 +319,7 @@ async fn find_bottlenecks(
         params,
     ).await?;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     println!("I've identified potential bottlenecks in your workflow:");
     println!();
     
@@ -344,13 +331,13 @@ async fn find_bottlenecks(
     ];
     
     for (i, (step, issue, impact)) in bottlenecks.iter().enumerate() {
-        println!("{}. {} {}", i + 1, "🔴".red(), step.bold());
-        println!("   Issue: {}", issue);
-        println!("   Impact: {}", impact.yellow());
+        println!("{i + 1}. {"🔴".red(} {}"), step.bold());
+        println!("   Issue: {issue}");
+        println!("   Impact: {impact.yellow(}"));
         println!();
     }
     
-    println!("{}", "💡 Suggestion:".green());
+    println!("{"💡 Suggestion:".green(}"));
     println!("Consider parallelizing payment validation and inventory checks,");
     println!("and implementing a queue-based notification system.");
     
@@ -370,7 +357,7 @@ async fn detect_patterns(
         HashMap::new(),
     ).await?;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     println!("I've detected several patterns in your workflow:");
     println!();
     
@@ -381,8 +368,8 @@ async fn detect_patterns(
     ];
     
     for (pattern, description, assessment) in patterns {
-        println!("• {} {}", pattern.bold(), assessment);
-        println!("  {}", description.dimmed());
+        println!("• {pattern.bold(} {}"), assessment);
+        println!("  {description.dimmed(}"));
         println!();
     }
     
@@ -413,20 +400,20 @@ async fn suggest_transformations(
         constraints,
     ).await?;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     println!("Here are my transformation suggestions to achieve your goals:");
     println!();
     
     for (i, suggestion) in suggestions.iter().enumerate() {
-        println!("{}. {}", i + 1, suggestion.description.bold());
-        println!("   {}", "Rationale:".yellow());
-        println!("   {}", suggestion.rationale);
-        println!("   {}", "Expected Benefit:".green());
-        println!("   {}", suggestion.expected_benefit);
+        println!("{i + 1}. {suggestion.description.bold(}"));
+        println!("   {"Rationale:".yellow(}"));
+        println!("   {suggestion.rationale}");
+        println!("   {"Expected Benefit:".green(}"));
+        println!("   {suggestion.expected_benefit}");
         
         if let Some(risk) = &suggestion.risk_assessment {
-            println!("   {}", "Risk Assessment:".red());
-            println!("   {}", risk);
+            println!("   {"Risk Assessment:".red(}"));
+            println!("   {risk}");
         }
         
         println!();
@@ -444,10 +431,7 @@ async fn custom_analysis(
     print_thinking();
     
     // Create a custom prompt for Claude
-    let custom_prompt = format!(
-        "Analyze this workflow and answer the following question: {}",
-        question
-    );
+    let custom_prompt = format!("Analyze this workflow and answer the following question: {question}");
     
     let result = claude.analyze_graph(
         workflow.clone(),
@@ -455,24 +439,24 @@ async fn custom_analysis(
         HashMap::new(),
     ).await?;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     
     // If we got insights, format them conversationally
     if !result.insights.is_empty() {
         for insight in &result.insights {
-            println!("{}", insight.description.cyan());
+            println!("{insight.description.cyan(}"));
         }
     } else {
         // Fallback response
-        println!("{}", result.summary.cyan());
+        println!("{result.summary.cyan(}"));
     }
     
     // Add recommendations if any
     if !result.recommendations.is_empty() {
         println!();
-        println!("{}", "Based on your question, I recommend:".cyan());
+        println!("{"Based on your question}", I recommend:".cyan());
         for (i, rec) in result.recommendations.iter().enumerate() {
-            println!("{}. {}", i + 1, rec.title);
+            println!("{i + 1}. {rec.title}");
         }
     }
     

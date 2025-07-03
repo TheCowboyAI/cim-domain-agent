@@ -1,7 +1,7 @@
 //! Comprehensive AI Provider Integration Tests
 //!
 //! ## Test Coverage
-//! 
+//!
 //! ```mermaid
 //! graph TD
 //!     subgraph "AI Provider Integration Tests"
@@ -32,9 +32,9 @@
 
 use cim_domain_agent::ai_providers::*;
 use cim_domain_agent::value_objects::*;
+use serde_json::json;
 use std::collections::HashMap;
 use std::time::Duration;
-use serde_json::json;
 use tokio::time::timeout;
 
 /// Test configuration for providers
@@ -57,14 +57,14 @@ impl Default for TestConfig {
 #[cfg(test)]
 mod provider_factory_tests {
     use super::*;
-    
+
     #[test]
     fn test_create_all_provider_types() {
         // Mock provider should always work
         let mock_config = ProviderConfig::Mock;
         let mock_provider = AIProviderFactory::create_provider(&mock_config);
         assert!(mock_provider.is_ok());
-        
+
         // OpenAI provider requires feature flag
         #[cfg(feature = "ai-openai")]
         {
@@ -75,7 +75,7 @@ mod provider_factory_tests {
             let openai_provider = AIProviderFactory::create_provider(&openai_config);
             assert!(openai_provider.is_ok());
         }
-        
+
         // Anthropic provider requires feature flag
         #[cfg(feature = "ai-anthropic")]
         {
@@ -86,7 +86,7 @@ mod provider_factory_tests {
             let anthropic_provider = AIProviderFactory::create_provider(&anthropic_config);
             assert!(anthropic_provider.is_ok());
         }
-        
+
         // Ollama provider requires feature flag
         #[cfg(feature = "ai-ollama")]
         {
@@ -98,12 +98,12 @@ mod provider_factory_tests {
             assert!(ollama_provider.is_ok());
         }
     }
-    
+
     #[test]
     fn test_provider_metadata() {
         let provider = mock::MockAIProvider::new();
         let metadata = provider.get_metadata();
-        
+
         assert!(!metadata.name.is_empty());
         assert!(!metadata.model.is_empty());
         assert!(!metadata.capabilities.is_empty());

@@ -17,8 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // Create a sample workflow graph
     let graph_data = create_sample_workflow();
-    println!("✓ Created sample workflow with {} nodes and {} edges", 
-        graph_data.nodes.len(), 
+    println!("✓ Created sample workflow with {graph_data.nodes.len(} nodes and {} edges"), 
         graph_data.edges.len()
     );
     
@@ -33,19 +32,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ).await?;
     
     println!("   Confidence: {:.0}%", analysis.confidence_score * 100.0);
-    println!("   Summary: {}", analysis.summary);
+    println!("   Summary: {analysis.summary}");
     
     if !analysis.insights.is_empty() {
         println!("\n   Insights:");
         for insight in &analysis.insights {
-            println!("   - {}: {}", insight.category, insight.description);
+            println!("   - {insight.category}: {insight.description}");
         }
     }
     
     if !analysis.recommendations.is_empty() {
         println!("\n   Recommendations:");
         for rec in &analysis.recommendations {
-            println!("   - {}: {}", rec.title, rec.description);
+            println!("   - {rec.title}: {rec.description}");
             println!("     Priority: {:?}, Effort: {:?}", rec.priority, rec.effort_level);
         }
     }
@@ -61,16 +60,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         HashMap::new(),
     ).await?;
     
-    println!("   Generated {} transformation suggestions", transformations.len());
+    println!("   Generated {transformations.len(} transformation suggestions"));
     
     for (i, transform) in transformations.iter().enumerate() {
-        println!("\n   Transformation {}: {}", i + 1, transform.description);
-        println!("   Type: {}", transform.suggestion_type);
-        println!("   Expected benefit: {}", transform.expected_benefit);
+        println!("\n   Transformation {i + 1}: {transform.description}");
+        println!("   Type: {transform.suggestion_type}");
+        println!("   Expected benefit: {transform.expected_benefit}");
         if !transform.transformation_steps.is_empty() {
             println!("   Steps:");
             for step in &transform.transformation_steps {
-                println!("   - {}", step);
+                println!("   - {step}");
             }
         }
     }
@@ -83,13 +82,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         HashMap::new(),
     ).await?;
     
-    println!("   Found {} patterns", patterns.insights.len());
+    println!("   Found {patterns.insights.len(} patterns"));
     for pattern in patterns.insights.iter().take(3) {
-        println!("   - {}: {} (confidence: {:.0}%)", 
-            pattern.category,
-            pattern.description,
-            pattern.confidence * 100.0
-        );
+        println!("   - {pattern.category}: {pattern.description} (confidence: {:.0}%)", pattern.confidence * 100.0);
     }
     
     println!("\n=== Demo Complete ===");

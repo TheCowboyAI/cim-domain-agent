@@ -20,39 +20,39 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Load environment variables
     let _ = dotenvy::dotenv();
 
-    println!("{}", "=== AI Graph Assistant ===".bright_cyan().bold());
-    println!("{}", "Interactive chat interface for graph analysis".bright_white());
+    println!("{"=== AI Graph Assistant ===".bright_cyan(}").bold());
+    println!("{"Interactive chat interface for graph analysis".bright_white(}"));
     println!();
 
     // Create AI provider
     let provider_config = if std::env::var("ANTHROPIC_API_KEY").is_ok() {
-        println!("{}", "Using Claude AI provider".bright_green());
+        println!("{"Using Claude AI provider".bright_green(}"));
         ProviderConfig::Anthropic {
             api_key: std::env::var("ANTHROPIC_API_KEY").unwrap(),
             model: "claude-3-5-sonnet-20241022".to_string(),
         }
     } else if std::env::var("OPENAI_API_KEY").is_ok() {
-        println!("{}", "Using OpenAI provider".bright_green());
+        println!("{"Using OpenAI provider".bright_green(}"));
         ProviderConfig::OpenAI {
             api_key: std::env::var("OPENAI_API_KEY").unwrap(),
             model: "gpt-4-turbo".to_string(),
         }
     } else {
-        println!("{}", "Using Mock provider (set API keys for real AI)".yellow());
+        println!("{"Using Mock provider (set API keys for real AI}")".yellow());
         ProviderConfig::Mock
     };
 
     let provider = AIProviderFactory::create_provider(&provider_config)?;
     let mut graph = create_demo_graph();
 
-    println!("\n{}", "Commands:".bright_yellow());
-    println!("  {} - Analyze the current graph", "analyze".bright_cyan());
-    println!("  {} - Get improvement suggestions", "suggest".bright_cyan());
-    println!("  {} <name> - Add a new node", "add node".bright_cyan());
-    println!("  {} <from> <to> - Connect two nodes", "connect".bright_cyan());
-    println!("  {} - Show current graph", "show".bright_cyan());
-    println!("  {} - Exit the program", "quit".bright_cyan());
-    println!("  {} - Ask anything about the graph\n", "Any other text".bright_cyan());
+    println!("\n{"Commands:".bright_yellow(}"));
+    println!("  {"analyze".bright_cyan(} - Analyze the current graph"));
+    println!("  {"suggest".bright_cyan(} - Get improvement suggestions"));
+    println!("  {"add node".bright_cyan(} <name> - Add a new node"));
+    println!("  {"connect".bright_cyan(} <from> <to> - Connect two nodes"));
+    println!("  {"show".bright_cyan(} - Show current graph"));
+    println!("  {"quit".bright_cyan(} - Exit the program"));
+    println!("  {"Any other text".bright_cyan(} - Ask anything about the graph\n"));
 
     // Main chat loop
     loop {
@@ -69,7 +69,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         match input.to_lowercase().as_str() {
             "quit" | "exit" => {
-                println!("{}", "Goodbye!".bright_yellow());
+                println!("{"Goodbye!".bright_yellow(}"));
                 break;
             }
             "analyze" => {
@@ -132,18 +132,18 @@ async fn analyze_graph(
         analysis.confidence_score * 100.0));
     
     if !analysis.insights.is_empty() {
-        println!("\n{}", "Key Insights:".bright_yellow());
+        println!("\n{"Key Insights:".bright_yellow(}"));
         for (i, insight) in analysis.insights.iter().take(3).enumerate() {
-            println!("  {}. {}", i + 1, insight.description);
+            println!("  {i + 1}. {insight.description}");
         }
     }
     
     if !analysis.recommendations.is_empty() {
-        println!("\n{}", "Recommendations:".bright_yellow());
+        println!("\n{"Recommendations:".bright_yellow(}"));
         for (i, rec) in analysis.recommendations.iter().take(3).enumerate() {
-            println!("  {}. {}", i + 1, rec.title);
+            println!("  {i + 1}. {rec.title}");
             if !rec.description.is_empty() {
-                println!("     {}", rec.description.dimmed());
+                println!("     {rec.description.dimmed(}"));
             }
         }
     }
@@ -169,12 +169,11 @@ async fn suggest_improvements(
     print_ai_response("Improvement suggestions:");
     
     for (i, suggestion) in suggestions.iter().take(3).enumerate() {
-        println!("\n{}. {}", 
-            format!("{}", i + 1).bright_yellow(),
+        println!("\n{println!("{i + 1}"}. {}").bright_yellow(),
             suggestion.description.bright_white()
         );
-        println!("   {} {}", "Rationale:".bright_cyan(), suggestion.rationale);
-        println!("   {} {}", "Benefit:".bright_green(), suggestion.expected_benefit);
+        println!("   {"Rationale:".bright_cyan(} {}"), suggestion.rationale);
+        println!("   {"Benefit:".bright_green(} {}"), suggestion.expected_benefit);
     }
     
     println!();
@@ -203,22 +202,20 @@ async fn custom_query(
 }
 
 fn show_graph(graph: &GraphData) {
-    println!("\n{}", "Current Graph:".bright_yellow());
-    println!("{}", format!("Graph ID: {}", graph.graph_id).dimmed());
+    println!("\n{"Current Graph:".bright_yellow(}"));
+    println!("{println!("Graph ID: {graph.graph_id}"}").dimmed());
     
-    println!("\n{} ({})", "Nodes".bright_cyan(), graph.nodes.len());
+    println!("\n{"Nodes".bright_cyan(} ({})"), graph.nodes.len());
     for node in &graph.nodes {
-        println!("  • {} ({}) - {}", 
-            node.id.bright_white(),
+        println!("  • {node.id.bright_white(} ({}) - {}"),
             node.node_type.bright_magenta(),
             node.label
         );
     }
     
-    println!("\n{} ({})", "Edges".bright_cyan(), graph.edges.len());
+    println!("\n{"Edges".bright_cyan(} ({})"), graph.edges.len());
     for edge in &graph.edges {
-        println!("  • {} → {} ({})", 
-            edge.source.bright_white(),
+        println!("  • {edge.source.bright_white(} → {} ({})"),
             edge.target.bright_white(),
             edge.edge_type.dimmed()
         );
@@ -228,7 +225,7 @@ fn show_graph(graph: &GraphData) {
 }
 
 fn add_node(graph: &mut GraphData, name: &str) {
-    let node_id = format!("node_{}", graph.nodes.len() + 1);
+    let node_id = format!("node_{graph.nodes.len(}") + 1);
     
     graph.nodes.push(NodeData {
         id: node_id.clone(),
@@ -242,7 +239,7 @@ fn add_node(graph: &mut GraphData, name: &str) {
         )),
     });
     
-    print_ai_response(&format!("Added node '{}' with ID '{}'", name, node_id));
+    print_ai_response(&format!("Added node '{name}' with ID '{node_id}'"));
     println!();
 }
 
@@ -252,16 +249,16 @@ fn connect_nodes(graph: &mut GraphData, source: &str, target: &str) {
     let target_exists = graph.nodes.iter().any(|n| n.id == target);
     
     if !source_exists {
-        print_error(&format!("Node '{}' not found", source));
+        print_error(&format!("Node '{source}' not found"));
         return;
     }
     
     if !target_exists {
-        print_error(&format!("Node '{}' not found", target));
+        print_error(&format!("Node '{target}' not found"));
         return;
     }
     
-    let edge_id = format!("edge_{}_{}", source, target);
+    let edge_id = format!("edge_{source}_{target}");
     graph.edges.push(EdgeData {
         id: edge_id,
         source: source.to_string(),
@@ -270,7 +267,7 @@ fn connect_nodes(graph: &mut GraphData, source: &str, target: &str) {
         properties: HashMap::new(),
     });
     
-    print_ai_response(&format!("Connected {} → {}", source, target));
+    print_ai_response(&format!("Connected {source} → {target}"));
     println!();
 }
 

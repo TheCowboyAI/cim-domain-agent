@@ -28,7 +28,7 @@ use std::env;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", "=== Real AI Provider Demo ===".bright_blue().bold());
+    println!("{"=== Real AI Provider Demo ===".bright_blue(}").bold());
     println!();
 
     // Load environment variables
@@ -39,37 +39,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Try OpenAI if API key is available
     if let Ok(api_key) = env::var("OPENAI_API_KEY") {
-        println!("{}", "Testing OpenAI Provider...".yellow());
+        println!("{"Testing OpenAI Provider...".yellow(}"));
         match test_openai_provider(&api_key, &graph_data).await {
-            Ok(()) => println!("{}", "✓ OpenAI test completed successfully".green()),
-            Err(e) => println!("{}", format!("✗ OpenAI test failed: {}", e).red()),
+            Ok(()) => println!("{"✓ OpenAI test completed successfully".green(}")),
+            Err(e) => println!("{println!("✗ OpenAI test failed: {e}"}").red()),
         }
         println!();
     } else {
-        println!("{}", "⚠ OPENAI_API_KEY not set, skipping OpenAI test".yellow());
+        println!("{"⚠ OPENAI_API_KEY not set}", skipping OpenAI test".yellow());
     }
 
     // Try Anthropic if API key is available
     if let Ok(api_key) = env::var("ANTHROPIC_API_KEY") {
-        println!("{}", "Testing Anthropic Provider...".yellow());
+        println!("{"Testing Anthropic Provider...".yellow(}"));
         match test_anthropic_provider(&api_key, &graph_data).await {
-            Ok(()) => println!("{}", "✓ Anthropic test completed successfully".green()),
-            Err(e) => println!("{}", format!("✗ Anthropic test failed: {}", e).red()),
+            Ok(()) => println!("{"✓ Anthropic test completed successfully".green(}")),
+            Err(e) => println!("{println!("✗ Anthropic test failed: {e}"}").red()),
         }
         println!();
     } else {
-        println!("{}", "⚠ ANTHROPIC_API_KEY not set, skipping Anthropic test".yellow());
+        println!("{"⚠ ANTHROPIC_API_KEY not set}", skipping Anthropic test".yellow());
     }
 
     // Try Ollama (usually runs locally)
-    println!("{}", "Testing Ollama Provider...".yellow());
+    println!("{"Testing Ollama Provider...".yellow(}"));
     match test_ollama_provider(&graph_data).await {
-        Ok(()) => println!("{}", "✓ Ollama test completed successfully".green()),
-        Err(e) => println!("{}", format!("✗ Ollama test failed: {}", e).red()),
+        Ok(()) => println!("{"✓ Ollama test completed successfully".green(}")),
+        Err(e) => println!("{println!("✗ Ollama test failed: {e}"}").red()),
     }
     println!();
 
-    println!("{}", "Demo completed!".bright_green().bold());
+    println!("{"Demo completed!".bright_green(}").bold());
     Ok(())
 }
 
@@ -277,47 +277,40 @@ fn create_sample_workflow_graph() -> GraphData {
 }
 
 fn print_analysis_result(analysis: &AnalysisResult) {
-    println!("\n  {}", "Analysis Result:".bright_cyan());
-    println!("    Summary: {}", analysis.summary);
+    println!("\n  {"Analysis Result:".bright_cyan(}"));
+    println!("    Summary: {analysis.summary}");
     println!("    Confidence: {:.2}", analysis.confidence_score);
     
     if !analysis.insights.is_empty() {
-        println!("\n    {}:", "Insights".bright_cyan());
+        println!("\n    {"Insights".bright_cyan(}:"));
         for insight in &analysis.insights {
-            println!("      • {} ({})", 
-                insight.description, 
-                format!("{:?}", insight.impact).bright_yellow()
+            println!("      • {insight.description} ({println!("{:?}", insight.impact})").bright_yellow()
             );
         }
     }
     
     if !analysis.recommendations.is_empty() {
-        println!("\n    {}:", "Recommendations".bright_cyan());
+        println!("\n    {"Recommendations".bright_cyan(}:"));
         for rec in &analysis.recommendations {
-            println!("      • {} ({})", 
-                rec.title, 
-                format!("{:?}", rec.priority).bright_magenta()
+            println!("      • {rec.title} ({println!("{:?}", rec.priority})").bright_magenta()
             );
             if !rec.description.is_empty() {
-                println!("        {}", rec.description.dimmed());
+                println!("        {rec.description.dimmed(}"));
             }
         }
     }
 }
 
 fn print_transformation_suggestions(suggestions: &[TransformationSuggestion]) {
-    println!("\n  {}", "Transformation Suggestions:".bright_cyan());
+    println!("\n  {"Transformation Suggestions:".bright_cyan(}"));
     for (i, suggestion) in suggestions.iter().enumerate() {
-        println!("    {}. {} ({})", 
-            i + 1, 
-            suggestion.description,
-            suggestion.suggestion_type.bright_yellow()
+        println!("    {i + 1}. {suggestion.description} ({suggestion.suggestion_type.bright_yellow(})")
         );
         if !suggestion.rationale.is_empty() {
-            println!("       Rationale: {}", suggestion.rationale.dimmed());
+            println!("       Rationale: {suggestion.rationale.dimmed(}"));
         }
         if !suggestion.expected_benefit.is_empty() {
-            println!("       Expected Benefit: {}", suggestion.expected_benefit.bright_green());
+            println!("       Expected Benefit: {suggestion.expected_benefit.bright_green(}"));
         }
     }
 } 

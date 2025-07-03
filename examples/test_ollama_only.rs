@@ -26,22 +26,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let model = std::env::var("OLLAMA_MODEL")
         .unwrap_or_else(|_| "llama2:7b".to_string());
 
-    println!("Host: {}", host);
-    println!("Model: {}\n", model);
+    println!("Host: {host}");
+    println!("Model: {model}\n");
 
     // Create provider
     let config = ProviderConfig::Ollama { host, model };
     let provider = AIProviderFactory::create_provider(&config)?;
     let metadata = provider.get_metadata();
     
-    println!("Provider initialized: {}", metadata.name);
-    println!("Version: {}\n", metadata.version);
+    println!("Provider initialized: {metadata.name}");
+    println!("Version: {metadata.version}\n");
 
     // Create a simple test graph
     let graph = create_simple_graph();
     
     println!("Testing graph analysis...");
-    println!("Graph: {} nodes, {} edges\n", graph.nodes.len(), graph.edges.len());
+    println!("Graph: {graph.nodes.len(} nodes, {} edges\n"), graph.edges.len());
 
     // Perform analysis with longer timeout
     let start = std::time::Instant::now();
@@ -60,28 +60,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("✅ Analysis completed in {:?}", duration);
             println!("\nResults:");
             println!("  Confidence: {:.2}%", analysis.confidence_score * 100.0);
-            println!("  Summary: {}", analysis.summary);
-            println!("  Insights: {}", analysis.insights.len());
-            println!("  Recommendations: {}", analysis.recommendations.len());
+            println!("  Summary: {analysis.summary}");
+            println!("  Insights: {analysis.insights.len(}"));
+            println!("  Recommendations: {analysis.recommendations.len(}"));
             
             if !analysis.insights.is_empty() {
                 println!("\nFirst Insight:");
-                println!("  {}", analysis.insights[0].description);
+                println!("  {analysis.insights[0].description}");
             }
             
             if !analysis.recommendations.is_empty() {
                 println!("\nFirst Recommendation:");
-                println!("  {}", analysis.recommendations[0].title);
+                println!("  {analysis.recommendations[0].title}");
             }
         }
         Err(e) => {
-            println!("❌ Analysis failed: {}", e);
+            println!("❌ Analysis failed: {e}");
             println!("\nTroubleshooting:");
             println!("1. Make sure Ollama is running: ollama serve");
-            println!("2. Check that {} model is installed: ollama list", 
-                metadata.model);
-            println!("3. Try pulling the model: ollama pull {}", 
-                metadata.model.split(':').next().unwrap_or(&metadata.model));
+            println!("2. Check that {metadata.model} model is installed: ollama list");
+            println!("3. Try pulling the model: ollama pull {metadata.model.split(':'}").next().unwrap_or(&metadata.model));
         }
     }
 

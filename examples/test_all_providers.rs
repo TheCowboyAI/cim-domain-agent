@@ -54,14 +54,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Test each provider
     for (name, config) in providers {
-        println!("\n{} Testing {} Provider {}", "=".repeat(20), name, "=".repeat(20));
+        println!("\n{"=".repeat(20} Testing {} Provider {}"), name, "=".repeat(20));
         
         match test_provider(name, config, &test_graph).await {
             Ok(duration) => {
-                println!("✅ {} test completed in {:?}", name, duration);
+                println!("✅ {name} test completed in {:?}", duration);
             }
             Err(e) => {
-                println!("❌ {} test failed: {}", name, e);
+                println!("❌ {name} test failed: {e}");
                 if name == "Ollama" {
                     println!("   Tip: Make sure Ollama is running locally with: ollama serve");
                 }
@@ -93,8 +93,8 @@ async fn test_provider(
     let provider = AIProviderFactory::create_provider(&config)?;
     let metadata = provider.get_metadata();
     
-    println!("Provider: {}", metadata.name);
-    println!("Model: {}", metadata.model);
+    println!("Provider: {metadata.name}");
+    println!("Model: {metadata.model}");
     
     // Perform analysis
     let start = std::time::Instant::now();
@@ -110,12 +110,12 @@ async fn test_provider(
     // Display results
     println!("\nAnalysis Results:");
     println!("  Confidence: {:.2}%", analysis.confidence_score * 100.0);
-    println!("  Summary: {}", analysis.summary);
-    println!("  Insights: {}", analysis.insights.len());
-    println!("  Recommendations: {}", analysis.recommendations.len());
+    println!("  Summary: {analysis.summary}");
+    println!("  Insights: {analysis.insights.len(}"));
+    println!("  Recommendations: {analysis.recommendations.len(}"));
     
     if !analysis.insights.is_empty() {
-        println!("\n  First Insight: {}", analysis.insights[0].description);
+        println!("\n  First Insight: {analysis.insights[0].description}");
     }
     
     Ok(duration)

@@ -131,37 +131,35 @@ impl App {
                         if !analysis.insights.is_empty() {
                             response.push_str("**Insights:**\n");
                             for insight in &analysis.insights {
-                                response.push_str(&format!("• {}\n", insight.description));
+                                response.push_str(&format!("• {insight.description}\n"));
                             }
                         }
 
                         if !analysis.recommendations.is_empty() {
                             response.push_str("\n**Recommendations:**\n");
                             for rec in &analysis.recommendations {
-                                response.push_str(&format!("• {}: {}\n", rec.title, rec.description));
+                                response.push_str(&format!("• {rec.title}: {rec.description}\n"));
                             }
                         }
 
                         self.tx.send(response).unwrap();
                     }
                     Err(e) => {
-                        self.tx.send(format!("Error analyzing graph: {}", e)).unwrap();
+                        self.tx.send(format!("Error analyzing graph: {e}")).unwrap();
                     }
                 }
             }
             "/nodes" => {
                 let mut response = String::from("📌 Graph Nodes:\n");
                 for node in &self.graph_data.nodes {
-                    response.push_str(&format!("• {} ({}): {}\n", 
-                        node.label, node.node_type, node.id));
+                    response.push_str(&format!("• {node.label} ({node.node_type}): {node.id}\n"));
                 }
                 self.add_ai_message(response);
             }
             "/edges" => {
                 let mut response = String::from("🔗 Graph Edges:\n");
                 for edge in &self.graph_data.edges {
-                    response.push_str(&format!("• {} → {} ({})\n", 
-                        edge.source, edge.target, edge.edge_type));
+                    response.push_str(&format!("• {edge.source} → {edge.target} ({edge.edge_type})\n"));
                 }
                 self.add_ai_message(response);
             }
@@ -174,7 +172,7 @@ impl App {
                 self.add_system_message("• /quit or Ctrl+C - Exit");
             }
             _ => {
-                self.add_system_message(&format!("Unknown command: {}", command));
+                self.add_system_message(&format!("Unknown command: {command}"));
             }
         }
     }
@@ -182,11 +180,9 @@ impl App {
     async fn handle_ai_query(&mut self, query: String) {
         self.is_processing = true;
         
-        let prompt = format!(
-            "You are analyzing a domain graph with {} nodes and {} edges. \
+        let prompt = format!("You are analyzing a domain graph with {self.graph_data.nodes.len(} nodes and {} edges. \
             The user asks: '{}'. \
-            Please provide a helpful, concise response.",
-            self.graph_data.nodes.len(),
+            Please provide a helpful, concise response."),
             self.graph_data.edges.len(),
             query
         );
@@ -209,7 +205,7 @@ impl App {
                 self.tx.send(response).unwrap();
             }
             Err(e) => {
-                self.tx.send(format!("Sorry, I encountered an error: {}", e)).unwrap();
+                self.tx.send(format!("Sorry, I encountered an error: {e}")).unwrap();
             }
         }
     }
@@ -388,8 +384,8 @@ fn ui(f: &mut Frame, app: &App) {
 
             let content = vec![
                 Line::from(vec![
-                    Span::styled(format!("[{}] ", m.timestamp), Style::default().fg(Color::DarkGray)),
-                    Span::styled(format!("{}: ", m.sender), style.add_modifier(Modifier::BOLD)),
+                    Span::styled(format!("[{m.timestamp}] "), Style::default().fg(Color::DarkGray)),
+                    Span::styled(format!("{m.sender}: "), style.add_modifier(Modifier::BOLD)),
                 ]),
                 Line::from(Span::raw(&m.content)),
                 Line::from(""),

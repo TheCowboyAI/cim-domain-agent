@@ -43,6 +43,16 @@ pub struct ToolRegistry {
     pub access_policies: HashMap<String, ToolAccess>,
 }
 
+/// Audit component for tool registrations
+#[derive(Component, Debug, Clone)]
+pub struct ToolRegistrationAudit {
+    pub tool_id: String,
+    pub tool_name: String,
+    pub registered_at: std::time::SystemTime,
+    pub tool_type: ToolType,
+    pub category: ToolCategory,
+}
+
 /// Event for tool registration
 #[derive(Event, Debug, Clone)]
 pub struct RegisterToolRequest {
@@ -97,6 +107,17 @@ pub fn handle_tool_registration(
         if let Some(access) = &request.access {
             registry.access_policies.insert(tool_name.clone(), access.clone());
         }
+        
+        // Create audit entity for tool registration
+        commands.spawn(ToolRegistrationAudit {
+            tool_id: request.tool.id.clone(),
+            tool_name: tool_name.clone(),
+            registered_at: std::time::SystemTime::now(),
+            tool_type: request.tool.tool_type.clone(),
+            category: request.tool.category.clone(),
+        });
+        
+        info!("Registered tool '{}' with category {:?}", tool_name, request.tool.category);
         
         // Tool registration doesn't trigger AgentToolsChanged as it's system-wide
         // AgentToolsChanged is only for agent-specific tool changes

@@ -1,22 +1,21 @@
 //! Interactive CIM Graph Demo with AI Integration
-//! 
+//!
 //! Click on nodes to select them, drag to move, and use AI to analyze relationships
 
-use bevy::prelude::*;
 use bevy::picking::prelude::*;
+use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use cim_domain_agent::{
     ai_providers::{
-        AIProviderFactory, GraphAnalysisProvider, ProviderConfig,
-        GraphData, NodeData, EdgeData,
+        AIProviderFactory, EdgeData, GraphAnalysisProvider, GraphData, NodeData, ProviderConfig,
     },
     value_objects::ai_capabilities::AnalysisCapability,
 };
-use std::collections::HashMap;
-use uuid::Uuid;
-use serde_json::json;
 use crossbeam::channel::{unbounded, Receiver, Sender};
+use serde_json::json;
+use std::collections::HashMap;
 use std::sync::Arc;
+use uuid::Uuid;
 
 #[derive(Resource)]
 struct GraphState {
@@ -74,9 +73,9 @@ struct UIState {
 fn main() {
     // Create AI provider
     let provider_config = ProviderConfig::Mock;
-    let ai_provider: Arc<Box<dyn GraphAnalysisProvider + Send + Sync>> = 
-        Arc::new(AIProviderFactory::create_provider(&provider_config)
-            .expect("Failed to create AI provider"));
+    let ai_provider: Arc<Box<dyn GraphAnalysisProvider + Send + Sync>> = Arc::new(
+        AIProviderFactory::create_provider(&provider_config).expect("Failed to create AI provider"),
+    );
 
     // Create async channels
     let (tx, rx) = unbounded();
@@ -89,34 +88,38 @@ fn main() {
         while let Ok(request) = rx.recv() {
             let provider = provider_clone.clone();
             let tx = result_tx.clone();
-            
+
             rt.spawn(async move {
                 let mut params = HashMap::new();
                 if let Some(node_id) = request.selected_node {
                     params.insert("focus_node".to_string(), json!(node_id));
                 }
-                
-                match provider.analyze_graph(
-                    request.graph_data,
-                    AnalysisCapability::GraphAnalysis,
-                    params,
-                ).await {
+
+                match provider
+                    .analyze_graph(
+                        request.graph_data,
+                        AnalysisCapability::GraphAnalysis,
+                        params,
+                    )
+                    .await
+                {
                     Ok(result) => {
-                        let mut text = format!("📊 Analysis Results:\n\n{}\n", result.summary);
-                        
+                        let mut text = format!("📊 Analysis Results:\n\n{result.summary}\n");
+
                         if !result.recommendations.is_empty() {
                             text.push_str("\n💡 Recommendations:\n");
                             for rec in &result.recommendations {
-                                text.push_str(&format!("• {}: {}\n", 
-                                    rec.recommendation_type, rec.description));
+                                text.push_str(&format!(
+                                    "• {rec.recommendation_type}: {rec.description}\n"
+                                ));
                             }
                         }
-                        
+
                         let _ = tx.send(AnalysisResponse { text });
                     }
                     Err(e) => {
                         let _ = tx.send(AnalysisResponse {
-                            text: format!("❌ Analysis failed: {}", e),
+                            text: format!("❌ Analysis failed: {e}"),
                         });
                     }
                 }
@@ -141,15 +144,18 @@ fn main() {
             ai_analysis: "No analysis yet.".to_string(),
         })
         .add_systems(Startup, setup)
-        .add_systems(Update, (
-            handle_selection,
-            handle_hover,
-            handle_drag,
-            handle_keyboard,
-            check_ai_results,
-            update_ui,
-            animate_selected,
-        ))
+        .add_systems(
+            Update,
+            (
+                handle_selection,
+                handle_hover,
+                handle_drag,
+                handle_keyboard,
+                check_ai_results,
+                update_ui,
+                animate_selected,
+            ),
+        )
         .run();
 }
 
@@ -195,83 +201,87 @@ fn setup(
     for node in &graph.data.nodes {
         let position = node.position.unwrap_or((0.0, 0.0, 0.0));
         let color = get_node_color(&node.node_type);
-        
-        let entity = commands.spawn((
-            GraphNode {
-                id: node.id.clone(),
-                node_type: node.node_type.clone(),
-            },
-            Mesh3d(meshes.add(Sphere::new(0.5).mesh().ico(3).unwrap())),
-            MeshMaterial3d(materials.add(StandardMaterial {
-                base_color: color,
-                metallic: 0.3,
-                perceptual_roughness: 0.5,
-                ..default()
-            })),
-            Transform::from_xyz(position.0 * 3.0, position.1 * 3.0, position.2 * 3.0),
-            PickableBundle::default(),
-            On::<Pointer<Click>>::run(on_node_click),
-            On::<Pointer<Over>>::run(on_node_hover),
-            On::<Pointer<Out>>::run(on_node_out),
-            On::<Pointer<DragStart>>::run(on_drag_start),
-            On::<Pointer<Drag>>::run(on_drag),
-            On::<Pointer<DragEnd>>::run(on_drag_end),
-            Hoverable,
-            Draggable { start_pos: None, drag_offset: None },
-        ))
-        .with_children(|parent| {
-            // Label
-            parent.spawn((
-                Text::new(&node.label),
-                TextFont {
-                    font_size: 16.0,
-                    ..default()
+
+        let entity = commands
+            .spawn((
+                GraphNode {
+                    id: node.id.clone(),
+                    node_type: node.node_type.clone(),
                 },
-                TextColor(Color::WHITE),
-                Transform::from_xyz(0.0, 1.0, 0.0),
-            ));
-        })
-        .id();
-        
+                Mesh3d(meshes.add(Sphere::new(0.5).mesh().ico(3).unwrap())),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: color,
+                    metallic: 0.3,
+                    perceptual_roughness: 0.5,
+                    ..default()
+                })),
+                Transform::from_xyz(position.0 * 3.0, position.1 * 3.0, position.2 * 3.0),
+                PickableBundle::default(),
+                On::<Pointer<Click>>::run(on_node_click),
+                On::<Pointer<Over>>::run(on_node_hover),
+                On::<Pointer<Out>>::run(on_node_out),
+                On::<Pointer<DragStart>>::run(on_drag_start),
+                On::<Pointer<Drag>>::run(on_drag),
+                On::<Pointer<DragEnd>>::run(on_drag_end),
+                Hoverable,
+                Draggable {
+                    start_pos: None,
+                    drag_offset: None,
+                },
+            ))
+            .with_children(|parent| {
+                // Label
+                parent.spawn((
+                    Text::new(&node.label),
+                    TextFont {
+                        font_size: 16.0,
+                        ..default()
+                    },
+                    TextColor(Color::WHITE),
+                    Transform::from_xyz(0.0, 1.0, 0.0),
+                ));
+            })
+            .id();
+
         node_entities.insert(node.id.clone(), entity);
     }
 
     // Spawn edges
     for edge in &graph.data.edges {
-        if let (Some(&source_entity), Some(&target_entity)) = 
-            (node_entities.get(&edge.source), node_entities.get(&edge.target)) 
-        {
+        if let (Some(&source_entity), Some(&target_entity)) = (
+            node_entities.get(&edge.source),
+            node_entities.get(&edge.target),
+        ) {
             // Simple line representation (would need custom mesh for proper edges)
-            commands.spawn((
-                GraphEdge {
-                    source: edge.source.clone(),
-                    target: edge.target.clone(),
-                },
-            ));
+            commands.spawn((GraphEdge {
+                source: edge.source.clone(),
+                target: edge.target.clone(),
+            },));
         }
     }
 
     // UI
-    commands.spawn((
-        Node {
-            position_type: PositionType::Absolute,
-            top: Val::Px(10.0),
-            left: Val::Px(10.0),
-            padding: UiRect::all(Val::Px(15.0)),
-            ..default()
-        },
-        BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.9)),
-    ))
-    .with_children(|parent| {
-        parent.spawn((
-            Text::new("Interactive CIM Graph"),
-            TextFont {
-                font_size: 24.0,
+    commands
+        .spawn((
+            Node {
+                position_type: PositionType::Absolute,
+                top: Val::Px(10.0),
+                left: Val::Px(10.0),
+                padding: UiRect::all(Val::Px(15.0)),
                 ..default()
             },
-            TextColor(Color::WHITE),
-        ));
-    });
+            BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.9)),
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                Text::new("Interactive CIM Graph"),
+                TextFont {
+                    font_size: 24.0,
+                    ..default()
+                },
+                TextColor(Color::WHITE),
+            ));
+        });
 }
 
 fn on_node_click(
@@ -316,7 +326,7 @@ fn on_drag_start(
 ) {
     if let Ok((transform, mut draggable)) = query.get_mut(event.target) {
         draggable.start_pos = Some(transform.translation);
-        
+
         // Calculate drag offset
         if let Ok((camera, camera_transform)) = camera_query.get_single() {
             if let Ok(window) = window_query.get_single() {
@@ -357,10 +367,7 @@ fn on_drag(
     }
 }
 
-fn on_drag_end(
-    event: Listener<Pointer<DragEnd>>,
-    mut query: Query<&mut Draggable>,
-) {
+fn on_drag_end(event: Listener<Pointer<DragEnd>>, mut query: Query<&mut Draggable>) {
     if let Ok(mut draggable) = query.get_mut(event.target) {
         draggable.start_pos = None;
         draggable.drag_offset = None;
@@ -385,8 +392,7 @@ fn handle_selection(
             for (entity, node) in nodes.iter() {
                 if &node.id == selected_id {
                     commands.entity(entity).insert(Selected);
-                    ui_state.info_text = format!("Selected: {} ({})", 
-                        node.id, node.node_type);
+                    ui_state.info_text = format!("Selected: {node.id} ({node.node_type})");
                     break;
                 }
             }
@@ -401,9 +407,9 @@ fn handle_hover(
     // Hover effects are handled by pointer events
 }
 
-fn handle_drag(
-    // Drag is handled by pointer events
-) {}
+fn handle_drag(// Drag is handled by pointer events
+) {
+}
 
 fn handle_keyboard(
     keyboard: Res<ButtonInput<KeyCode>>,
@@ -416,7 +422,7 @@ fn handle_keyboard(
             graph_data: graph_state.data.clone(),
             selected_node: graph_state.selected_node.clone(),
         };
-        
+
         if channels.sender.send(request).is_ok() {
             ui_state.ai_analysis = "🔄 Analyzing...".to_string();
         }
@@ -427,10 +433,7 @@ fn handle_keyboard(
     }
 }
 
-fn check_ai_results(
-    channels: Res<AIChannels>,
-    mut ui_state: ResMut<UIState>,
-) {
+fn check_ai_results(channels: Res<AIChannels>, mut ui_state: ResMut<UIState>) {
     if let Ok(response) = channels.receiver.try_recv() {
         ui_state.ai_analysis = response.text;
     }
@@ -443,35 +446,33 @@ fn update_ui(
 ) {
     if ui_state.is_changed() {
         // Update info panel
-        commands.spawn((
-            Node {
-                position_type: PositionType::Absolute,
-                bottom: Val::Px(10.0),
-                left: Val::Px(10.0),
-                right: Val::Px(10.0),
-                max_width: Val::Px(600.0),
-                padding: UiRect::all(Val::Px(15.0)),
-                ..default()
-            },
-            BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.9)),
-        ))
-        .with_children(|parent| {
-            parent.spawn((
-                Text::new(&format!("{}\n\n{}", ui_state.info_text, ui_state.ai_analysis)),
-                TextFont {
-                    font_size: 16.0,
+        commands
+            .spawn((
+                Node {
+                    position_type: PositionType::Absolute,
+                    bottom: Val::Px(10.0),
+                    left: Val::Px(10.0),
+                    right: Val::Px(10.0),
+                    max_width: Val::Px(600.0),
+                    padding: UiRect::all(Val::Px(15.0)),
                     ..default()
                 },
-                TextColor(Color::WHITE),
-            ));
-        });
+                BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.9)),
+            ))
+            .with_children(|parent| {
+                parent.spawn((
+                    Text::new(&format!("{ui_state.info_text}\n\n{ui_state.ai_analysis}")),
+                    TextFont {
+                        font_size: 16.0,
+                        ..default()
+                    },
+                    TextColor(Color::WHITE),
+                ));
+            });
     }
 }
 
-fn animate_selected(
-    time: Res<Time>,
-    mut query: Query<&mut Transform, With<Selected>>,
-) {
+fn animate_selected(time: Res<Time>, mut query: Query<&mut Transform, With<Selected>>) {
     for mut transform in query.iter_mut() {
         let scale = 1.0 + (time.elapsed_secs() * 3.0).sin() * 0.1;
         transform.scale = Vec3::splat(scale);
@@ -495,18 +496,14 @@ fn create_interactive_graph() -> GraphData {
             id: "alice".to_string(),
             node_type: "Person".to_string(),
             label: "Alice Chen".to_string(),
-            properties: HashMap::from([
-                ("role".to_string(), json!("CEO")),
-            ]),
+            properties: HashMap::from([("role".to_string(), json!("CEO"))]),
             position: Some((-2.0, 0.0, 0.0)),
         },
         NodeData {
             id: "bob".to_string(),
             node_type: "Person".to_string(),
             label: "Bob Smith".to_string(),
-            properties: HashMap::from([
-                ("role".to_string(), json!("CTO")),
-            ]),
+            properties: HashMap::from([("role".to_string(), json!("CTO"))]),
             position: Some((2.0, 0.0, 0.0)),
         },
         NodeData {
@@ -550,4 +547,4 @@ fn create_interactive_graph() -> GraphData {
     ];
 
     GraphData { nodes, edges }
-} 
+}

@@ -159,13 +159,10 @@ fn main() {
             let sender = response_sender.clone();
             
             runtime.spawn(async move {
-                let prompt = format!(
-                    "You are an AI assistant analyzing a CIM domain graph. \
-                    The user said: '{}'\n\n\
-                    The graph has {} nodes and {} edges representing domain relationships.\n\
-                    Please provide a helpful, conversational response. Be concise but informative.",
-                    request.message,
-                    request.graph_data.nodes.len(),
+                let prompt = format!("You are an AI assistant analyzing a CIM domain graph. \
+                    The user said: '{request.message}'\n\n\
+                    The graph has {request.graph_data.nodes.len(} nodes and {} edges representing domain relationships.\n\
+                    Please provide a helpful, conversational response. Be concise but informative."),
                     request.graph_data.edges.len()
                 );
 
@@ -187,7 +184,7 @@ fn main() {
                         AIResponse { content, success: true }
                     }
                     Err(e) => AIResponse {
-                        content: format!("I apologize, I encountered an error: {}", e),
+                        content: format!("I apologize, I encountered an error: {e}"),
                         success: false,
                     }
                 };
@@ -513,23 +510,23 @@ fn handle_keyboard_input(
                         }
                         "nodes" => {
                             let node_list = graph.data.nodes.iter()
-                                .map(|n| format!("• {} ({})", n.label, n.node_type))
+                                .map(|n| format!("• {n.label} ({n.node_type})"))
                                 .collect::<Vec<_>>()
                                 .join("\n");
                             chat_state.messages.push(ChatMessage {
                                 sender: MessageSender::AI,
-                                content: format!("Graph nodes:\n{}", node_list),
+                                content: format!("Graph nodes:\n{node_list}"),
                                 timestamp: time.elapsed_secs_f64(),
                             });
                         }
                         "edges" => {
                             let edge_list = graph.data.edges.iter()
-                                .map(|e| format!("• {} → {} ({})", e.source, e.target, e.edge_type))
+                                .map(|e| format!("• {e.source} → {e.target} ({e.edge_type})"))
                                 .collect::<Vec<_>>()
                                 .join("\n");
                             chat_state.messages.push(ChatMessage {
                                 sender: MessageSender::AI,
-                                content: format!("Graph relationships:\n{}", edge_list),
+                                content: format!("Graph relationships:\n{edge_list}"),
                                 timestamp: time.elapsed_secs_f64(),
                             });
                         }
@@ -566,7 +563,7 @@ fn update_chat_display(
     // Update input field text
     for mut text in input_query.iter_mut() {
         if chat_state.is_typing {
-            text.0 = format!("{}|", chat_state.input_buffer);
+            text.0 = format!("{chat_state.input_buffer}|");
         } else if chat_state.input_buffer.is_empty() {
             text.0 = "Type your message...".to_string();
         } else {
@@ -605,7 +602,7 @@ fn update_chat_display(
                     ))
                     .with_children(|msg_parent| {
                         msg_parent.spawn((
-                            Text::new(format!("{}: {}", prefix, message.content)),
+                            Text::new(format!("{prefix}: {message.content}")),
                             TextFont {
                                 font_size: 16.0,
                                 ..default()

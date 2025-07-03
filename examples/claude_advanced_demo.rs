@@ -37,16 +37,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let provider = AIProviderFactory::create_provider(&provider_config)?;
     let metadata = provider.get_metadata();
     
-    println!("Provider: {}", metadata.name);
-    println!("Model: {}", metadata.model);
+    println!("Provider: {metadata.name}");
+    println!("Model: {metadata.model}");
     println!("Version: {}\n");
 
     // Create a complex e-commerce workflow
     let workflow = create_ecommerce_workflow();
     
     println!("📊 Analyzing E-commerce Order Processing Workflow");
-    println!("   Nodes: {}", workflow.nodes.len());
-    println!("   Edges: {}", workflow.edges.len());
+    println!("   Nodes: {workflow.nodes.len(}"));
+    println!("   Edges: {workflow.edges.len(}"));
     println!("   Complexity: High (parallel paths, error handling)\n");
 
     // Step 1: Initial Analysis
@@ -79,9 +79,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Detected Patterns:");
     for insight in &pattern_analysis.insights {
         if insight.category == "pattern" {
-            println!("  🔍 {}", insight.description);
+            println!("  🔍 {insight.description}");
             for evidence in &insight.evidence {
-                println!("     - {}", evidence);
+                println!("     - {evidence}");
             }
         }
     }
@@ -102,10 +102,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Business Logic Insights:");
     for insight in &semantic_analysis.insights {
         if insight.confidence > 0.7 {
-            println!("  💡 {} (confidence: {:.0}%)", 
-                insight.description, 
-                insight.confidence * 100.0
-            );
+            println!("  💡 {insight.description} (confidence: {:.0}%)", insight.confidence * 100.0);
         }
     }
 
@@ -133,22 +130,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Transformation Roadmap:");
     for (i, suggestion) in transformations.iter().enumerate() {
-        println!("\n  Phase {}: {}", i + 1, suggestion.description);
-        println!("  Expected Benefit: {}", suggestion.expected_benefit);
+        println!("\n  Phase {i + 1}: {suggestion.description}");
+        println!("  Expected Benefit: {suggestion.expected_benefit}");
         
         if let Some(risk) = &suggestion.risk_assessment {
             if let Some(risk_level) = risk.get("risk_level") {
-                println!("  Risk Level: {}", risk_level);
+                println!("  Risk Level: {risk_level}");
             }
             if let Some(mitigation) = risk.get("mitigation") {
-                println!("  Mitigation: {}", mitigation);
+                println!("  Mitigation: {mitigation}");
             }
         }
         
         println!("  Implementation Steps:");
         for (j, step) in suggestion.transformation_steps.iter().enumerate() {
             if let Some(action) = step.get("action") {
-                println!("    {}. {}", j + 1, action);
+                println!("    {j + 1}. {action}");
             }
         }
     }
@@ -174,26 +171,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ).await?;
 
     println!("Compliance & Security Analysis:");
-    println!("Summary: {}\n", compliance_analysis.summary);
+    println!("Summary: {compliance_analysis.summary}\n");
     
     for rec in &compliance_analysis.recommendations {
-        println!("⚡ {}: {}", rec.priority, rec.title);
-        println!("   {}", rec.description);
+        println!("⚡ {rec.priority}: {rec.title}");
+        println!("   {rec.description}");
     }
 
     // Summary
     println!("\n\n=== Analysis Summary ===");
     println!("✅ Completed 5-step advanced analysis");
-    println!("📊 Generated {} insights", 
-        initial_analysis.insights.len() + 
+    println!("📊 Generated {initial_analysis.insights.len(} insights") + 
         pattern_analysis.insights.len() + 
         semantic_analysis.insights.len()
     );
-    println!("💡 Produced {} recommendations", 
-        initial_analysis.recommendations.len() + 
+    println!("💡 Produced {initial_analysis.recommendations.len(} recommendations") + 
         compliance_analysis.recommendations.len()
     );
-    println!("🔄 Created {} transformation phases", transformations.len());
+    println!("🔄 Created {transformations.len(} transformation phases"));
 
     if matches!(provider_config, ProviderConfig::Mock) {
         println!("\n💡 Tip: Set ANTHROPIC_API_KEY to see real Claude analysis!");
@@ -456,20 +451,20 @@ fn edge(id: &str, source: &str, target: &str, edge_type: &str) -> EdgeData {
 
 fn display_analysis_results(analysis: &cim_domain_agent::value_objects::analysis_result::AnalysisResult) {
     println!("Confidence Score: {:.2}%", analysis.confidence_score * 100.0);
-    println!("Summary: {}\n", analysis.summary);
+    println!("Summary: {analysis.summary}\n");
 
     if !analysis.insights.is_empty() {
         println!("Key Insights:");
         for insight in &analysis.insights {
-            println!("  • {} (impact: {:?})", insight.description, insight.impact);
+            println!("  • {insight.description} (impact: {:?})", insight.impact);
         }
     }
 
     if !analysis.recommendations.is_empty() {
         println!("\nTop Recommendations:");
         for rec in analysis.recommendations.iter().take(3) {
-            println!("  ⚡ {:?}: {}", rec.priority, rec.title);
-            println!("     Expected Impact: {}", rec.expected_impact);
+            println!("  ⚡ {:?}: {rec.priority}", rec.title);
+            println!("     Expected Impact: {rec.expected_impact}");
         }
     }
 } 

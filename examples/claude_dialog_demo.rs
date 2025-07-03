@@ -112,12 +112,12 @@ impl DialogContext {
             .rev();
 
         for (participant, message) in recent_turns {
-            context.push_str(&format!("{}: {}\n", participant, message));
+            context.push_str(&format!("{participant}: {message}\n"));
         }
 
         // Add current topic context
         if let Some(topic) = &self.current_topic {
-            context.push_str(&format!("\nCurrent topic: {}\n", topic.name));
+            context.push_str(&format!("\nCurrent topic: {topic.name}\n"));
         }
 
         context
@@ -127,12 +127,10 @@ impl DialogContext {
     fn get_summary(&self) -> String {
         let topics_discussed = if self.current_topic.is_some() { 1 } else { 0 };
         
-        format!(
-            "Dialog Summary:\n\
-             - Total turns: {}\n\
+        format!("Dialog Summary:\n\
+             - Total turns: {self.conversation_history.len(}\n\
              - Topics discussed: {}\n\
-             - Participants: 2 (You and Claude)",
-            self.conversation_history.len(),
+             - Participants: 2 (You and Claude)"),
             topics_discussed
         )
     }
@@ -203,7 +201,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     let (provider_name, config) = match provider_type.as_str() {
         "mock" => {
-            println!("{}", "Using mock AI provider for demo...".yellow());
+            println!("{"Using mock AI provider for demo...".yellow(}"));
             ("Mock AI", ProviderConfig::Mock)
         },
         _ => {
@@ -216,7 +214,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     })
                 },
                 _ => {
-                    println!("{}", "Note: ANTHROPIC_API_KEY not set, using mock provider.".yellow());
+                    println!("{"Note: ANTHROPIC_API_KEY not set}", using mock provider.".yellow());
                     ("Mock AI", ProviderConfig::Mock)
                 }
             }
@@ -243,19 +241,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut dialog_ctx = DialogContext::new(claude, workflow, user_name.clone());
     
     println!();
-    println!("{}", format!("Hello {}, I'm {}, your AI workflow analyst.", user_name, provider_name).cyan());
-    println!("{}", "I'm using the Dialog Domain to track our conversation.".cyan());
-    println!("{}", "I've loaded a sample e-commerce order processing workflow.".cyan());
+    println!("{println!("Hello {user_name}, I'm {provider_name}, your AI workflow analyst."}").cyan());
+    println!("{"I'm using the Dialog Domain to track our conversation.".cyan(}"));
+    println!("{"I've loaded a sample e-commerce order processing workflow.".cyan(}"));
     println!();
     print_workflow_summary(&dialog_ctx.workflow);
     println!();
-    println!("{}", "What would you like to know about this workflow?".cyan());
-    println!("{}", "(Type 'help' for options, 'summary' for dialog info, or 'quit' to exit)".dimmed());
+    println!("{"What would you like to know about this workflow?".cyan(}"));
+    println!("{"(Type 'help' for options, 'summary' for dialog info, or 'quit' to exit}")".dimmed());
     println!();
     
     // Main conversation loop
     loop {
-        print!("{} ", format!("{}:", user_name).green().bold());
+        print!("{} ", format!("{user_name}:").green().bold());
         io::stdout().flush()?;
         
         let mut input = String::new();
@@ -272,9 +270,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match input.to_lowercase().as_str() {
             "quit" | "exit" => {
                 println!();
-                println!("{}", dialog_ctx.get_summary().yellow());
+                println!("{dialog_ctx.get_summary(}").yellow());
                 println!();
-                println!("{}", "Thanks for chatting! Goodbye! 👋".cyan());
+                println!("{"Thanks for chatting! Goodbye! 👋".cyan(}"));
                 break;
             }
             "help" => {
@@ -282,7 +280,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             "summary" => {
                 println!();
-                println!("{}", dialog_ctx.get_summary().yellow());
+                println!("{dialog_ctx.get_summary(}").yellow());
             }
             "show" => {
                 print_workflow_details(&dialog_ctx.workflow);
@@ -316,43 +314,43 @@ fn clear_screen() {
 }
 
 fn print_header() {
-    println!("{}", "╔══════════════════════════════════════════════════════════╗".blue());
-    println!("{}", "║      🤖 Claude AI + Dialog Domain Integration Demo 🤖     ║".blue());
-    println!("{}", "╚══════════════════════════════════════════════════════════╝".blue());
+    println!("{"╔══════════════════════════════════════════════════════════╗".blue(}"));
+    println!("{"║      🤖 Claude AI + Dialog Domain Integration Demo 🤖     ║".blue(}"));
+    println!("{"╚══════════════════════════════════════════════════════════╝".blue(}"));
     println!();
 }
 
 fn print_help() {
     println!();
-    println!("{}", "Available commands:".yellow());
-    println!("  {} - Show detailed workflow structure", "show".bold());
-    println!("  {} - Run general workflow analysis", "analyze".bold());
-    println!("  {} - Get optimization suggestions", "optimize".bold());
-    println!("  {} - Find workflow bottlenecks", "bottlenecks".bold());
-    println!("  {} - Detect workflow patterns", "patterns".bold());
-    println!("  {} - Show conversation summary", "summary".bold());
-    println!("  {} - Show this help message", "help".bold());
-    println!("  {} - Exit the demo", "quit".bold());
+    println!("{"Available commands:".yellow(}"));
+    println!("  {"show".bold(} - Show detailed workflow structure"));
+    println!("  {"analyze".bold(} - Run general workflow analysis"));
+    println!("  {"optimize".bold(} - Get optimization suggestions"));
+    println!("  {"bottlenecks".bold(} - Find workflow bottlenecks"));
+    println!("  {"patterns".bold(} - Detect workflow patterns"));
+    println!("  {"summary".bold(} - Show conversation summary"));
+    println!("  {"help".bold(} - Show this help message"));
+    println!("  {"quit".bold(} - Exit the demo"));
     println!();
-    println!("{}", "Or ask any question about the workflow!".dimmed());
+    println!("{"Or ask any question about the workflow!".dimmed(}"));
 }
 
 fn print_workflow_summary(workflow: &GraphData) {
-    println!("{}", "📊 Workflow Summary:".yellow());
-    println!("   Name: {}", workflow.metadata.get("name")
+    println!("{"📊 Workflow Summary:".yellow(}"));
+    println!("   Name: {workflow.metadata.get("name"}")
         .and_then(|v| v.as_str())
         .unwrap_or("Unknown").bold());
-    println!("   Nodes: {}", workflow.nodes.len().to_string().bold());
-    println!("   Edges: {}", workflow.edges.len().to_string().bold());
-    println!("   Type: {}", "E-commerce Order Processing".bold());
+    println!("   Nodes: {workflow.nodes.len(}").to_string().bold());
+    println!("   Edges: {workflow.edges.len(}").to_string().bold());
+    println!("   Type: {"E-commerce Order Processing".bold(}"));
 }
 
 fn print_workflow_details(workflow: &GraphData) {
     println!();
-    println!("{}", "📋 Detailed Workflow Structure:".yellow());
+    println!("{"📋 Detailed Workflow Structure:".yellow(}"));
     println!();
     
-    println!("{}", "Nodes:".cyan());
+    println!("{"Nodes:".cyan(}"));
     for node in &workflow.nodes {
         let icon = match node.node_type.as_str() {
             "start" => "🟢",
@@ -362,11 +360,11 @@ fn print_workflow_details(workflow: &GraphData) {
             "parallel" => "🔄",
             _ => "📦",
         };
-        println!("  {} {} ({})", icon, node.label.bold(), node.node_type);
+        println!("  {icon} {node.label.bold(} ({})"), node.node_type);
     }
     
     println!();
-    println!("{}", "Edges:".cyan());
+    println!("{"Edges:".cyan(}"));
     let edge_count = workflow.edges.len().min(5);
     for edge in &workflow.edges[..edge_count] {
         let source_label = workflow.nodes.iter()
@@ -379,15 +377,12 @@ fn print_workflow_details(workflow: &GraphData) {
             .map(|n| &n.label)
             .unwrap_or(&edge.target);
             
-        println!("  {} → {} ({})", 
-            source_label, 
-            target_label,
-            edge.edge_type.dimmed()
+        println!("  {source_label} → {target_label} ({edge.edge_type.dimmed(})")
         );
     }
     
     if workflow.edges.len() > 5 {
-        println!("  ... and {} more edges", workflow.edges.len() - 5);
+        println!("  ... and {workflow.edges.len(} more edges") - 5);
     }
 }
 
@@ -414,17 +409,17 @@ async fn analyze_workflow(
     let processing_time_ms = start_time.elapsed().as_millis() as u64;
     let confidence = 0.85; // Mock confidence for now
     
-    println!("{}", "Claude:".cyan().bold());
-    println!("{}", result.summary.cyan());
+    println!("{"Claude:".cyan(}").bold());
+    println!("{result.summary.cyan(}"));
     
     // Add Claude's response to dialog
     dialog_ctx.add_claude_turn(&result.summary, confidence, processing_time_ms).await;
     
     if !result.insights.is_empty() {
         println!();
-        println!("{}", "Key Insights:".yellow());
+        println!("{"Key Insights:".yellow(}"));
         for (i, insight) in result.insights.iter().enumerate() {
-            println!("  {}. {}", i + 1, insight.description);
+            println!("  {i + 1}. {insight.description}");
         }
     }
     
@@ -451,20 +446,20 @@ async fn optimize_workflow(
     
     let processing_time_ms = start_time.elapsed().as_millis() as u64;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     println!("I've analyzed your workflow for optimization opportunities.");
     
     let mut response = String::from("I've analyzed your workflow for optimization opportunities. ");
     
     if !result.recommendations.is_empty() {
         println!();
-        println!("{}", "Here are my suggestions:".cyan());
+        println!("{"Here are my suggestions:".cyan(}"));
         response.push_str("Here are my suggestions: ");
         
         for (i, rec) in result.recommendations.iter().enumerate() {
-            println!("{}. {}", i + 1, rec.title.bold());
-            println!("   {}", rec.description);
-            response.push_str(&format!("{}. {} - {}. ", i + 1, rec.title, rec.description));
+            println!("{i + 1}. {rec.title.bold(}"));
+            println!("   {rec.description}");
+            response.push_str(&format!("{i + 1}. {rec.title} - {rec.description}. "));
         }
     }
     
@@ -493,7 +488,7 @@ async fn find_bottlenecks(
     
     let processing_time_ms = start_time.elapsed().as_millis() as u64;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     println!("I've identified potential bottlenecks in your workflow:");
     println!();
     
@@ -505,8 +500,8 @@ async fn find_bottlenecks(
     let mut response = String::from("I've identified potential bottlenecks: ");
     
     for (i, (step, issue, impact)) in bottlenecks.iter().enumerate() {
-        println!("{}. {} - {} ({})", i + 1, step.bold(), issue, impact.yellow());
-        response.push_str(&format!("{} has {} causing {}. ", step, issue, impact));
+        println!("{i + 1}. {step.bold(} - {} ({})"), issue, impact.yellow());
+        response.push_str(&format!("{step} has {issue} causing {impact}. "));
     }
     
     dialog_ctx.add_claude_turn(&response, 0.8, processing_time_ms).await;
@@ -529,7 +524,7 @@ async fn detect_patterns(
     
     let processing_time_ms = start_time.elapsed().as_millis() as u64;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     println!("I've detected several patterns in your workflow:");
     println!();
     
@@ -541,8 +536,8 @@ async fn detect_patterns(
     let mut response = String::from("I've detected several patterns: ");
     
     for (pattern, description, assessment) in patterns {
-        println!("• {} {} - {}", pattern.bold(), assessment, description);
-        response.push_str(&format!("{} ({}). ", pattern, description));
+        println!("• {pattern.bold(} {} - {}"), assessment, description);
+        response.push_str(&format!("{pattern} ({description}). "));
     }
     
     dialog_ctx.add_claude_turn(&response, 0.85, processing_time_ms).await;
@@ -558,9 +553,7 @@ async fn custom_analysis(
     let start_time = std::time::Instant::now();
     print_thinking();
     
-    let custom_prompt = format!(
-        "Conversation context:\n{}\n\nAnalyze this workflow and answer: {}",
-        dialog_ctx.get_context_prompt(),
+    let custom_prompt = format!("Conversation context:\n{dialog_ctx.get_context_prompt(}\n\nAnalyze this workflow and answer: {}"),
         question
     );
     
@@ -572,15 +565,15 @@ async fn custom_analysis(
     
     let processing_time_ms = start_time.elapsed().as_millis() as u64;
     
-    println!("{}", "Claude:".cyan().bold());
+    println!("{"Claude:".cyan(}").bold());
     
     if !result.insights.is_empty() {
         for insight in &result.insights {
-            println!("{}", insight.description.cyan());
+            println!("{insight.description.cyan(}"));
         }
         dialog_ctx.add_claude_turn(&result.insights[0].description, 0.75, processing_time_ms).await;
     } else {
-        println!("{}", result.summary.cyan());
+        println!("{result.summary.cyan(}"));
         dialog_ctx.add_claude_turn(&result.summary, 0.7, processing_time_ms).await;
     }
     

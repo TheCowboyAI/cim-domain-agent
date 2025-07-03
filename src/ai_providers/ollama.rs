@@ -45,7 +45,7 @@ impl OllamaProvider {
             .get(&format!("{}/api/tags", self.base_url))
             .send()
             .await
-            .map_err(|e| AIProviderError::ConnectionError(format!("Cannot connect to Ollama: {}", e)))?;
+            .map_err(|e| AIProviderError::ConnectionError(format!("Cannot connect to Ollama: {e}")))?;
         
         if !response.status().is_success() {
             return Err(AIProviderError::ConnectionError("Ollama is not running".to_string()));
@@ -88,8 +88,7 @@ impl OllamaProvider {
             AnalysisCapability::Custom(prompt) => prompt.as_str(),
         };
         
-        format!(
-            "{}\n\nGraph Structure:\n{}\n\nProvide your analysis in JSON format with 'findings' and 'recommendations' arrays. Each finding should have: id, type, description, severity (0-1), related_elements, and evidence. Each recommendation should have: id, type, description, expected_impact, effort (low/medium/high), and actions.",
+        format!("{}\n\nGraph Structure:\n{}\n\nProvide your analysis in JSON format with 'findings' and 'recommendations' arrays. Each finding should have: id, type, description, severity (0-1), related_elements, and evidence. Each recommendation should have: id, type, description, expected_impact, effort (low/medium/high), and actions.",
             analysis_instruction,
             graph_to_prompt(graph_data)
         )
@@ -407,8 +406,7 @@ impl GraphAnalysisProvider for OllamaProvider {
         // Check health first
         self.check_health().await?;
         
-        let prompt = format!(
-            "Suggest specific transformations to optimize this graph:\n\n{}\n\nOptimization Goals:\n- {}\n\nConstraints:\n{:?}\n\nProvide transformation suggestions in JSON format with a 'transformations' array. Each transformation should have: id, type, description, rationale, expected_benefit, steps (array), and risk_assessment.",
+        let prompt = format!("Suggest specific transformations to optimize this graph:\n\n{}\n\nOptimization Goals:\n- {}\n\nConstraints:\n{:?}\n\nProvide transformation suggestions in JSON format with a 'transformations' array. Each transformation should have: id, type, description, rationale, expected_benefit, steps (array), and risk_assessment.",
             graph_to_prompt(&graph_data),
             optimization_goals.join("\n- "),
             constraints

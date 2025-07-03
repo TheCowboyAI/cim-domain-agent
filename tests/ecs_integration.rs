@@ -1,37 +1,43 @@
 //! ECS Integration tests for Agent domain
 
 use bevy::prelude::*;
+use cim_domain_agent::components::{AgentCapabilities, AgentEntity, AgentReadiness, CheckStatus};
 use cim_domain_agent::{
-    components::{
-        AgentComponent, CapabilitiesComponent, PermissionsComponent,
-        StatusComponent, ToolsComponent, MetadataComponent
-    },
-    systems::{
-        // Use actual systems from lifecycle module
-        create_agent_system, activate_agent_system, suspend_agent_system,
-        decommission_agent_system, update_agent_readiness_system,
-        // Use actual systems from capabilities module
-        manage_capabilities_system, sync_agent_capabilities,
-        // These are command types from the modules
-        AgentDeployCommand, ActivateAgentCommand, SuspendAgentCommand,
-        DecommissionAgentCommand, ChangeAgentCapabilitiesCommand,
-    },
     commands::{
-        DeployAgent, ActivateAgent, SuspendAgent, DecommissionAgent,
-        UpdateCapabilities, GrantPermissions, RevokePermissions,
-        EnableTools, DisableTools, RequestGraphAnalysis
+        ActivateAgent, DecommissionAgent, DeployAgent, DisableTools, EnableTools, GrantPermissions,
+        RequestGraphAnalysis, RevokePermissions, SuspendAgent, UpdateCapabilities,
+    },
+    components::{
+        AgentComponent, CapabilitiesComponent, MetadataComponent, PermissionsComponent,
+        StatusComponent, ToolsComponent,
     },
     events::{
-        AgentDeployed, AgentActivated, AgentSuspended, AgentDecommissioned,
-        CapabilitiesChanged, PermissionsChanged, ToolsChanged,
-        GraphAnalysisCompleted, AgentCapabilitiesChanged
+        AgentActivated, AgentCapabilitiesChanged, AgentDecommissioned, AgentDeployed,
+        AgentSuspended, CapabilitiesChanged, GraphAnalysisCompleted, PermissionsChanged,
+        ToolsChanged,
+    },
+    systems::{
+        activate_agent_system,
+        // Use actual systems from lifecycle module
+        create_agent_system,
+        decommission_agent_system,
+        // Use actual systems from capabilities module
+        manage_capabilities_system,
+        suspend_agent_system,
+        sync_agent_capabilities,
+        update_agent_readiness_system,
+        ActivateAgentCommand,
+        // These are command types from the modules
+        AgentDeployCommand,
+        ChangeAgentCapabilitiesCommand,
+        DecommissionAgentCommand,
+        SuspendAgentCommand,
     },
     value_objects::{
-        AgentId, AgentType, AgentCapability, AICapabilities, AnalysisCapability,
-        AgentStatus, AgentState
+        AICapabilities, AgentCapability, AgentId, AgentState, AgentStatus, AgentType,
+        AnalysisCapability,
     },
 };
-use cim_domain_agent::components::{AgentEntity, AgentCapabilities, AgentReadiness, CheckStatus};
 use std::collections::HashSet;
 use uuid::Uuid;
 
@@ -71,7 +77,7 @@ struct RequestGraphAnalysisCommand(RequestGraphAnalysis);
 #[test]
 fn test_agent_lifecycle() {
     let mut app = App::new();
-    
+
     // Add events
     app.add_event::<AgentDeployCommand>()
         .add_event::<ActivateAgentCommand>()
@@ -84,12 +90,15 @@ fn test_agent_lifecycle() {
         .add_event::<AgentCapabilitiesChanged>();
 
     // Add systems
-    app.add_systems(Update, (
-        create_agent_system,
-        activate_agent_system,
-        suspend_agent_system,
-        decommission_agent_system,
-    ));
+    app.add_systems(
+        Update,
+        (
+            create_agent_system,
+            activate_agent_system,
+            suspend_agent_system,
+            decommission_agent_system,
+        ),
+    );
 
     // Deploy agent
     let agent_id = Uuid::new_v4();
@@ -124,7 +133,7 @@ fn test_agent_lifecycle() {
 #[test]
 fn test_capability_management() {
     let mut app = App::new();
-    
+
     // Add events
     app.add_event::<AgentDeployCommand>()
         .add_event::<ChangeAgentCapabilitiesCommand>()
@@ -132,10 +141,7 @@ fn test_capability_management() {
         .add_event::<AgentCapabilitiesChanged>();
 
     // Add systems
-    app.add_systems(Update, (
-        create_agent_system,
-        manage_capabilities_system,
-    ));
+    app.add_systems(Update, (create_agent_system, manage_capabilities_system));
 
     // Deploy agent
     let agent_id = Uuid::new_v4();
@@ -164,7 +170,9 @@ fn test_capability_management() {
     app.update();
 
     // Verify capabilities
-    let mut agent_query = app.world_mut().query::<(&AgentEntity, &AgentCapabilities)>();
+    let mut agent_query = app
+        .world_mut()
+        .query::<(&AgentEntity, &AgentCapabilities)>();
     let agents: Vec<_> = agent_query.iter(&app.world()).collect();
     assert_eq!(agents.len(), 1);
     assert!(agents[0].1.has("capability.read"));
@@ -181,7 +189,9 @@ fn test_capability_management() {
     app.update();
 
     // Verify removal
-    let mut agent_query = app.world_mut().query::<(&AgentEntity, &AgentCapabilities)>();
+    let mut agent_query = app
+        .world_mut()
+        .query::<(&AgentEntity, &AgentCapabilities)>();
     let agents: Vec<_> = agent_query.iter(&app.world()).collect();
     assert!(agents[0].1.has("capability.read"));
     assert!(!agents[0].1.has("capability.write"));
@@ -200,15 +210,12 @@ fn test_capability_management() {
 #[test]
 fn test_readiness_system() {
     let mut app = App::new();
-    
+
     // Add events and systems
     app.add_event::<AgentDeployCommand>()
         .add_event::<AgentDeployed>();
 
-    app.add_systems(Update, (
-        create_agent_system,
-        update_agent_readiness_system,
-    ));
+    app.add_systems(Update, (create_agent_system, update_agent_readiness_system));
 
     // Deploy agent without capabilities
     let agent_id = Uuid::new_v4();
@@ -228,7 +235,7 @@ fn test_readiness_system() {
     let mut agent_query = app.world_mut().query::<(&AgentEntity, &AgentReadiness)>();
     let agents: Vec<_> = agent_query.iter(&app.world()).collect();
     assert_eq!(agents.len(), 1);
-    
+
     // Find the status check
     let status_check = agents[0].1.checks.get("status");
     assert!(status_check.is_some());
@@ -240,7 +247,7 @@ fn test_permission_management_placeholder() {
     // This is a placeholder test since permission systems aren't implemented yet
     let mut app = App::new();
     app.add_plugins(MinimalPlugins);
-    
+
     // Just verify the app can be created
     app.update();
 }
@@ -250,7 +257,7 @@ fn test_ai_analysis_placeholder() {
     // This is a placeholder test since AI analysis systems aren't implemented yet
     let mut app = App::new();
     app.add_plugins(MinimalPlugins);
-    
+
     // Just verify the app can be created
     app.update();
 }
@@ -258,13 +265,13 @@ fn test_ai_analysis_placeholder() {
 #[test]
 fn test_agent_query_system() {
     let mut app = App::new();
-    
+
     app.add_plugins(MinimalPlugins);
-    
+
     // Create multiple agents
     let agent1 = AgentId::new();
     let agent2 = AgentId::new();
-    
+
     app.world_mut().spawn((
         AgentComponent { id: agent1 },
         StatusComponent {
@@ -273,7 +280,7 @@ fn test_agent_query_system() {
             health: 100.0,
         },
     ));
-    
+
     app.world_mut().spawn((
         AgentComponent { id: agent2 },
         StatusComponent {
@@ -282,14 +289,15 @@ fn test_agent_query_system() {
             health: 75.0,
         },
     ));
-    
+
     // Query active agents
-    let active_agents: Vec<_> = app.world()
+    let active_agents: Vec<_> = app
+        .world()
         .query::<(&AgentComponent, &StatusComponent)>()
         .iter(&app.world())
         .filter(|(_, status)| status.state == AgentState::Active)
         .collect();
-    
+
     assert_eq!(active_agents.len(), 1);
     assert_eq!(active_agents[0].0.id, agent1);
-} 
+}

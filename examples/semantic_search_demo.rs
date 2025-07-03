@@ -25,7 +25,7 @@ use std::sync::Arc;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", "=== Semantic Search Demo ===".blue().bold());
+    println!("{"=== Semantic Search Demo ===".blue(}").bold());
     println!();
     
     // Create semantic search engine
@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn create_search_engine() -> Result<Arc<dyn SemanticSearchEngine>, Box<dyn std::error::Error>> {
-    println!("{}", "Creating semantic search engine...".green());
+    println!("{"Creating semantic search engine...".green(}"));
     
     // Use mock embedding service for demo (would use real AI provider in production)
     let embedding_service = Arc::new(MockEmbeddingService::new(384));
@@ -64,14 +64,14 @@ async fn create_search_engine() -> Result<Arc<dyn SemanticSearchEngine>, Box<dyn
         config,
     ));
     
-    println!("{}", "✓ Search engine created".green());
+    println!("{"✓ Search engine created".green(}"));
     println!();
     
     Ok(engine)
 }
 
 async fn index_sample_content(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", "Indexing sample content...".yellow());
+    println!("{"Indexing sample content...".yellow(}"));
     
     // Index documents
     let documents = vec![
@@ -122,7 +122,7 @@ async fn index_sample_content(engine: &Arc<dyn SemanticSearchEngine>) -> Result<
     ];
     
     let doc_ids = engine.index_batch(documents).await?;
-    println!("  {} Indexed {} documents", "✓".green(), doc_ids.len());
+    println!("  {"✓".green(} Indexed {} documents"), doc_ids.len());
     
     // Index graph nodes
     let graph_nodes = vec![
@@ -160,7 +160,7 @@ async fn index_sample_content(engine: &Arc<dyn SemanticSearchEngine>) -> Result<
     ];
     
     let node_ids = engine.index_batch(graph_nodes).await?;
-    println!("  {} Indexed {} graph nodes", "✓".green(), node_ids.len());
+    println!("  {"✓".green(} Indexed {} graph nodes"), node_ids.len());
     
     // Index concepts
     let concepts = vec![
@@ -187,19 +187,19 @@ async fn index_sample_content(engine: &Arc<dyn SemanticSearchEngine>) -> Result<
     ];
     
     let concept_ids = engine.index_batch(concepts).await?;
-    println!("  {} Indexed {} concepts", "✓".green(), concept_ids.len());
+    println!("  {"✓".green(} Indexed {} concepts"), concept_ids.len());
     
     let stats = engine.stats().await?;
     println!();
-    println!("Total indexed items: {}", stats.total_items.to_string().cyan());
+    println!("Total indexed items: {stats.total_items.to_string(}").cyan());
     println!();
     
     Ok(())
 }
 
 async fn demo_basic_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", "1. Basic Semantic Search".blue().bold());
-    println!("   Searching for: {}", "workflow optimization techniques".italic());
+    println!("{"1. Basic Semantic Search".blue(}").bold());
+    println!("   Searching for: {"workflow optimization techniques".italic(}"));
     
     let query = SearchQuery::new("workflow optimization techniques")
         .with_limit(5)
@@ -209,14 +209,12 @@ async fn demo_basic_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(),
     
     println!("\n   Results:");
     for (i, result) in results.iter().enumerate() {
-        println!("   {}. {} ({})", 
-            i + 1,
-            result.source_id.green(),
+        println!("   {i + 1}. {result.source_id.green(} ({})"),
             format!("{:.2}%", result.similarity * 100.0).yellow()
         );
         if let Some(metadata) = &result.metadata {
             if let Some(category) = metadata.get("category") {
-                println!("      Category: {}", category);
+                println!("      Category: {category}");
             }
         }
     }
@@ -226,8 +224,8 @@ async fn demo_basic_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(),
 }
 
 async fn demo_filtered_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", "2. Filtered Search".blue().bold());
-    println!("   Searching for: {} with filter: category=workflow", "process management".italic());
+    println!("{"2. Filtered Search".blue(}").bold());
+    println!("   Searching for: {"process management".italic(} with filter: category=workflow"));
     
     let filter = SearchFilter {
         source_types: Some(vec!["document".to_string()]),
@@ -246,9 +244,7 @@ async fn demo_filtered_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<
     
     println!("\n   Results (filtered):");
     for (i, result) in results.iter().enumerate() {
-        println!("   {}. {} ({})", 
-            i + 1,
-            result.source_id.green(),
+        println!("   {i + 1}. {result.source_id.green(} ({})"),
             format!("{:.2}%", result.similarity * 100.0).yellow()
         );
     }
@@ -258,8 +254,8 @@ async fn demo_filtered_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<
 }
 
 async fn demo_graph_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", "3. Graph Node Search".blue().bold());
-    println!("   Searching for: {}", "parallel execution nodes".italic());
+    println!("{"3. Graph Node Search".blue(}").bold());
+    println!("   Searching for: {"parallel execution nodes".italic(}"));
     
     let filter = SearchFilter {
         source_types: Some(vec!["graph_node".to_string()]),
@@ -276,13 +272,12 @@ async fn demo_graph_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(),
     
     println!("\n   Graph nodes found:");
     for result in results {
-        println!("   - {} ({})", 
-            result.source_id.green(),
+        println!("   - {result.source_id.green(} ({})"),
             format!("{:.2}%", result.similarity * 100.0).yellow()
         );
         if let Some(metadata) = &result.metadata {
             if let Some(node_type) = metadata.get("node_type") {
-                println!("     Type: {}", node_type.to_string().cyan());
+                println!("     Type: {node_type.to_string(}").cyan());
             }
         }
     }
@@ -292,8 +287,8 @@ async fn demo_graph_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(),
 }
 
 async fn demo_cross_domain_search(engine: &Arc<dyn SemanticSearchEngine>) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", "4. Cross-Domain Search".blue().bold());
-    println!("   Searching across all content types for: {}", "optimization performance".italic());
+    println!("{"4. Cross-Domain Search".blue(}").bold());
+    println!("   Searching across all content types for: {"optimization performance".italic(}"));
     
     let query = SearchQuery::new("optimization and performance improvements")
         .with_limit(8)
@@ -312,17 +307,16 @@ async fn demo_cross_domain_search(engine: &Arc<dyn SemanticSearchEngine>) -> Res
     }
     
     for (source_type, items) in by_type {
-        println!("\n   {}:", source_type.to_uppercase().cyan());
+        println!("\n   {source_type.to_uppercase(}:").cyan());
         for item in items {
-            println!("   - {} ({})", 
-                item.source_id.green(),
+            println!("   - {item.source_id.green(} ({})"),
                 format!("{:.2}%", item.similarity * 100.0).yellow()
             );
         }
     }
     
     println!();
-    println!("{}", "Demo completed successfully!".green().bold());
+    println!("{"Demo completed successfully!".green(}").bold());
     
     Ok(())
 } 

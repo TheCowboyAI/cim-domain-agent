@@ -52,6 +52,24 @@ pub enum PermissionAction {
     Revoke,
 }
 
+/// Audit entry for permission changes
+#[derive(Component, Debug, Clone)]
+pub struct PermissionAuditEntry {
+    pub agent_id: AgentId,
+    pub action: PermissionAction,
+    pub permission: Permission,
+    pub result: PermissionAuditResult,
+    pub timestamp: std::time::SystemTime,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum PermissionAuditResult {
+    Success,
+    DeniedUnauthenticated,
+    DeniedInsufficientPermissions,
+    Failed(String),
+}
+
 /// System to handle permission change requests
 pub fn handle_permission_changes(
     mut commands: Commands,
@@ -71,7 +89,15 @@ pub fn handle_permission_changes(
                 .contains(&request.permission);
             
             if requires_auth && !auth_state.is_authenticated {
-                // Skip if not authenticated
+                // Log permission denial and add audit component
+                warn!("Permission change denied for unauthenticated agent: {:?}", request.agent_id);
+                commands.spawn(PermissionAuditEntry {
+                    agent_id: request.agent_id.clone(),
+                    action: request.action.clone(),
+                    permission: request.permission.clone(),
+                    result: PermissionAuditResult::DeniedUnauthenticated,
+                    timestamp: std::time::SystemTime::now(),
+                });
                 continue;
             }
 
@@ -115,6 +141,15 @@ pub fn handle_permission_changes(
 
             // Send event if any changes were made
             if !granted_permissions.is_empty() || !revoked_permissions.is_empty() {
+                // Create audit entry for successful permission change
+                commands.spawn(PermissionAuditEntry {
+                    agent_id: request.agent_id.clone(),
+                    action: request.action.clone(),
+                    permission: request.permission.clone(),
+                    result: PermissionAuditResult::Success,
+                    timestamp: std::time::SystemTime::now(),
+                });
+
                 permissions_changed.send(AgentPermissionsChanged {
                     agent_id: AgentId::from_uuid(agent.agent_id),
                     granted: granted_permissions,
@@ -185,14 +220,23 @@ pub fn check_permission_requirements(
                 .map(|scope| permissions.scopes.contains(scope))
                 .unwrap_or(true);
             
+            // Log permission check for audit
+            info!(
+                "Permission check for agent {:?}: {} for resource '{}' - allowed: {}",
+                agent.agent_id,
+                check.required_permission.access_level,
+                check.required_permission.resource,
+                has_permission && has_scope
+            );
+            
             check_results.write(PermissionCheckResult {
                 agent_id: check.agent_id.clone(),
                 permission: check.required_permission.clone(),
                 allowed: has_permission && has_scope,
                 reason: if !has_permission {
-                    Some("Permission not granted".to_string())
+                    Some(format!("Permission not granted for agent {:?}", agent.agent_id))
                 } else if !has_scope {
-                    Some("Scope not authorized".to_string())
+                    Some(format!("Scope not authorized for agent {:?}", agent.agent_id))
                 } else {
                     None
                 },

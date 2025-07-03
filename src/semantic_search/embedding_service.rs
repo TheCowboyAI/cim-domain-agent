@@ -110,7 +110,7 @@ impl AIProviderEmbeddingService {
         // This is a simplified parser - real implementation would handle different provider formats
         let parsed: serde_json::Value = serde_json::from_str(response)
             .map_err(|e| SemanticSearchError::EmbeddingGenerationFailed(
-                format!("Failed to parse response: {}", e)
+                format!("Failed to parse response: {e}")
             ))?;
         
         // Try OpenAI format

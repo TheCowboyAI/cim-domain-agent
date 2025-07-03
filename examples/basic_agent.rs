@@ -41,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Process the command
     let result = command_handler.handle_deploy_agent(deploy_command).await?;
     println!("   Agent deployed successfully!");
-    println!("   Agent ID: {}", agent_id);
+    println!("   Agent ID: {agent_id}");
     
     // 2. Activate the agent
     println!("\n2. Activating agent...");
@@ -95,24 +95,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     if let Some(agent) = agent_view {
         println!("   Agent Details:");
-        println!("   - ID: {}", agent.id);
+        println!("   - ID: {agent.id}");
         println!("   - Type: {:?}", agent.agent_type);
         println!("   - Status: {:?}", agent.status);
-        println!("   - Owner: {}", agent.owner_id);
-        println!("   - Capabilities: {} models, {} analysis types", 
-            agent.capabilities.as_ref().map(|c| c.supported_models.len()).unwrap_or(0),
+        println!("   - Owner: {agent.owner_id}");
+        println!("   - Capabilities: {agent.capabilities.as_ref(} models, {} analysis types").map(|c| c.supported_models.len()).unwrap_or(0),
             agent.capabilities.as_ref().map(|c| c.capabilities.len()).unwrap_or(0)
         );
-        println!("   - Permissions: {} granted", agent.permissions.len());
+        println!("   - Permissions: {agent.permissions.len(} granted"));
     }
     
     // 6. List all agents for owner
     println!("\n6. Listing all agents for owner...");
     let owner_agents = query_handler.list_agents_by_owner(owner_id).await?;
     
-    println!("   Found {} agents for owner", owner_agents.len());
+    println!("   Found {owner_agents.len(} agents for owner"));
     for agent in owner_agents {
-        println!("   - {} ({}): {:?}", agent.name, agent.id, agent.status);
+        println!("   - {agent.name} ({agent.id}): {:?}", agent.status);
     }
     
     println!("\n=== Example completed successfully! ===");

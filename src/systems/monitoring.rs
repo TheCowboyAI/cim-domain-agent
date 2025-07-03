@@ -323,7 +323,7 @@ pub fn track_agent_activities(
                     add_activity_record(
                         &mut history,
                         ActivityType::Authentication,
-                        format!("Authentication failed: {}", reason),
+                        format!("Authentication failed: {reason}"),
                         false,
                     );
                 }

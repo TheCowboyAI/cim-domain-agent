@@ -50,7 +50,7 @@ pub fn load_provider_config() -> AIProviderResult<ProviderConfig> {
         }
         
         _ => Err(AIProviderError::ConfigurationError(
-            format!("Unknown provider type: {}", provider_type)
+            format!("Unknown provider type: {provider_type}")
         )),
     }
 }
@@ -122,7 +122,7 @@ pub fn create_provider_config(
         }
         
         _ => Err(AIProviderError::ConfigurationError(
-            format!("Unknown provider: {}", provider_name)
+            format!("Unknown provider: {provider_name}")
         )),
     }
 }

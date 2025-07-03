@@ -254,9 +254,9 @@ async fn test_openai_real_analysis() {
     assert!(!result.insights.is_empty(), "Should have insights");
     assert!(!result.recommendations.is_empty(), "Should have recommendations");
 
-    println!("Summary: {}", result.summary);
-    println!("Insights: {}", result.insights.len());
-    println!("Recommendations: {}", result.recommendations.len());
+    println!("Summary: {result.summary}");
+    println!("Insights: {result.insights.len(}"));
+    println!("Recommendations: {result.recommendations.len(}"));
 
     // Test 2: Pattern Detection
     println!("\n=== Testing OpenAI Pattern Detection ===");
@@ -267,7 +267,7 @@ async fn test_openai_real_analysis() {
     ).await.expect("Pattern detection should succeed");
 
     assert!(!pattern_result.insights.is_empty(), "Should detect patterns");
-    println!("Patterns found: {}", pattern_result.insights.len());
+    println!("Patterns found: {pattern_result.insights.len(}"));
 
     // Test 3: Transformation Suggestions
     println!("\n=== Testing OpenAI Transformation Suggestions ===");
@@ -285,13 +285,13 @@ async fn test_openai_real_analysis() {
     ).await.expect("Transformation suggestions should succeed");
 
     assert!(!transformations.is_empty(), "Should suggest transformations");
-    println!("Transformations suggested: {}", transformations.len());
+    println!("Transformations suggested: {transformations.len(}"));
 
     for (i, transform) in transformations.iter().enumerate() {
-        println!("\nTransformation {}: {}", i + 1, transform.title);
+        println!("\nTransformation {i + 1}: {transform.title}");
         println!("  Type: {:?}", transform.transformation_type);
         println!("  Expected improvement: {:.0}%", transform.expected_improvement * 100.0);
-        println!("  Steps: {}", transform.steps.len());
+        println!("  Steps: {transform.steps.len(}"));
     }
 }
 
@@ -336,11 +336,11 @@ async fn test_anthropic_real_analysis() {
     assert!(!result.summary.is_empty(), "Should have a summary");
     assert!(!result.insights.is_empty(), "Should have semantic insights");
 
-    println!("Semantic Analysis Summary: {}", result.summary);
-    println!("Semantic Insights: {}", result.insights.len());
+    println!("Semantic Analysis Summary: {result.summary}");
+    println!("Semantic Insights: {result.insights.len(}"));
 
     for insight in result.insights.iter().take(3) {
-        println!("  - {}: {}", insight.category, insight.description);
+        println!("  - {insight.category}: {insight.description}");
     }
 }
 
@@ -353,10 +353,10 @@ async fn test_ollama_real_analysis() {
     
     // Try to connect to Ollama
     let client = reqwest::Client::new();
-    match client.get(&format!("{}/api/tags", host)).send().await {
-        Ok(_) => println!("Ollama is running at {}", host),
+    match client.get(&format!("{host}/api/tags")).send().await {
+        Ok(_) => println!("Ollama is running at {host}"),
         Err(e) => {
-            eprintln!("Skipping test: Cannot connect to Ollama at {} - {}", host, e);
+            eprintln!("Skipping test: Cannot connect to Ollama at {host} - {e}");
             return;
         }
     }
@@ -381,14 +381,14 @@ async fn test_ollama_real_analysis() {
 
     match result {
         Ok(analysis) => {
-            println!("Analysis Summary: {}", analysis.summary);
+            println!("Analysis Summary: {analysis.summary}");
             println!("Confidence: {:.0}%", analysis.confidence_score * 100.0);
-            println!("Insights: {}", analysis.insights.len());
+            println!("Insights: {analysis.insights.len(}"));
             
             assert!(!analysis.summary.is_empty(), "Should have a summary");
         }
         Err(e) => {
-            eprintln!("Ollama analysis failed (model might not be available): {}", e);
+            eprintln!("Ollama analysis failed (model might not be available): {e}");
             // Don't fail the test if the model isn't available
         }
     }
@@ -416,10 +416,10 @@ async fn test_provider_error_handling() {
     let graph_data = create_realistic_workflow_graph();
 
     for (name, config) in providers {
-        println!("\nTesting error handling for {}", name);
+        println!("\nTesting error handling for {name}");
         
         let provider = AIProviderFactory::create_provider(&config)
-            .expect(&format!("Should create {} provider", name));
+            .expect(&format!("Should create {name} provider"));
 
         let result = provider.analyze_graph(
             graph_data.clone(),
@@ -428,6 +428,6 @@ async fn test_provider_error_handling() {
         ).await;
 
         assert!(result.is_err(), "{} should fail with invalid credentials", name);
-        println!("  ✓ {} correctly returned error: {:?}", name, result.err());
+        println!("  ✓ {name} correctly returned error: {:?}", result.err());
     }
 } 

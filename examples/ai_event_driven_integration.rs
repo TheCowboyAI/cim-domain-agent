@@ -70,7 +70,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     event_bus.sender.send(DomainEvent::AgentDeployed(agent_deployed_event.clone()))?;
-    println!("   ✓ Agent deployed: {}", agent_deployed_event.name);
+    println!("   ✓ Agent deployed: {agent_deployed_event.name}");
 
     // Step 2: Create a workflow that needs optimization
     println!("\n2. Creating workflow for analysis...");
@@ -81,7 +81,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         workflow_id,
         graph_data: workflow_data.clone(),
     })?;
-    println!("   ✓ Workflow created with {} nodes", workflow_data.nodes.len());
+    println!("   ✓ Workflow created with {workflow_data.nodes.len(} nodes"));
 
     // Step 3: Process events (Event Handler)
     println!("\n3. Processing events...");
@@ -109,20 +109,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("\n   ✓ Analysis completed!");
                 println!("   Agent: {:?}", completed.agent_id);
                 println!("   Confidence: {:.0}%", completed.confidence_score * 100.0);
-                println!("   Insights: {} found", completed.insights.len());
-                println!("   Recommendations: {} generated", completed.recommendations.len());
+                println!("   Insights: {completed.insights.len(} found"));
+                println!("   Recommendations: {completed.recommendations.len(} generated"));
                 
                 // Display insights
                 for (category, description) in &completed.insights {
-                    println!("     - {}: {}", category, description);
+                    println!("     - {category}: {description}");
                 }
                 
                 // Step 5: Apply recommendations (Command generation)
                 if !completed.recommendations.is_empty() {
                     println!("\n5. Generating commands from recommendations...");
                     for (title, description) in completed.recommendations.iter().take(2) {
-                        println!("   → Command: Apply '{}'", title);
-                        println!("     Description: {}", description);
+                        println!("   → Command: Apply '{title}'");
+                        println!("     Description: {description}");
                         
                         // In a real system, this would generate actual graph modification commands
                         // e.g., AddNode, ConnectNodes, etc.

@@ -57,10 +57,10 @@ async fn demo_mock_provider(graph_data: &GraphData) -> Result<(), Box<dyn std::e
         HashMap::new(),
     ).await?;
 
-    println!("Analysis confidence: {}", analysis_result.confidence);
-    println!("Findings: {}", analysis_result.findings.len());
+    println!("Analysis confidence: {analysis_result.confidence}");
+    println!("Findings: {analysis_result.findings.len(}"));
     for finding in &analysis_result.findings {
-        println!("  - {}: {}", finding.finding_type, finding.description);
+        println!("  - {finding.finding_type}: {finding.description}");
     }
 
     // Test transformation suggestions
@@ -70,9 +70,9 @@ async fn demo_mock_provider(graph_data: &GraphData) -> Result<(), Box<dyn std::e
         HashMap::new(),
     ).await?;
 
-    println!("Transformation suggestions: {}", suggestions.len());
+    println!("Transformation suggestions: {suggestions.len(}"));
     for suggestion in &suggestions {
-        println!("  - {}: {}", suggestion.suggestion_type, suggestion.description);
+        println!("  - {suggestion.suggestion_type}: {suggestion.description}");
     }
 
     Ok(())
@@ -99,9 +99,9 @@ async fn demo_openai_provider(
     ).await?;
 
     println!("OpenAI Analysis:");
-    println!("  Confidence: {}", analysis_result.confidence);
-    println!("  Findings: {}", analysis_result.findings.len());
-    println!("  Recommendations: {}", analysis_result.recommendations.len());
+    println!("  Confidence: {analysis_result.confidence}");
+    println!("  Findings: {analysis_result.findings.len(}"));
+    println!("  Recommendations: {analysis_result.recommendations.len(}"));
 
     Ok(())
 }
@@ -133,8 +133,8 @@ async fn demo_anthropic_provider(
     ).await?;
 
     println!("Anthropic Analysis:");
-    println!("  Confidence: {}", analysis_result.confidence);
-    println!("  Patterns found: {}", analysis_result.findings.len());
+    println!("  Confidence: {analysis_result.confidence}");
+    println!("  Patterns found: {analysis_result.findings.len(}"));
 
     Ok(())
 }
@@ -162,11 +162,11 @@ async fn demo_ollama_provider(graph_data: &GraphData) -> Result<(), Box<dyn std:
     ).await {
         Ok(analysis_result) => {
             println!("Ollama Analysis:");
-            println!("  Confidence: {}", analysis_result.confidence);
-            println!("  Semantic insights: {}", analysis_result.findings.len());
+            println!("  Confidence: {analysis_result.confidence}");
+            println!("  Semantic insights: {analysis_result.findings.len(}"));
         }
         Err(e) => {
-            println!("Ollama analysis failed (is Ollama running?): {}", e);
+            println!("Ollama analysis failed (is Ollama running?): {e}");
         }
     }
 

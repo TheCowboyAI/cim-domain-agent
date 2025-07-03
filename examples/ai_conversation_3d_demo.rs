@@ -111,13 +111,10 @@ fn main() {
             
             runtime.spawn(async move {
                 // Create a conversational prompt
-                let prompt = format!(
-                    "You are an AI assistant helping to analyze a domain graph. \
-                    The user asked: '{}'\n\n\
-                    The graph contains {} nodes and {} edges representing domain relationships.\n\
-                    Please provide a helpful, conversational response.",
-                    request.message,
-                    request.graph_data.nodes.len(),
+                let prompt = format!("You are an AI assistant helping to analyze a domain graph. \
+                    The user asked: '{request.message}'\n\n\
+                    The graph contains {request.graph_data.nodes.len(} nodes and {} edges representing domain relationships.\n\
+                    Please provide a helpful, conversational response."),
                     request.graph_data.edges.len()
                 );
 
@@ -139,7 +136,7 @@ fn main() {
                         ConversationResponse { content, success: true }
                     }
                     Err(e) => ConversationResponse {
-                        content: format!("Sorry, I encountered an error: {}", e),
+                        content: format!("Sorry, I encountered an error: {e}"),
                         success: false,
                     }
                 };
@@ -420,7 +417,7 @@ fn update_chat_display(
                     };
 
                     parent.spawn((
-                        Text::new(format!("{}{}", prefix, message.content)),
+                        Text::new(format!("{prefix}{message.content}")),
                         TextFont {
                             font_size: 16.0,
                             ..default()

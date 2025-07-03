@@ -356,19 +356,16 @@ mod embedding_generation_tests {
     }
     
     fn graph_to_text_representation(graph: &GraphData) -> String {
-        let mut text = format!("Graph with {} nodes and {} edges. ", 
-            graph.nodes.len(), 
+        let mut text = format!("Graph with {graph.nodes.len(} nodes and {} edges. "), 
             graph.edges.len()
         );
         
         for node in &graph.nodes {
-            text.push_str(&format!("Node {} of type {} labeled '{}'. ", 
-                node.id, node.node_type, node.label));
+            text.push_str(&format!("Node {node.id} of type {node.node_type} labeled '{node.label}'. "));
         }
         
         for edge in &graph.edges {
-            text.push_str(&format!("Edge from {} to {} of type {}. ", 
-                edge.source, edge.target, edge.edge_type));
+            text.push_str(&format!("Edge from {edge.source} to {edge.target} of type {edge.edge_type}. "));
         }
         
         text
@@ -524,9 +521,7 @@ mod cross_domain_search_tests {
     }
     
     fn generate_graph_embedding(graph: &GraphData) -> Vec<f32> {
-        let text_repr = format!(
-            "Graph type: {:?}, Nodes: {}, Edges: {}, Node types: {:?}",
-            graph.metadata.get("type"),
+        let text_repr = format!("Graph type: {:?}, Nodes: {graph.metadata.get("type"}, Edges: {}, Node types: {:?}"),
             graph.nodes.len(),
             graph.edges.len(),
             graph.nodes.iter().map(|n| &n.node_type).collect::<Vec<_>>()

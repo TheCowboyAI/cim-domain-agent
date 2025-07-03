@@ -23,7 +23,7 @@ impl OpenAIProvider {
         let mut headers = HeaderMap::new();
         headers.insert(
             AUTHORIZATION,
-            HeaderValue::from_str(&format!("Bearer {}", api_key))
+            HeaderValue::from_str(&format!("Bearer {api_key}"))
                 .map_err(|e| AIProviderError::ConfigurationError(e.to_string()))?,
         );
         headers.insert(
@@ -239,8 +239,7 @@ impl GraphAnalysisProvider for OpenAIProvider {
         parameters: HashMap<String, Value>,
     ) -> AIProviderResult<AnalysisResult> {
         let system_prompt = self.create_analysis_prompt(&analysis_type);
-        let user_prompt = format!(
-            "Analyze this graph:\n\n{}\n\nParameters: {:?}",
+        let user_prompt = format!("Analyze this graph:\n\n{}\n\nParameters: {:?}",
             graph_to_prompt(&graph_data),
             parameters
         );
@@ -288,8 +287,7 @@ impl GraphAnalysisProvider for OpenAIProvider {
     ) -> AIProviderResult<Vec<TransformationSuggestion>> {
         let system_prompt = "You are a graph transformation expert. Suggest specific transformations to optimize the graph for the given goals while respecting constraints. Provide your response as a JSON array of transformation suggestions.";
         
-        let user_prompt = format!(
-            "Graph:\n{}\n\nOptimization Goals:\n{}\n\nConstraints:\n{:?}",
+        let user_prompt = format!("Graph:\n{}\n\nOptimization Goals:\n{}\n\nConstraints:\n{:?}",
             graph_to_prompt(&graph_data),
             optimization_goals.join("\n- "),
             constraints

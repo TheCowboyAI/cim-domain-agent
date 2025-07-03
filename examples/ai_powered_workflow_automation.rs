@@ -1,5 +1,5 @@
 //! AI-Powered Workflow Automation Example
-//! 
+//!
 //! This example demonstrates:
 //! 1. Real AI provider integration (OpenAI, Anthropic, Ollama)
 //! 2. Workflow analysis and optimization
@@ -7,33 +7,32 @@
 //! 4. Event-driven architecture integration
 //! 5. Cross-domain communication
 
+use cim_domain::{CommandBus, EventBus, MessageFactory};
 use cim_domain_agent::{
     ai_providers::{
-        AIProviderFactory, GraphAnalysisProvider,
-        GraphData, NodeData, EdgeData,
-        config::load_provider_config,
+        config::load_provider_config, AIProviderFactory, EdgeData, GraphAnalysisProvider,
+        GraphData, NodeData,
     },
-    commands::{DeployAgent, AnalyzeGraph},
+    commands::{AnalyzeGraph, DeployAgent},
     events::{GraphAnalysisCompleted, TransformationSuggestionsGenerated},
     value_objects::{
+        transformation::{Priority, TransformationType},
         AgentId, AgentType, AnalysisCapability,
-        transformation::{TransformationType, Priority},
     },
 };
 use cim_domain_graph::{
-    commands::{CreateGraph, AddNode, ConnectNodes},
+    commands::{AddNode, ConnectNodes, CreateGraph},
     events::GraphEvent,
-    value_objects::{GraphId, NodeId, EdgeId, NodeType, EdgeType},
+    value_objects::{EdgeId, EdgeType, GraphId, NodeId, NodeType},
 };
 use cim_domain_workflow::{
-    commands::{CreateWorkflow, AddWorkflowStep},
+    commands::{AddWorkflowStep, CreateWorkflow},
     events::WorkflowEvent,
-    value_objects::{WorkflowId, StepType},
+    value_objects::{StepType, WorkflowId},
 };
-use cim_domain::{CommandBus, EventBus, MessageFactory};
-use std::collections::HashMap;
 use serde_json::json;
-use tracing::{info, warn, error};
+use std::collections::HashMap;
+use tracing::{error, info, warn};
 use tracing_subscriber;
 use uuid::Uuid;
 
@@ -65,7 +64,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("\n1. Loading AI provider configuration...");
     let provider_config = load_provider_config()?;
     let ai_provider = AIProviderFactory::create_provider(&provider_config)?;
-    
+
     let metadata = ai_provider.get_metadata();
     info!("  ✓ Provider: {}", metadata.name);
     info!("  ✓ Model: {}", metadata.model);
@@ -88,27 +87,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let analysis_params = HashMap::from([
         ("focus".to_string(), json!("bottleneck_detection")),
         ("optimization_goal".to_string(), json!("reduce_total_time")),
-        ("constraints".to_string(), json!({
-            "maintain_quality": true,
-            "max_parallel_tasks": 3
-        })),
+        (
+            "constraints".to_string(),
+            json!({
+                "maintain_quality": true,
+                "max_parallel_tasks": 3
+            }),
+        ),
     ]);
 
-    let analysis_result = ai_provider.analyze_graph(
-        graph_data.clone(),
-        AnalysisCapability::WorkflowOptimization,
-        analysis_params,
-    ).await?;
+    let analysis_result = ai_provider
+        .analyze_graph(
+            graph_data.clone(),
+            AnalysisCapability::WorkflowOptimization,
+            analysis_params,
+        )
+        .await?;
 
-    info!("  ✓ Analysis confidence: {:.0}%", analysis_result.confidence_score * 100.0);
+    info!(
+        "  ✓ Analysis confidence: {:.0}%",
+        analysis_result.confidence_score * 100.0
+    );
     info!("  ✓ Summary: {}", analysis_result.summary);
 
     // Display insights
     if !analysis_result.insights.is_empty() {
         info!("\n  Insights:");
         for (i, insight) in analysis_result.insights.iter().enumerate() {
-            info!("    {}. {} (confidence: {:.0}%)", 
-                i + 1, 
+            info!(
+                "    {}. {} (confidence: {:.0}%)",
+                i + 1,
                 insight.description,
                 insight.confidence * 100.0
             );
@@ -119,8 +127,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if !analysis_result.recommendations.is_empty() {
         info!("\n  Recommendations:");
         for (i, rec) in analysis_result.recommendations.iter().enumerate() {
-            info!("    {}. {} (Priority: {:?})", 
-                i + 1, 
+            info!(
+                "    {}. {} (Priority: {:?})",
+                i + 1,
                 rec.title,
                 rec.priority
             );
@@ -143,21 +152,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ("required_quality_score".to_string(), json!(0.95)),
     ]);
 
-    let transformations = ai_provider.suggest_transformations(
-        graph_data.clone(),
-        optimization_goals,
-        constraints,
-    ).await?;
+    let transformations = ai_provider
+        .suggest_transformations(graph_data.clone(), optimization_goals, constraints)
+        .await?;
 
-    info!("  ✓ Generated {} transformation suggestions", transformations.len());
+    info!(
+        "  ✓ Generated {} transformation suggestions",
+        transformations.len()
+    );
 
     // Display transformations
     for (i, transform) in transformations.iter().enumerate() {
         info!("\n  Transformation {}: {}", i + 1, transform.title);
         info!("    Type: {:?}", transform.transformation_type);
         info!("    Description: {}", transform.description);
-        info!("    Expected improvement: {:.0}%", transform.expected_improvement * 100.0);
-        
+        info!(
+            "    Expected improvement: {:.0}%",
+            transform.expected_improvement * 100.0
+        );
+
         if !transform.steps.is_empty() {
             info!("    Steps:");
             for (j, step) in transform.steps.iter().enumerate() {
@@ -169,28 +182,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Step 6: Simulate applying the best transformation
     if let Some(best_transform) = transformations.first() {
         info!("\n6. Applying transformation: {}", best_transform.title);
-        
+
         // In a real system, this would trigger domain commands
         let applied_result = apply_transformation(&workflow, best_transform).await?;
-        
+
         info!("  ✓ Transformation applied successfully");
-        info!("  ✓ New workflow efficiency: {:.0}% improvement", 
-            applied_result.improvement * 100.0);
+        info!(
+            "  ✓ New workflow efficiency: {:.0}% improvement",
+            applied_result.improvement * 100.0
+        );
     }
 
     // Step 7: Demonstrate event-driven integration
     info!("\n7. Publishing analysis events for other domains...");
-    
+
     // Create analysis completed event
     let analysis_event = GraphAnalysisCompleted {
         agent_id: AgentId::new(),
         graph_id: GraphId::new(),
         analysis_type: AnalysisCapability::WorkflowOptimization,
         confidence_score: analysis_result.confidence_score,
-        insights: analysis_result.insights.iter()
+        insights: analysis_result
+            .insights
+            .iter()
             .map(|i| (i.category.clone(), i.description.clone()))
             .collect(),
-        recommendations: analysis_result.recommendations.iter()
+        recommendations: analysis_result
+            .recommendations
+            .iter()
             .map(|r| (r.title.clone(), r.description.clone()))
             .collect(),
         metadata: HashMap::new(),
@@ -201,7 +220,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Step 8: Demonstrate continuous improvement
     info!("\n8. Setting up continuous workflow monitoring...");
-    
+
     // In a real system, this would set up periodic analysis
     info!("  ✓ Workflow will be re-analyzed every 24 hours");
     info!("  ✓ AI will learn from execution metrics to improve suggestions");
@@ -281,7 +300,10 @@ fn create_order_processing_workflow() -> SampleWorkflow {
                 name: "Complete Order".to_string(),
                 step_type: StepType::End,
                 duration_ms: 50,
-                dependencies: vec!["notify_warehouse".to_string(), "send_confirmation".to_string()],
+                dependencies: vec![
+                    "notify_warehouse".to_string(),
+                    "send_confirmation".to_string(),
+                ],
             },
         ],
     }
@@ -311,7 +333,7 @@ fn workflow_to_graph(workflow: &SampleWorkflow) -> GraphData {
     for step in &workflow.steps {
         for dep in &step.dependencies {
             let edge = EdgeData {
-                id: format!("{}->{}", dep, step.id),
+                id: format!("{dep}->{step.id}"),
                 source: dep.clone(),
                 target: step.id.clone(),
                 edge_type: "dependency".to_string(),
@@ -353,9 +375,7 @@ async fn apply_transformation(
     // 5. Measure the improvement
 
     // For demo purposes, simulate the result
-    let original_duration: u64 = workflow.steps.iter()
-        .map(|s| s.duration_ms)
-        .sum();
+    let original_duration: u64 = workflow.steps.iter().map(|s| s.duration_ms).sum();
 
     let improvement = transformation.expected_improvement;
     let new_duration = (original_duration as f64 * (1.0 - improvement)) as u64;
@@ -368,4 +388,4 @@ async fn apply_transformation(
         improvement,
         new_duration_ms: new_duration,
     })
-} 
+}

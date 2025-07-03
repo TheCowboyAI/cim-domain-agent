@@ -60,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     println!("2. Deploying AI Agent with Conceptual Reasoning:");
-    println!("   - Name: {}", deploy_cmd.name);
+    println!("   - Name: {deploy_cmd.name}");
     println!("   - Capabilities: {:?}", deploy_cmd.initial_capabilities);
     
     // Configure AI with conceptual reasoning
@@ -85,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create conceptual reasoning capability
     let reasoning_capability = ConceptualReasoningCapability::new(space_id);
     println!("   - Conceptual Space: {:?}", space_id);
-    println!("   - Dimension Mappings: {} analysis types", reasoning_capability.dimension_mappings.len());
+    println!("   - Dimension Mappings: {reasoning_capability.dimension_mappings.len(} analysis types"));
     println!();
 
     // 3. Analyze different graph types in conceptual space
@@ -129,9 +129,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         similarity_threshold,
     );
     
-    println!("   - Query: Find graphs similar to workflow (threshold: {})", similarity_threshold);
+    println!("   - Query: Find graphs similar to workflow (threshold: {similarity_threshold})");
     for (idx, (graph, similarity)) in similar_to_workflow.iter().enumerate() {
-        println!("   - Result {}: Similarity = {:.2}", idx + 1, similarity);
+        println!("   - Result {idx + 1}: Similarity = {:.2}", similarity);
     }
     println!();
 
@@ -141,7 +141,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   - From: Workflow Graph");
     println!("   - To: Knowledge Graph");
     println!("   - Distance: {:.2}", path.distance);
-    println!("   - Interpretation: {}", path.interpretation);
+    println!("   - Interpretation: {path.interpretation}");
     println!();
 
     // 6. Concept clustering for pattern discovery
@@ -149,8 +149,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let clusters = cluster_graph_concepts(&[workflow_graph, knowledge_graph, social_graph]);
     
     for (idx, cluster) in clusters.iter().enumerate() {
-        println!("   - Cluster {}: {} members, coherence = {:.2}", 
-            idx + 1, cluster.members.len(), cluster.coherence);
+        println!("   - Cluster {idx + 1}: {cluster.members.len(} members, coherence = {:.2}"), cluster.coherence);
         println!("     Characteristics: {:?}", cluster.characteristics);
     }
     println!();
@@ -160,8 +159,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let recommendations = generate_recommendations(&workflow_graph, &reasoning_capability);
     
     for (idx, rec) in recommendations.iter().enumerate() {
-        println!("   {}. {}", idx + 1, rec.title);
-        println!("      - {}", rec.description);
+        println!("   {idx + 1}. {rec.title}");
+        println!("      - {rec.description}");
         println!("      - Impact: {:?}, Effort: {:?}", rec.impact, rec.effort);
     }
     println!();
@@ -175,10 +174,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("   - Target: Knowledge Domain");
     println!("   - Transformations:");
     for transform in &mapping.dimension_transforms {
-        println!("     • {} → {} ({})", 
-            transform.source_field, 
-            transform.target_dimension,
-            transform.transform_fn);
+        println!("     • {transform.source_field} → {transform.target_dimension} ({transform.transform_fn})");
     }
 
     // 9. Set up AI provider
@@ -205,8 +201,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     ).await?;
     
     println!("   Analysis complete!");
-    println!("   - Insights: {}", analysis_result.insights.len());
-    println!("   - Recommendations: {}", analysis_result.recommendations.len());
+    println!("   - Insights: {analysis_result.insights.len(}"));
+    println!("   - Recommendations: {analysis_result.recommendations.len(}"));
     
     // 11. Map analysis to conceptual space
     println!("\n11. Mapping analysis to conceptual space...");
@@ -216,9 +212,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 12. Find similar concepts
     println!("\n12. Finding similar concepts...");
     let similar = find_similar_workflow_concepts(&conceptual_point);
-    println!("   Found {} similar concepts:", similar.len());
+    println!("   Found {similar.len(} similar concepts:"));
     for (i, concept) in similar.iter().enumerate() {
-        println!("   {}. Similarity: {:.2}", i + 1, concept.similarity);
+        println!("   {i + 1}. Similarity: {:.2}", concept.similarity);
     }
     
     // 13. Create semantic path
@@ -227,16 +223,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         coordinates: vec![0.9, 0.9, 0.9], // Optimal workflow
     };
     let path = create_semantic_path(&conceptual_point, &target_point);
-    println!("   Path with {} waypoints", path.waypoints.len());
+    println!("   Path with {path.waypoints.len(} waypoints"));
     println!("   Total distance: {:.2}", path.total_distance);
     
     // 14. Identify concept clusters
     println!("\n14. Identifying concept clusters...");
     let clusters = identify_workflow_clusters();
-    println!("   Found {} clusters:", clusters.len());
+    println!("   Found {clusters.len(} clusters:"));
     for cluster in &clusters {
-        println!("   - Cluster with {} members (coherence: {:.2})", 
-            cluster.members.len(), 
+        println!("   - Cluster with {cluster.members.len(} members (coherence: {:.2})"), 
             cluster.coherence
         );
     }
@@ -244,15 +239,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 15. Generate recommendations based on conceptual analysis
     println!("\n15. Generating conceptual recommendations...");
     let recommendations = generate_conceptual_recommendations(&analysis_result);
-    println!("   Generated {} recommendations:", recommendations.len());
+    println!("   Generated {recommendations.len(} recommendations:"));
     for (i, rec) in recommendations.iter().enumerate() {
-        println!("   {}. {}", i + 1, rec.description);
+        println!("   {i + 1}. {rec.description}");
     }
     
     // 16. Create conceptual space visualization data
     println!("\n16. Creating conceptual space for visualization...");
     let space = create_workflow_conceptual_space()?;
-    println!("   Space created with {} dimensions", space.dimensions.len());
+    println!("   Space created with {space.dimensions.len(} dimensions"));
     
     println!("\n=== Demo Complete ===");
     Ok(())

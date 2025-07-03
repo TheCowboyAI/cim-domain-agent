@@ -10,20 +10,20 @@
 //! - DEFAULT_AI_PROVIDER: Which provider to use (openai, anthropic, ollama, mock)
 
 use cim_domain_agent::ai_providers::{
-    AIProviderFactory, GraphAnalysisProvider, GraphData, NodeData, EdgeData,
-    config::load_provider_config,
+    config::load_provider_config, AIProviderFactory, EdgeData, GraphAnalysisProvider, GraphData,
+    NodeData,
 };
 use cim_domain_agent::value_objects::AnalysisCapability;
-use std::collections::HashMap;
 use serde_json::json;
-use tracing::{info, error};
+use std::collections::HashMap;
+use tracing::{error, info};
 use tracing_subscriber;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize logging
     tracing_subscriber::fmt::init();
-    
+
     // Load configuration from environment
     let provider_config = match load_provider_config() {
         Ok(config) => config,
@@ -37,76 +37,90 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Err(e.into());
         }
     };
-    
+
     info!("Using provider configuration: {:?}", provider_config);
-    
+
     // Create the AI provider
     let provider = AIProviderFactory::create_provider(&provider_config)?;
-    
+
     // Create a sample workflow graph
     let graph_data = create_sample_workflow_graph();
-    
-    info!("Analyzing graph with {} nodes and {} edges", 
-        graph_data.nodes.len(), 
+
+    info!(
+        "Analyzing graph with {} nodes and {} edges",
+        graph_data.nodes.len(),
         graph_data.edges.len()
     );
-    
+
     // Test different analysis capabilities
-    
+
     // 1. General Graph Analysis
     info!("\n=== Running Graph Analysis ===");
-    match provider.analyze_graph(
-        graph_data.clone(),
-        AnalysisCapability::GraphAnalysis,
-        HashMap::new(),
-    ).await {
+    match provider
+        .analyze_graph(
+            graph_data.clone(),
+            AnalysisCapability::GraphAnalysis,
+            HashMap::new(),
+        )
+        .await
+    {
         Ok(result) => {
             info!("Analysis Summary: {}", result.summary);
             info!("Confidence Score: {}", result.confidence_score);
-            info!("Found {} insights and {} recommendations", 
-                result.insights.len(), 
+            info!(
+                "Found {} insights and {} recommendations",
+                result.insights.len(),
                 result.recommendations.len()
             );
-            
+
             for insight in &result.insights {
                 info!("  Insight: {} - {}", insight.category, insight.description);
             }
-            
+
             for rec in &result.recommendations {
                 info!("  Recommendation: {} - {}", rec.title, rec.description);
             }
         }
         Err(e) => error!("Graph analysis failed: {}", e),
     }
-    
+
     // 2. Workflow Optimization
     info!("\n=== Running Workflow Optimization ===");
     let optimization_params = HashMap::from([
         ("focus".to_string(), json!("performance")),
         ("max_parallel_tasks".to_string(), json!(3)),
     ]);
-    
-    match provider.analyze_graph(
-        graph_data.clone(),
-        AnalysisCapability::WorkflowOptimization,
-        optimization_params,
-    ).await {
+
+    match provider
+        .analyze_graph(
+            graph_data.clone(),
+            AnalysisCapability::WorkflowOptimization,
+            optimization_params,
+        )
+        .await
+    {
         Ok(result) => {
             info!("Optimization Summary: {}", result.summary);
             for rec in &result.recommendations {
-                info!("  Optimization: {} (Priority: {:?})", rec.title, rec.priority);
+                info!(
+                    "  Optimization: {} (Priority: {:?})",
+                    rec.title, rec.priority
+                );
             }
         }
         Err(e) => error!("Workflow optimization failed: {}", e),
     }
-    
+
     // 3. Pattern Detection
     info!("\n=== Running Pattern Detection ===");
-    match provider.analyze_graph(
-        graph_data.clone(),
-        AnalysisCapability::PatternDetection,
-        HashMap::new(),
-    ).await {
+    match provider
+        .analyze_graph(
+            graph_data.clone(),
+            AnalysisCapability::PatternDetection,
+            HashMap::new(),
+        )
+        .await
+    {
         Ok(result) => {
             info!("Pattern Detection Summary: {}", result.summary);
             for insight in &result.insights {
@@ -117,7 +131,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(e) => error!("Pattern detection failed: {}", e),
     }
-    
+
     // 4. Transformation Suggestions
     info!("\n=== Getting Transformation Suggestions ===");
     let optimization_goals = vec![
@@ -125,17 +139,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Improve parallelization".to_string(),
         "Minimize resource usage".to_string(),
     ];
-    
+
     let constraints = HashMap::from([
         ("preserve_dependencies".to_string(), json!(true)),
         ("max_cost".to_string(), json!(1000)),
     ]);
-    
-    match provider.suggest_transformations(
-        graph_data.clone(),
-        optimization_goals,
-        constraints,
-    ).await {
+
+    match provider
+        .suggest_transformations(graph_data.clone(), optimization_goals, constraints)
+        .await
+    {
         Ok(suggestions) => {
             info!("Received {} transformation suggestions", suggestions.len());
             for (i, suggestion) in suggestions.iter().enumerate() {
@@ -148,7 +161,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(e) => error!("Transformation suggestions failed: {}", e),
     }
-    
+
     // Display provider metadata
     let metadata = provider.get_metadata();
     info!("\n=== Provider Information ===");
@@ -156,12 +169,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("Model: {}", metadata.model);
     info!("Capabilities: {:?}", metadata.capabilities);
     if let Some(limits) = metadata.rate_limits {
-        info!("Rate Limits: {} req/min, {} tokens/min", 
-            limits.requests_per_minute, 
-            limits.tokens_per_minute
+        info!(
+            "Rate Limits: {} req/min, {} tokens/min",
+            limits.requests_per_minute, limits.tokens_per_minute
         );
     }
-    
+
     Ok(())
 }
 
@@ -172,9 +185,7 @@ fn create_sample_workflow_graph() -> GraphData {
             id: "start".to_string(),
             node_type: "start".to_string(),
             label: "Start Process".to_string(),
-            properties: HashMap::from([
-                ("trigger".to_string(), json!("manual")),
-            ]),
+            properties: HashMap::from([("trigger".to_string(), json!("manual"))]),
             position: Some((0.0, 0.0, 0.0)),
         },
         NodeData {
@@ -211,18 +222,14 @@ fn create_sample_workflow_graph() -> GraphData {
             id: "merge".to_string(),
             node_type: "merge".to_string(),
             label: "Merge Results".to_string(),
-            properties: HashMap::from([
-                ("merge_strategy".to_string(), json!("combine")),
-            ]),
+            properties: HashMap::from([("merge_strategy".to_string(), json!("combine"))]),
             position: Some((300.0, 0.0, 0.0)),
         },
         NodeData {
             id: "notify".to_string(),
             node_type: "notification".to_string(),
             label: "Send Notification".to_string(),
-            properties: HashMap::from([
-                ("channels".to_string(), json!(["email", "slack"])),
-            ]),
+            properties: HashMap::from([("channels".to_string(), json!(["email", "slack"]))]),
             position: Some((400.0, 0.0, 0.0)),
         },
         NodeData {
@@ -233,7 +240,7 @@ fn create_sample_workflow_graph() -> GraphData {
             position: Some((500.0, 0.0, 0.0)),
         },
     ];
-    
+
     let edges = vec![
         EdgeData {
             id: "e1".to_string(),
@@ -247,18 +254,14 @@ fn create_sample_workflow_graph() -> GraphData {
             source: "validate".to_string(),
             target: "process_a".to_string(),
             edge_type: "parallel".to_string(),
-            properties: HashMap::from([
-                ("condition".to_string(), json!("valid")),
-            ]),
+            properties: HashMap::from([("condition".to_string(), json!("valid"))]),
         },
         EdgeData {
             id: "e3".to_string(),
             source: "validate".to_string(),
             target: "process_b".to_string(),
             edge_type: "parallel".to_string(),
-            properties: HashMap::from([
-                ("condition".to_string(), json!("valid")),
-            ]),
+            properties: HashMap::from([("condition".to_string(), json!("valid"))]),
         },
         EdgeData {
             id: "e4".to_string(),
@@ -289,15 +292,21 @@ fn create_sample_workflow_graph() -> GraphData {
             properties: HashMap::new(),
         },
     ];
-    
+
     GraphData {
         graph_id: uuid::Uuid::new_v4(),
         nodes,
         edges,
         metadata: HashMap::from([
-            ("workflow_name".to_string(), json!("Sample Processing Workflow")),
+            (
+                "workflow_name".to_string(),
+                json!("Sample Processing Workflow"),
+            ),
             ("version".to_string(), json!("1.0.0")),
-            ("created_at".to_string(), json!(chrono::Utc::now().to_rfc3339())),
+            (
+                "created_at".to_string(),
+                json!(chrono::Utc::now().to_rfc3339()),
+            ),
         ]),
     }
-} 
+}

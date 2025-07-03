@@ -33,15 +33,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let provider = AIProviderFactory::create_provider(&provider_config)?;
     let metadata = provider.get_metadata();
     
-    println!("Using AI Provider: {}", metadata.name);
-    println!("Model: {}", metadata.model);
-    println!("Version: {}\n", metadata.version);
+    println!("Using AI Provider: {metadata.name}");
+    println!("Model: {metadata.model}");
+    println!("Version: {metadata.version}\n");
 
     // Create a simple workflow graph
     let graph_data = create_sample_graph();
     
-    println!("Analyzing workflow graph with {} nodes and {} edges...\n", 
-        graph_data.nodes.len(), 
+    println!("Analyzing workflow graph with {graph_data.nodes.len(} nodes and {} edges...\n"), 
         graph_data.edges.len()
     );
 
@@ -57,22 +56,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Display results
     println!("Analysis completed in {:?}\n", duration);
     println!("Confidence Score: {:.2}%", analysis.confidence_score * 100.0);
-    println!("Summary: {}\n", analysis.summary);
+    println!("Summary: {analysis.summary}\n");
 
-    println!("Insights ({}):", analysis.insights.len());
+    println!("Insights ({analysis.insights.len(}):"));
     for (i, insight) in analysis.insights.iter().enumerate() {
-        println!("  {}. {} (confidence: {:.0}%)", 
-            i + 1, 
-            insight.description, 
-            insight.confidence * 100.0
-        );
+        println!("  {i + 1}. {insight.description} (confidence: {:.0}%)", insight.confidence * 100.0);
     }
 
-    println!("\nRecommendations ({}):", analysis.recommendations.len());
+    println!("\nRecommendations ({analysis.recommendations.len(}):"));
     for (i, rec) in analysis.recommendations.iter().enumerate() {
-        println!("  {}. {}", i + 1, rec.title);
-        println!("     {}", rec.description);
-        println!("     Expected Impact: {}", rec.expected_impact);
+        println!("  {i + 1}. {rec.title}");
+        println!("     {rec.description}");
+        println!("     Expected Impact: {rec.expected_impact}");
     }
 
     // Get transformation suggestions
@@ -83,10 +78,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         HashMap::new(),
     ).await?;
 
-    println!("\nTransformation Suggestions ({}):", suggestions.len());
+    println!("\nTransformation Suggestions ({suggestions.len(}):"));
     for (i, suggestion) in suggestions.iter().enumerate() {
-        println!("  {}. {}", i + 1, suggestion.description);
-        println!("     Benefit: {}", suggestion.expected_benefit);
+        println!("  {i + 1}. {suggestion.description}");
+        println!("     Benefit: {suggestion.expected_benefit}");
     }
 
     println!("\n✅ Demo completed successfully!");

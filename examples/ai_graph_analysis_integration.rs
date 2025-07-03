@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         panic!("No events generated");
     };
     
-    println!("  ✓ Graph created with ID: {}", graph_id);
+    println!("  ✓ Graph created with ID: {graph_id}");
 
     // Step 2: Add workflow nodes
     println!("\n2. Adding workflow nodes...");
@@ -80,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let Some(event) = events.first() {
             if let cim_domain_graph::domain_events::GraphDomainEvent::NodeAdded(added) = event {
                 node_ids.push(added.node_id);
-                println!("  ✓ Added node: {} ({})", name, added.node_id);
+                println!("  ✓ Added node: {name} ({added.node_id})");
             }
         }
     }
@@ -106,7 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
         
         graph_handler.handle_graph_command(add_edge_cmd).await?;
-        println!("  ✓ Added edge: {} -> {}", source_idx, target_idx);
+        println!("  ✓ Added edge: {source_idx} -> {target_idx}");
     }
 
     // Step 4: Load the graph for AI analysis
@@ -163,7 +163,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let ai_provider = AIProviderFactory::create_provider(&provider_config)?;
     
     let provider_metadata = ai_provider.get_metadata();
-    println!("  ✓ AI provider initialized: {}", provider_metadata.name);
+    println!("  ✓ AI provider initialized: {provider_metadata.name}");
 
     // Step 6: Analyze the workflow
     println!("\n6. Analyzing workflow with AI...");
@@ -183,14 +183,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n  Analysis Results:");
     println!("  ================");
     println!("  Confidence: {:.2}%", analysis_result.confidence_score * 100.0);
-    println!("  Summary: {}", analysis_result.summary);
+    println!("  Summary: {analysis_result.summary}");
     println!("\n  Insights:");
     for (i, insight) in analysis_result.insights.iter().enumerate() {
-        println!("    {}. {} (confidence: {:.2}%)", i + 1, insight.description, insight.confidence * 100.0);
+        println!("    {i + 1}. {insight.description} (confidence: {:.2}%)", insight.confidence * 100.0);
     }
     println!("\n  Recommendations:");
     for (i, rec) in analysis_result.recommendations.iter().enumerate() {
-        println!("    {}. {} - {}", i + 1, rec.title, rec.description);
+        println!("    {i + 1}. {rec.title} - {rec.description}");
     }
 
     // Generate analysis completed event
@@ -203,7 +203,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         duration_ms,
     };
     
-    println!("\n  ✓ Analysis completed in {}ms", duration_ms);
+    println!("\n  ✓ Analysis completed in {duration_ms}ms");
 
     // Step 7: Get transformation suggestions
     println!("\n7. Generating transformation suggestions...");
@@ -227,11 +227,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n  Transformation Suggestions:");
     println!("  =========================");
     for (i, suggestion) in suggestions.iter().enumerate() {
-        println!("\n  Suggestion {}:", i + 1);
-        println!("    Type: {}", suggestion.suggestion_type);
-        println!("    Description: {}", suggestion.description);
-        println!("    Expected Benefit: {}", suggestion.expected_benefit);
-        println!("    Rationale: {}", suggestion.rationale);
+        println!("\n  Suggestion {i + 1}:");
+        println!("    Type: {suggestion.suggestion_type}");
+        println!("    Description: {suggestion.description}");
+        println!("    Expected Benefit: {suggestion.expected_benefit}");
+        println!("    Rationale: {suggestion.rationale}");
         if let Some(risk) = &suggestion.risk_assessment {
             println!("    Risk Assessment: {:?}", risk);
         }
@@ -391,15 +391,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Summary
     println!("\n=== Summary ===");
-    println!("✓ Created workflow graph with {} nodes and {} edges", 
-        updated_graph.nodes().len(), 
+    println!("✓ Created workflow graph with {updated_graph.nodes(} nodes and {} edges").len(), 
         updated_graph.edges().len()
     );
-    println!("✓ AI analysis identified {} insights and {} recommendations",
-        analysis_result.insights.len(),
+    println!("✓ AI analysis identified {analysis_result.insights.len(} insights and {} recommendations"),
         analysis_result.recommendations.len()
     );
-    println!("✓ Applied {} optimizations successfully", executed_event.results.len());
+    println!("✓ Applied {executed_event.results.len(} optimizations successfully"));
     println!("✓ Verification showed {:.1}% improvement in confidence",
         (verification_result.confidence_score - analysis_result.confidence_score) * 100.0
     );

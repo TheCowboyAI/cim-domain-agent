@@ -1,20 +1,19 @@
 //! CIM Domain Graph Demo with AI Integration
-//! 
+//!
 //! Visualizes real CIM domain entities and their relationships
 
 use bevy::prelude::*;
 use cim_domain_agent::{
     ai_providers::{
-        AIProviderFactory, GraphAnalysisProvider, ProviderConfig,
-        GraphData, NodeData, EdgeData,
+        AIProviderFactory, EdgeData, GraphAnalysisProvider, GraphData, NodeData, ProviderConfig,
     },
     value_objects::ai_capabilities::AnalysisCapability,
 };
-use std::collections::HashMap;
-use uuid::Uuid;
-use serde_json::json;
 use crossbeam::channel::{unbounded, Receiver, Sender};
+use serde_json::json;
+use std::collections::HashMap;
 use std::sync::Arc;
+use uuid::Uuid;
 
 #[derive(Resource)]
 struct GraphResource {
@@ -96,8 +95,9 @@ fn main() {
         ProviderConfig::Mock
     };
 
-    let ai_provider: Arc<Box<dyn GraphAnalysisProvider + Send + Sync>> = Arc::new(AIProviderFactory::create_provider(&provider_config)
-        .expect("Failed to create AI provider"));
+    let ai_provider: Arc<Box<dyn GraphAnalysisProvider + Send + Sync>> = Arc::new(
+        AIProviderFactory::create_provider(&provider_config).expect("Failed to create AI provider"),
+    );
 
     // Create channels for async communication
     let (request_sender, request_receiver) = unbounded::<AnalysisRequest>();
@@ -107,44 +107,48 @@ fn main() {
     let ai_provider_clone = ai_provider.clone();
     std::thread::spawn(move || {
         let runtime = tokio::runtime::Runtime::new().unwrap();
-        
+
         while let Ok(request) = request_receiver.recv() {
             let provider = ai_provider_clone.clone();
             let sender = response_sender.clone();
-            
+
             runtime.spawn(async move {
-                let response = match provider.analyze_graph(
-                    request.graph_data,
-                    request.capability,
-                    HashMap::new(),
-                ).await {
+                let response = match provider
+                    .analyze_graph(request.graph_data, request.capability, HashMap::new())
+                    .await
+                {
                     Ok(result) => {
-                        let mut text = format!("🤖 AI Domain Analysis (confidence: {:.0}%):\n\n", 
-                            result.confidence_score * 100.0);
-                        
+                        let mut text = format!(
+                            "🤖 AI Domain Analysis (confidence: {:.0}%):\n\n",
+                            result.confidence_score * 100.0
+                        );
+
                         if !result.insights.is_empty() {
                             text.push_str("📊 Insights:\n");
                             for (i, insight) in result.insights.iter().take(3).enumerate() {
-                                text.push_str(&format!("  {}. {}\n", i + 1, insight.description));
+                                text.push_str(&format!("  {i + 1}. {insight.description}\n"));
                             }
                         }
-                        
+
                         if !result.recommendations.is_empty() {
                             text.push_str("\n💡 Recommendations:\n");
                             for (i, rec) in result.recommendations.iter().take(3).enumerate() {
-                                text.push_str(&format!("  {}. {}\n", i + 1, rec.title));
-                                text.push_str(&format!("     {}\n", rec.description));
+                                text.push_str(&format!("  {i + 1}. {rec.title}\n"));
+                                text.push_str(&format!("     {rec.description}\n"));
                             }
                         }
-                        
-                        AnalysisResponse { text, success: true }
+
+                        AnalysisResponse {
+                            text,
+                            success: true,
+                        }
                     }
                     Err(e) => AnalysisResponse {
-                        text: format!("❌ Analysis failed: {}", e),
+                        text: format!("❌ Analysis failed: {e}"),
                         success: false,
-                    }
+                    },
                 };
-                
+
                 let _ = sender.send(response);
             });
         }
@@ -181,11 +185,7 @@ fn main() {
         .run();
 }
 
-fn setup(
-    mut commands: Commands,
-    graph: Res<GraphResource>,
-    asset_server: Res<AssetServer>,
-) {
+fn setup(mut commands: Commands, graph: Res<GraphResource>, asset_server: Res<AssetServer>) {
     // Camera
     commands.spawn(Camera2d::default());
 
@@ -196,53 +196,54 @@ fn setup(
     for node in &graph.data.nodes {
         let position = node.position.unwrap_or((0.0, 0.0, 0.0));
         let domain = get_domain_type(&node.node_type);
-        
+
         // Node entity
-        let entity = commands.spawn((
-            GraphNode {
-                id: node.id.clone(),
-                node_type: node.node_type.clone(),
-                domain: domain.clone(),
-            },
-            Transform::from_xyz(position.0, position.1, 0.0)
-                .with_scale(Vec3::splat(40.0)),
-            Visibility::default(),
-        ))
-        .with_children(|parent| {
-            // Node visual (colored circle based on domain)
-            parent.spawn((
-                Sprite {
-                    color: get_domain_color(&domain),
-                    custom_size: Some(Vec2::new(2.0, 2.0)),
-                    ..default()
+        let entity = commands
+            .spawn((
+                GraphNode {
+                    id: node.id.clone(),
+                    node_type: node.node_type.clone(),
+                    domain: domain.clone(),
                 },
-                Transform::default(),
-            ));
-            
-            // Node label with name
-            parent.spawn((
-                Text::new(&node.label),
-                TextFont {
-                    font_size: 18.0,
-                    ..default()
-                },
-                TextColor(Color::WHITE),
-                Transform::from_xyz(0.0, -1.8, 1.0),
-                NodeLabel,
-            ));
-            
-            // Node type label
-            parent.spawn((
-                Text::new(format!("[{}]", node.node_type)),
-                TextFont {
-                    font_size: 14.0,
-                    ..default()
-                },
-                TextColor(Color::srgb(0.7, 0.7, 0.7)),
-                Transform::from_xyz(0.0, -2.5, 1.0),
-            ));
-        }).id();
-        
+                Transform::from_xyz(position.0, position.1, 0.0).with_scale(Vec3::splat(40.0)),
+                Visibility::default(),
+            ))
+            .with_children(|parent| {
+                // Node visual (colored circle based on domain)
+                parent.spawn((
+                    Sprite {
+                        color: get_domain_color(&domain),
+                        custom_size: Some(Vec2::new(2.0, 2.0)),
+                        ..default()
+                    },
+                    Transform::default(),
+                ));
+
+                // Node label with name
+                parent.spawn((
+                    Text::new(&node.label),
+                    TextFont {
+                        font_size: 18.0,
+                        ..default()
+                    },
+                    TextColor(Color::WHITE),
+                    Transform::from_xyz(0.0, -1.8, 1.0),
+                    NodeLabel,
+                ));
+
+                // Node type label
+                parent.spawn((
+                    Text::new(format!("[{node.node_type}]")),
+                    TextFont {
+                        font_size: 14.0,
+                        ..default()
+                    },
+                    TextColor(Color::srgb(0.7, 0.7, 0.7)),
+                    Transform::from_xyz(0.0, -2.5, 1.0),
+                ));
+            })
+            .id();
+
         node_entities.insert(node.id.clone(), entity);
     }
 
@@ -250,43 +251,44 @@ fn setup(
     for edge in &graph.data.edges {
         if let (Some(&source_entity), Some(&target_entity)) = (
             node_entities.get(&edge.source),
-            node_entities.get(&edge.target)
+            node_entities.get(&edge.target),
         ) {
             // Get positions of source and target nodes
             if let (Some(source_node), Some(target_node)) = (
                 graph.data.nodes.iter().find(|n| n.id == edge.source),
-                graph.data.nodes.iter().find(|n| n.id == edge.target)
+                graph.data.nodes.iter().find(|n| n.id == edge.target),
             ) {
                 let source_pos = source_node.position.unwrap_or((0.0, 0.0, 0.0));
                 let target_pos = target_node.position.unwrap_or((0.0, 0.0, 0.0));
-                
+
                 let start = Vec3::new(source_pos.0, source_pos.1, -0.1);
                 let end = Vec3::new(target_pos.0, target_pos.1, -0.1);
                 let midpoint = (start + end) / 2.0;
-                
+
                 // Edge line (simplified for now - in real app would draw actual line)
-                commands.spawn((
-                    GraphEdge {
-                        source: edge.source.clone(),
-                        target: edge.target.clone(),
-                        relationship: edge.edge_type.clone(),
-                    },
-                    Transform::from_translation(midpoint),
-                    Visibility::default(),
-                ))
-                .with_children(|parent| {
-                    // Edge label
-                    parent.spawn((
-                        Text::new(&edge.edge_type),
-                        TextFont {
-                            font_size: 14.0,
-                            ..default()
+                commands
+                    .spawn((
+                        GraphEdge {
+                            source: edge.source.clone(),
+                            target: edge.target.clone(),
+                            relationship: edge.edge_type.clone(),
                         },
-                        TextColor(Color::srgb(0.8, 0.8, 0.3)),
-                        Transform::from_xyz(0.0, 0.0, 0.1),
-                        EdgeLabel,
-                    ));
-                });
+                        Transform::from_translation(midpoint),
+                        Visibility::default(),
+                    ))
+                    .with_children(|parent| {
+                        // Edge label
+                        parent.spawn((
+                            Text::new(&edge.edge_type),
+                            TextFont {
+                                font_size: 14.0,
+                                ..default()
+                            },
+                            TextColor(Color::srgb(0.8, 0.8, 0.3)),
+                            Transform::from_xyz(0.0, 0.0, 0.1),
+                            EdgeLabel,
+                        ));
+                    });
             }
         }
     }
@@ -354,11 +356,11 @@ fn get_domain_type(node_type: &str) -> DomainType {
 
 fn get_domain_color(domain: &DomainType) -> Color {
     match domain {
-        DomainType::Person => Color::srgb(0.2, 0.8, 0.2),      // Green
+        DomainType::Person => Color::srgb(0.2, 0.8, 0.2), // Green
         DomainType::Organization => Color::srgb(0.2, 0.2, 0.8), // Blue
-        DomainType::Policy => Color::srgb(0.8, 0.8, 0.2),      // Yellow
-        DomainType::Location => Color::srgb(0.8, 0.2, 0.2),    // Red
-        DomainType::Agent => Color::srgb(0.6, 0.2, 0.8),       // Purple
+        DomainType::Policy => Color::srgb(0.8, 0.8, 0.2), // Yellow
+        DomainType::Location => Color::srgb(0.8, 0.2, 0.2), // Red
+        DomainType::Agent => Color::srgb(0.6, 0.2, 0.8),  // Purple
     }
 }
 
@@ -380,7 +382,7 @@ fn handle_input(
             graph_data: graph.data.clone(),
             capability: AnalysisCapability::GraphAnalysis,
         };
-        
+
         if channels.sender.send(request).is_ok() {
             analysis.text = "🔄 Analyzing domain relationships with AI...".to_string();
             analysis.timestamp = time.elapsed_secs_f64();
@@ -414,8 +416,7 @@ fn update_node_positions(
     if keyboard.just_pressed(KeyCode::KeyR) {
         // Reset to original positions
         for (node_component, mut transform) in nodes.iter_mut() {
-            if let Some(node_data) = graph.data.nodes.iter()
-                .find(|n| n.id == node_component.id) {
+            if let Some(node_data) = graph.data.nodes.iter().find(|n| n.id == node_component.id) {
                 let pos = node_data.position.unwrap_or((0.0, 0.0, 0.0));
                 transform.translation = Vec3::new(pos.0, pos.1, 0.0);
             }
@@ -430,7 +431,7 @@ fn update_node_positions(
                 DomainType::Location => 1.5,
                 DomainType::Agent => 2.0,
             };
-            
+
             let offset = (time.elapsed_secs() * 0.3 + domain_offset).sin() * 3.0;
             transform.translation.y += offset * time.delta_secs();
         }
@@ -447,7 +448,7 @@ fn display_analysis(
         for entity in existing_text.iter() {
             commands.entity(entity).despawn();
         }
-        
+
         // Create new analysis text
         commands.spawn((
             Text::new(&analysis.text),
@@ -505,7 +506,6 @@ fn create_cim_domain_graph() -> GraphData {
             ]),
             position: Some((0.0, 200.0, 0.0)),
         },
-        
         // Organizations
         NodeData {
             id: "techcorp".to_string(),
@@ -527,7 +527,6 @@ fn create_cim_domain_graph() -> GraphData {
             ]),
             position: Some((0.0, 0.0, 0.0)),
         },
-        
         // Policies
         NodeData {
             id: "data_policy".to_string(),
@@ -549,14 +548,16 @@ fn create_cim_domain_graph() -> GraphData {
             ]),
             position: Some((300.0, -100.0, 0.0)),
         },
-        
         // Locations
         NodeData {
             id: "hq".to_string(),
             node_type: "Location".to_string(),
             label: "Headquarters".to_string(),
             properties: HashMap::from([
-                ("address".to_string(), json!("123 Tech Street, San Francisco")),
+                (
+                    "address".to_string(),
+                    json!("123 Tech Street, San Francisco"),
+                ),
                 ("capacity".to_string(), json!(300)),
             ]),
             position: Some((-300.0, -200.0, 0.0)),
@@ -571,14 +572,16 @@ fn create_cim_domain_graph() -> GraphData {
             ]),
             position: Some((0.0, -200.0, 0.0)),
         },
-        
         // AI Agents
         NodeData {
             id: "assistant".to_string(),
             node_type: "AI Agent".to_string(),
             label: "Development Assistant".to_string(),
             properties: HashMap::from([
-                ("capabilities".to_string(), json!(["code_review", "documentation", "testing"])),
+                (
+                    "capabilities".to_string(),
+                    json!(["code_review", "documentation", "testing"]),
+                ),
                 ("model".to_string(), json!("Claude 3.5")),
             ]),
             position: Some((200.0, 200.0, 0.0)),
@@ -588,7 +591,10 @@ fn create_cim_domain_graph() -> GraphData {
             node_type: "AI Agent".to_string(),
             label: "Policy Analyzer".to_string(),
             properties: HashMap::from([
-                ("capabilities".to_string(), json!(["compliance_check", "risk_assessment"])),
+                (
+                    "capabilities".to_string(),
+                    json!(["compliance_check", "risk_assessment"]),
+                ),
                 ("model".to_string(), json!("GPT-4")),
             ]),
             position: Some((400.0, 0.0, 0.0)),
@@ -602,9 +608,7 @@ fn create_cim_domain_graph() -> GraphData {
             source: "alice".to_string(),
             target: "techcorp".to_string(),
             edge_type: "leads".to_string(),
-            properties: HashMap::from([
-                ("since".to_string(), json!("2020")),
-            ]),
+            properties: HashMap::from([("since".to_string(), json!("2020"))]),
         },
         EdgeData {
             id: "e2".to_string(),
@@ -627,7 +631,6 @@ fn create_cim_domain_graph() -> GraphData {
             edge_type: "manages".to_string(),
             properties: HashMap::new(),
         },
-        
         // Organization relationships
         EdgeData {
             id: "e5".to_string(),
@@ -636,7 +639,6 @@ fn create_cim_domain_graph() -> GraphData {
             edge_type: "part_of".to_string(),
             properties: HashMap::new(),
         },
-        
         // Policy relationships
         EdgeData {
             id: "e6".to_string(),
@@ -652,7 +654,6 @@ fn create_cim_domain_graph() -> GraphData {
             edge_type: "governed_by".to_string(),
             properties: HashMap::new(),
         },
-        
         // Location relationships
         EdgeData {
             id: "e8".to_string(),
@@ -668,7 +669,6 @@ fn create_cim_domain_graph() -> GraphData {
             edge_type: "works_from".to_string(),
             properties: HashMap::new(),
         },
-        
         // AI Agent relationships
         EdgeData {
             id: "e10".to_string(),
@@ -703,4 +703,4 @@ fn create_cim_domain_graph() -> GraphData {
             ("version".to_string(), json!("1.0")),
         ]),
     }
-} 
+}
