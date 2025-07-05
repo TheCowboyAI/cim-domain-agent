@@ -45,7 +45,7 @@ impl AgentToolAccess {
     /// Update usage statistics
     pub fn record_usage(&mut self, tool_id: &str, success: bool) {
         let stats = self.usage_stats.entry(tool_id.to_string())
-            .or_insert_with(ToolUsageStats::default);
+            .or_default();
         
         stats.invocation_count += 1;
         if success {
@@ -240,6 +240,7 @@ impl ToolExecutionHistory {
 
 /// Component for tool preferences
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct ToolPreferences {
     /// Preferred tools for specific tasks
     pub task_preferences: HashMap<String, Vec<String>>,
@@ -249,12 +250,4 @@ pub struct ToolPreferences {
     pub disabled_tools: Vec<String>,
 }
 
-impl Default for ToolPreferences {
-    fn default() -> Self {
-        Self {
-            task_preferences: HashMap::new(),
-            tool_priorities: HashMap::new(),
-            disabled_tools: Vec::new(),
-        }
-    }
-} 
+ 

@@ -51,6 +51,7 @@ pub trait VectorStore: Send + Sync {
 
 /// Filter criteria for vector search
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct SearchFilter {
     /// Filter by source type
     pub source_types: Option<Vec<String>>,
@@ -65,16 +66,6 @@ pub struct SearchFilter {
     pub created_before: Option<std::time::SystemTime>,
 }
 
-impl Default for SearchFilter {
-    fn default() -> Self {
-        Self {
-            source_types: None,
-            metadata_filters: HashMap::new(),
-            created_after: None,
-            created_before: None,
-        }
-    }
-}
 
 /// In-memory vector store implementation
 pub struct InMemoryVectorStore {

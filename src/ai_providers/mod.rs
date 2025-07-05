@@ -208,7 +208,7 @@ pub fn graph_to_prompt(graph: &GraphData) -> String {
     if !graph.metadata.is_empty() {
         prompt.push_str("Metadata:\n");
         for (key, value) in &graph.metadata {
-            prompt.push_str(&format!("  {}: {}\n", key, value));
+            prompt.push_str(&format!("  {key}: {value}\n"));
         }
     }
     
@@ -218,7 +218,7 @@ pub fn graph_to_prompt(graph: &GraphData) -> String {
         prompt.push_str(&format!("- {} [{}]: {}\n", node.id, node.node_type, node.label));
         if !node.properties.is_empty() {
             for (key, value) in &node.properties {
-                prompt.push_str(&format!("    {}: {}\n", key, value));
+                prompt.push_str(&format!("    {key}: {value}\n"));
             }
         }
     }
@@ -229,7 +229,7 @@ pub fn graph_to_prompt(graph: &GraphData) -> String {
         prompt.push_str(&format!("- {} -> {} [{}]\n", edge.source, edge.target, edge.edge_type));
         if !edge.properties.is_empty() {
             for (key, value) in &edge.properties {
-                prompt.push_str(&format!("    {}: {}\n", key, value));
+                prompt.push_str(&format!("    {key}: {value}\n"));
             }
         }
     }

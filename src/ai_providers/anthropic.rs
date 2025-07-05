@@ -74,8 +74,8 @@ impl AnthropicProvider {
     /// Parse Anthropic response into analysis result
     fn parse_analysis_response(&self, response: &MessageResponse, analysis_type: AnalysisCapability) -> AIProviderResult<AnalysisResult> {
         let content = response.content.first()
-            .and_then(|c| match c {
-                ContentBlock::Text { text } => Some(text),
+            .map(|c| match c {
+                ContentBlock::Text { text } => text,
             })
             .ok_or_else(|| AIProviderError::InvalidResponse("No text content in response".to_string()))?;
         
@@ -103,7 +103,7 @@ impl AnthropicProvider {
         Ok(AnalysisResult {
             id: uuid::Uuid::new_v4(),
             confidence_score: 0.85, // Claude confidence estimate
-            summary: format!("{:?} analysis completed", analysis_type),
+            summary: format!("{analysis_type:?} analysis completed"),
             recommendations,
             insights,
             metadata: HashMap::from([
@@ -265,7 +265,7 @@ impl GraphAnalysisProvider for AnthropicProvider {
         };
         
         let response = self.client
-            .post(&format!("{}/messages", self.base_url))
+            .post(format!("{}/messages", self.base_url))
             .json(&request)
             .send()
             .await
@@ -273,7 +273,7 @@ impl GraphAnalysisProvider for AnthropicProvider {
         
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AIProviderError::ApiError(format!("Anthropic API error: {}", error_text)));
+            return Err(AIProviderError::ApiError(format!("Anthropic API error: {error_text}")));
         }
         
         let message_response: MessageResponse = response.json().await
@@ -310,7 +310,7 @@ impl GraphAnalysisProvider for AnthropicProvider {
         };
         
         let response = self.client
-            .post(&format!("{}/messages", self.base_url))
+            .post(format!("{}/messages", self.base_url))
             .json(&request)
             .send()
             .await
@@ -318,15 +318,15 @@ impl GraphAnalysisProvider for AnthropicProvider {
         
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AIProviderError::ApiError(format!("Anthropic API error: {}", error_text)));
+            return Err(AIProviderError::ApiError(format!("Anthropic API error: {error_text}")));
         }
         
         let message_response: MessageResponse = response.json().await
             .map_err(|e| AIProviderError::InvalidResponse(e.to_string()))?;
         
         let content = message_response.content.first()
-            .and_then(|c| match c {
-                ContentBlock::Text { text } => Some(text),
+            .map(|c| match c {
+                ContentBlock::Text { text } => text,
             })
             .ok_or_else(|| AIProviderError::InvalidResponse("No text content in response".to_string()))?;
         

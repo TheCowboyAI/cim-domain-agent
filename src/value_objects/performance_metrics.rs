@@ -5,6 +5,7 @@ use std::time::Duration;
 
 /// Performance metrics for an agent
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct PerformanceMetrics {
     /// Task completion metrics
     pub task_metrics: TaskMetrics,
@@ -92,16 +93,6 @@ pub struct MetricsPeriod {
     pub end: std::time::SystemTime,
 }
 
-impl Default for PerformanceMetrics {
-    fn default() -> Self {
-        Self {
-            task_metrics: TaskMetrics::default(),
-            resource_metrics: ResourceMetrics::default(),
-            quality_metrics: QualityMetrics::default(),
-            period: MetricsPeriod::default(),
-        }
-    }
-}
 
 impl Default for TaskMetrics {
     fn default() -> Self {

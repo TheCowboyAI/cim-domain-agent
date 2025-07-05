@@ -5,16 +5,16 @@
 
 use bevy_ecs::prelude::*;
 use bevy::prelude::{Time, EventReader, EventWriter, Plugin, App, Update};
-use chrono::{DateTime, Utc, Duration};
 use crate::components::{AgentEntity, AgentCapabilities};
 use crate::events::AuthenticationEvent;
 use crate::value_objects::{AgentId, AuthToken, SessionId};
 use std::collections::HashMap;
 use uuid::Uuid;
-use tracing::{info, warn, error, debug};
+use tracing::{info, warn, debug};
 
 /// Component representing authentication state
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct AuthenticationState {
     pub is_authenticated: bool,
     pub session_id: Option<SessionId>,
@@ -22,16 +22,6 @@ pub struct AuthenticationState {
     pub expires_at: Option<std::time::SystemTime>,
 }
 
-impl Default for AuthenticationState {
-    fn default() -> Self {
-        Self {
-            is_authenticated: false,
-            session_id: None,
-            token: None,
-            expires_at: None,
-        }
-    }
-}
 
 /// Marker component for authenticated agents
 #[derive(Component, Debug, Clone)]
@@ -86,15 +76,15 @@ pub fn handle_authentication_requests(
                 
                 // Update authentication state
                 auth_state.is_authenticated = true;
-                auth_state.session_id = Some(session_id.clone());
+                auth_state.session_id = Some(session_id);
                 auth_state.token = Some(request.token.clone());
                 auth_state.expires_at = Some(
                     std::time::SystemTime::now() + std::time::Duration::from_secs(3600)
                 );
 
                 // Store session
-                auth_manager.sessions.insert(session_id.clone(), request.agent_id.clone());
-                auth_manager.tokens.insert(request.token.clone(), session_id.clone());
+                auth_manager.sessions.insert(session_id, request.agent_id);
+                auth_manager.tokens.insert(request.token.clone(), session_id);
 
                 // Log authentication for this specific entity
                 info!("Agent {:?} authenticated with entity {:?}", agent.agent_id, entity);
@@ -106,15 +96,15 @@ pub fn handle_authentication_requests(
 
                 // Send success response
                 auth_responses.write(AuthenticationResponse {
-                    agent_id: request.agent_id.clone(),
+                    agent_id: request.agent_id,
                     success: true,
-                    session_id: Some(session_id.clone()),
+                    session_id: Some(session_id),
                     message: "Authentication successful".to_string(),
                 });
 
                 // Send authentication event
                 commands.trigger(AuthenticationEvent::Authenticated {
-                    agent_id: request.agent_id.clone(),
+                    agent_id: request.agent_id,
                     session_id,
                 });
             } else {
@@ -123,21 +113,21 @@ pub fn handle_authentication_requests(
 
                 // Send failure response
                 auth_responses.write(AuthenticationResponse {
-                    agent_id: request.agent_id.clone(),
+                    agent_id: request.agent_id,
                     success: false,
                     session_id: None,
                     message: "Invalid token".to_string(),
                 });
 
                 commands.trigger(AuthenticationEvent::AuthenticationFailed {
-                    agent_id: request.agent_id.clone(),
+                    agent_id: request.agent_id,
                     reason: "Invalid token".to_string(),
                 });
             }
         } else {
             // Agent not found
             auth_responses.write(AuthenticationResponse {
-                agent_id: request.agent_id.clone(),
+                agent_id: request.agent_id,
                 success: false,
                 session_id: None,
                 message: "Agent not found".to_string(),

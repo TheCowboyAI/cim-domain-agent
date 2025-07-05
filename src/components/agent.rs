@@ -33,6 +33,7 @@ pub struct AgentOwner {
 
 /// Component tracking agent relationships
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct AgentRelationships {
     /// Parent agent if this is a sub-agent
     pub parent_agent: Option<Uuid>,
@@ -42,15 +43,6 @@ pub struct AgentRelationships {
     pub collaborators: Vec<Uuid>,
 }
 
-impl Default for AgentRelationships {
-    fn default() -> Self {
-        Self {
-            parent_agent: None,
-            child_agents: Vec::new(),
-            collaborators: Vec::new(),
-        }
-    }
-}
 
 /// Component for agent resource usage
 #[derive(Component, Debug, Clone)]

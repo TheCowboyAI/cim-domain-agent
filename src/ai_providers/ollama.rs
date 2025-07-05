@@ -42,7 +42,7 @@ impl OllamaProvider {
     pub async fn check_health(&self) -> AIProviderResult<()> {
         // Check if Ollama is running
         let response = self.client
-            .get(&format!("{}/api/tags", self.base_url))
+            .get(format!("{}/api/tags", self.base_url))
             .send()
             .await
             .map_err(|e| AIProviderError::ConnectionError(format!("Cannot connect to Ollama: {e}")))?;
@@ -214,8 +214,7 @@ impl OllamaProvider {
             .and_then(|r| r.as_array())
             .map(|recommendations| {
                 recommendations.iter()
-                    .enumerate()
-                    .filter_map(|(_i, r)| {
+                    .filter_map(|r| {
                         Some(Recommendation {
                             id: uuid::Uuid::new_v4(),
                             title: r.get("title")
@@ -380,7 +379,7 @@ impl GraphAnalysisProvider for OllamaProvider {
         };
         
         let response = self.client
-            .post(&format!("{}/api/generate", self.base_url))
+            .post(format!("{}/api/generate", self.base_url))
             .json(&request)
             .send()
             .await
@@ -388,7 +387,7 @@ impl GraphAnalysisProvider for OllamaProvider {
         
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AIProviderError::ApiError(format!("Ollama API error: {}", error_text)));
+            return Err(AIProviderError::ApiError(format!("Ollama API error: {error_text}")));
         }
         
         let generate_response: GenerateResponse = response.json().await
@@ -424,7 +423,7 @@ impl GraphAnalysisProvider for OllamaProvider {
         };
         
         let response = self.client
-            .post(&format!("{}/api/generate", self.base_url))
+            .post(format!("{}/api/generate", self.base_url))
             .json(&request)
             .send()
             .await
@@ -432,7 +431,7 @@ impl GraphAnalysisProvider for OllamaProvider {
         
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AIProviderError::ApiError(format!("Ollama API error: {}", error_text)));
+            return Err(AIProviderError::ApiError(format!("Ollama API error: {error_text}")));
         }
         
         let generate_response: GenerateResponse = response.json().await

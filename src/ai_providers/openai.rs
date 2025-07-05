@@ -97,7 +97,7 @@ impl OpenAIProvider {
         Ok(AnalysisResult {
             id: uuid::Uuid::new_v4(),
             confidence_score: 0.8, // OpenAI confidence estimate
-            summary: format!("{:?} analysis completed", analysis_type),
+            summary: format!("{analysis_type:?} analysis completed"),
             recommendations,
             insights,
             metadata: HashMap::from([
@@ -262,7 +262,7 @@ impl GraphAnalysisProvider for OpenAIProvider {
         };
         
         let response = self.client
-            .post(&format!("{}/chat/completions", self.base_url))
+            .post(format!("{}/chat/completions", self.base_url))
             .json(&request)
             .send()
             .await
@@ -270,7 +270,7 @@ impl GraphAnalysisProvider for OpenAIProvider {
         
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AIProviderError::ApiError(format!("OpenAI API error: {}", error_text)));
+            return Err(AIProviderError::ApiError(format!("OpenAI API error: {error_text}")));
         }
         
         let chat_response: ChatResponse = response.json().await
@@ -311,7 +311,7 @@ impl GraphAnalysisProvider for OpenAIProvider {
         };
         
         let response = self.client
-            .post(&format!("{}/chat/completions", self.base_url))
+            .post(format!("{}/chat/completions", self.base_url))
             .json(&request)
             .send()
             .await
@@ -319,7 +319,7 @@ impl GraphAnalysisProvider for OpenAIProvider {
         
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            return Err(AIProviderError::ApiError(format!("OpenAI API error: {}", error_text)));
+            return Err(AIProviderError::ApiError(format!("OpenAI API error: {error_text}")));
         }
         
         let chat_response: ChatResponse = response.json().await

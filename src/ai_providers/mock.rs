@@ -12,6 +12,12 @@ pub struct MockAIProvider {
     delay_ms: u64,
 }
 
+impl Default for MockAIProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MockAIProvider {
     pub fn new() -> Self {
         Self { delay_ms: 100 }

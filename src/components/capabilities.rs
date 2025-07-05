@@ -54,6 +54,7 @@ impl Default for AgentCapabilities {
 
 /// Component for capability requirements
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct CapabilityRequirements {
     /// Required capabilities for the agent to function
     pub required: HashSet<String>,
@@ -63,18 +64,10 @@ pub struct CapabilityRequirements {
     pub incompatible: HashSet<String>,
 }
 
-impl Default for CapabilityRequirements {
-    fn default() -> Self {
-        Self {
-            required: HashSet::new(),
-            optional: HashSet::new(),
-            incompatible: HashSet::new(),
-        }
-    }
-}
 
 /// Component tracking capability usage
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct CapabilityUsageStats {
     /// Usage count per capability
     pub usage_count: HashMap<String, u64>,
@@ -84,18 +77,10 @@ pub struct CapabilityUsageStats {
     pub success_rate: HashMap<String, f32>,
 }
 
-impl Default for CapabilityUsageStats {
-    fn default() -> Self {
-        Self {
-            usage_count: HashMap::new(),
-            last_used: HashMap::new(),
-            success_rate: HashMap::new(),
-        }
-    }
-}
 
 /// Component for capability categories
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct CapabilityCategories {
     /// Mapping of categories to capabilities
     pub categories: HashMap<String, HashSet<String>>,
@@ -111,18 +96,11 @@ impl CapabilityCategories {
     pub fn add_to_category(&mut self, category: String, capability: String) {
         self.categories
             .entry(category)
-            .or_insert_with(HashSet::new)
+            .or_default()
             .insert(capability);
     }
 }
 
-impl Default for CapabilityCategories {
-    fn default() -> Self {
-        Self {
-            categories: HashMap::new(),
-        }
-    }
-}
 
 /// Predefined capability types
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

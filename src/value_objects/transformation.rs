@@ -5,6 +5,7 @@ use serde_json::Value;
 
 /// A suggestion for transforming a graph
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct TransformationSuggestion {
     /// Unique identifier for this suggestion
     pub id: String,
@@ -29,16 +30,4 @@ pub struct TransformationSuggestion {
     pub risk_assessment: Option<Value>,
 }
 
-impl Default for TransformationSuggestion {
-    fn default() -> Self {
-        Self {
-            id: String::new(),
-            suggestion_type: String::new(),
-            description: String::new(),
-            rationale: String::new(),
-            expected_benefit: String::new(),
-            transformation_steps: Vec::new(),
-            risk_assessment: None,
-        }
-    }
-} 
+ 

@@ -141,6 +141,12 @@ impl SemanticAnalyzer {
     }
 }
 
+impl Default for GraphConceptualMapper {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GraphConceptualMapper {
     /// Create a new mapper with default settings
     pub fn new() -> Self {
@@ -468,6 +474,12 @@ pub struct GraphContentSummary {
     pub node_titles: Vec<String>,
     pub node_descriptions: Vec<String>,
     pub edge_labels: Vec<String>,
+}
+
+impl Default for GraphContentSummary {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl GraphContentSummary {

@@ -68,14 +68,14 @@ pub fn manage_capabilities_system(
 pub fn update_capability_usage_system(
     mut usage_events: EventReader<CapabilityUsedEvent>,
     mut agent_query: Query<(&AgentEntity, Option<&mut CapabilityUsageStats>)>,
-    _commands: Commands,
+    mut commands: Commands,
 ) {
     for usage_event in usage_events.read() {
         // Find the agent
         let agent_found = agent_query.iter_mut()
             .find(|(entity, _)| entity.agent_id == usage_event.agent_id);
 
-        if let Some((_agent_entity, usage_stats)) = agent_found {
+        if let Some((agent_entity, usage_stats)) = agent_found {
             if let Some(mut stats) = usage_stats {
                 // Update existing stats
                 let count = {
@@ -114,8 +114,11 @@ pub fn update_capability_usage_system(
                     if usage_event.success { 1.0 } else { 0.0 }
                 );
 
-                // TODO: In a real implementation, we'd need to store the Entity ID
-                // to add the component. For now, this is a placeholder.
+                // Find the entity in the query and add the component
+                if let Some((entity, _)) = agent_query.iter()
+                    .find(|(e, _)| e.agent_id == usage_event.agent_id) {
+                    commands.entity(entity).insert(new_stats);
+                }
             }
         }
     }
@@ -163,9 +166,9 @@ pub fn check_capability_requirements_system(
             };
 
             let message = if !missing_required.is_empty() {
-                format!("Missing required capabilities: {:?}", missing_required)
+                format!("Missing required capabilities: {missing_required:?}")
             } else if !has_incompatible.is_empty() {
-                format!("Has incompatible capabilities: {:?}", has_incompatible)
+                format!("Has incompatible capabilities: {has_incompatible:?}")
             } else {
                 "All capability requirements met".to_string()
             };
@@ -179,26 +182,26 @@ pub fn check_capability_requirements_system(
     }
 }
 
-/// System for categorizing capabilities
+/// System for categorizing agent capabilities
 ///
 /// ```mermaid
 /// graph LR
 ///     A[CapabilityCategorizeCommand] --> B[categorize_capabilities_system]
 ///     B --> C[Find Agent]
 ///     C --> D[Update Categories]
-///     D --> E[Reorganize]
+///     D --> E[Store Categories]
 /// ```
 pub fn categorize_capabilities_system(
     mut categorize_events: EventReader<CapabilityCategorizeCommand>,
     mut agent_query: Query<(&AgentEntity, &AgentCapabilities, Option<&mut CapabilityCategories>)>,
-    _commands: Commands,
+    mut commands: Commands,
 ) {
     for categorize_cmd in categorize_events.read() {
         // Find the agent
         let agent_found = agent_query.iter_mut()
             .find(|(entity, _, _)| entity.agent_id == categorize_cmd.agent_id);
 
-        if let Some((_, _capabilities, categories)) = agent_found {
+        if let Some((_, capabilities, categories)) = agent_found {
             if let Some(mut cats) = categories {
                 // Update existing categories
                 cats.add_to_category(
@@ -213,7 +216,11 @@ pub fn categorize_capabilities_system(
                     categorize_cmd.capability.clone()
                 );
                 
-                // Would add component here in real implementation
+                // Find the entity in the query and add the component
+                if let Some((entity, _, _)) = agent_query.iter()
+                    .find(|(e, _, _)| e.agent_id == categorize_cmd.agent_id) {
+                    commands.entity(entity).insert(new_cats);
+                }
             }
         }
     }

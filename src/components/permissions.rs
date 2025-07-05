@@ -79,6 +79,7 @@ impl Default for PermissionInheritance {
 
 /// Component for permission scope
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct PermissionScope {
     /// Resource-specific permissions
     pub resource_permissions: std::collections::HashMap<String, HashSet<String>>,
@@ -86,14 +87,6 @@ pub struct PermissionScope {
     pub global_permissions: HashSet<String>,
 }
 
-impl Default for PermissionScope {
-    fn default() -> Self {
-        Self {
-            resource_permissions: std::collections::HashMap::new(),
-            global_permissions: HashSet::new(),
-        }
-    }
-}
 
 /// Standard permission types
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

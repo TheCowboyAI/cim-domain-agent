@@ -13,24 +13,17 @@ use crate::value_objects::{
 use crate::systems::permissions::PermissionsComponent;
 use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
+use std::time::Duration;
 
 /// Component representing available tools for an agent
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct ToolsComponent {
     pub available_tools: HashMap<String, Tool>,
     pub tool_usage_history: Vec<ToolUsage>,
     pub active_executions: HashSet<Uuid>,
 }
 
-impl Default for ToolsComponent {
-    fn default() -> Self {
-        Self {
-            available_tools: HashMap::new(),
-            tool_usage_history: Vec::new(),
-            active_executions: HashSet::new(),
-        }
-    }
-}
 
 /// Resource for managing tool registry
 #[derive(Resource, Debug, Default)]
@@ -113,7 +106,15 @@ pub fn handle_tool_registration(
             tool_id: request.tool.id.clone(),
             tool_name: tool_name.clone(),
             registered_at: std::time::SystemTime::now(),
-            tool_type: request.tool.tool_type.clone(),
+            tool_type: match &request.tool.category {
+                ToolCategory::Analysis => ToolType::AIService,
+                ToolCategory::Transformation => ToolType::AIService,
+                ToolCategory::Query => ToolType::Database,
+                ToolCategory::Communication => ToolType::MessageQueue,
+                ToolCategory::Integration => ToolType::RestAPI,
+                ToolCategory::DataManipulation => ToolType::FileSystem,
+                ToolCategory::Custom(s) => ToolType::Custom(s.clone()),
+            },
             category: request.tool.category.clone(),
         });
         
@@ -150,7 +151,22 @@ pub fn assign_tools_to_agents(
                     // Add tool to agent
                     tools.available_tools.insert(tool.name.clone(), tool.clone());
                     
-                    // Usage tracking will be done when the tool is actually used
+                    // Create audit record for tool assignment
+                    commands.entity(entity).insert(ToolRegistrationAudit {
+                        tool_id: tool.id.clone(),
+                        tool_name: tool.name.clone(),
+                        registered_at: std::time::SystemTime::now(),
+                        tool_type: match &tool.category {
+                            ToolCategory::Analysis => ToolType::AIService,
+                            ToolCategory::Transformation => ToolType::AIService,
+                            ToolCategory::Query => ToolType::Database,
+                            ToolCategory::Communication => ToolType::MessageQueue,
+                            ToolCategory::DataManipulation => ToolType::FileSystem,
+                            ToolCategory::Integration => ToolType::RestAPI,
+                            ToolCategory::Custom(s) => ToolType::Custom(s.clone()),
+                        },
+                        category: tool.category.clone(),
+                    });
                     
                     // Create tool access for the event
                     let tool_access = ToolAccess::new(
@@ -158,15 +174,17 @@ pub fn assign_tools_to_agents(
                         tool.name.clone(),
                         match &tool.category {
                             ToolCategory::Analysis => ToolType::AIService,
+                            ToolCategory::Transformation => ToolType::AIService,
                             ToolCategory::Query => ToolType::Database,
                             ToolCategory::Communication => ToolType::MessageQueue,
+                            ToolCategory::DataManipulation => ToolType::FileSystem,
                             ToolCategory::Integration => ToolType::RestAPI,
-                            _ => ToolType::Custom(format!("{:?}", tool.category)),
+                            ToolCategory::Custom(s) => ToolType::Custom(s.clone()),
                         }
                     );
                     
                     // Trigger event
-                    tools_changed.send(AgentToolsChanged {
+                    tools_changed.write(AgentToolsChanged {
                         agent_id: AgentId::from_uuid(agent.agent_id),
                         enabled: vec![tool_access],
                         disabled: vec![],
@@ -195,50 +213,70 @@ pub fn handle_tool_execution(
         {
             // Check if agent has the tool
             if let Some(tool) = tools.available_tools.get(&request.tool_name).cloned() {
-                // Check if agent has execute capability
-                if !capabilities.has("capability.execute") {
+                // Check if agent has required capabilities
+                let has_capabilities = tool.required_capabilities.is_empty() ||
+                    tool.required_capabilities.iter().all(|cap| capabilities.has(cap));
+                
+                if !has_capabilities {
                     execution_responses.write(ExecuteToolResponse {
-                        agent_id: request.agent_id.clone(),
+                        agent_id: request.agent_id,
                         tool_name: request.tool_name.clone(),
                         execution_id: request.execution_id,
                         result: ExecutionResult::failure(ExecutionError {
-                            code: "NO_EXECUTE_CAPABILITY".to_string(),
-                            message: "Agent does not have tool execution capability".to_string(),
+                            code: "MISSING_CAPABILITY".to_string(),
+                            message: "Agent lacks required capabilities for this tool".to_string(),
                             stack_trace: None,
                             recoverable: false,
-                            remediation: Some("Grant execute capability to the agent".to_string()),
+                            remediation: Some("Add required capabilities to agent".to_string()),
                         }),
                     });
                     continue;
                 }
                 
-                // Add to active executions
+                // Check if tool exists in registry for validation
+                if !registry.tools.contains_key(&request.tool_name) {
+                    warn!("Tool {} not found in registry but exists in agent tools", request.tool_name);
+                }
+                
+                // Track execution start
                 tools.active_executions.insert(request.execution_id);
                 
-                // Simulate tool execution (in real implementation, this would call actual tool)
-                let start_time = std::time::Instant::now();
-                let result = execute_tool_mock(&tool, &request.parameters);
-                let execution_time = start_time.elapsed();
+                // Create execution audit record
+                let execution_entity = commands.spawn(ToolExecutionAudit {
+                    execution_id: request.execution_id,
+                    agent_id: request.agent_id,
+                    tool_name: request.tool_name.clone(),
+                    started_at: time.elapsed(),
+                    completed_at: None,
+                    success: false,
+                }).id();
+                
+                // Execute the tool (mock implementation)
+                let result = execute_tool(&tool, &request.parameters);
+                
+                // Update execution audit
+                commands.entity(execution_entity).insert(ToolExecutionCompleted {
+                    completed_at: time.elapsed(),
+                    success: result.is_success(),
+                });
                 
                 // Record usage
-                let usage = ToolUsage {
-                    tool_id: request.tool_name.clone(),
-                    agent_id: agent.agent_id,
+                tools.tool_usage_history.push(ToolUsage {
+                    tool_id: tool.id.clone(),
                     used_at: chrono::Utc::now(),
-                    duration_ms: execution_time.as_millis() as u64,
-                    success: result.success,
-                    error: if result.success { None } else { result.error.as_ref().map(|e| e.message.clone()) },
-                    input_summary: Some(request.parameters.clone()),
-                    output_summary: result.output.clone(),
-                };
-                tools.tool_usage_history.push(usage);
+                    duration_ms: 100, // Mock duration
+                    success: result.is_success(),
+                    error_message: if result.is_success() { None } else { 
+                        result.error.as_ref().map(|e| e.message.clone()) 
+                    },
+                });
                 
                 // Remove from active executions
                 tools.active_executions.remove(&request.execution_id);
                 
                 // Send response
                 execution_responses.write(ExecuteToolResponse {
-                    agent_id: request.agent_id.clone(),
+                    agent_id: request.agent_id,
                     tool_name: request.tool_name.clone(),
                     execution_id: request.execution_id,
                     result,
@@ -249,7 +287,7 @@ pub fn handle_tool_execution(
             } else {
                 // Tool not available
                 execution_responses.write(ExecuteToolResponse {
-                    agent_id: request.agent_id.clone(),
+                    agent_id: request.agent_id,
                     tool_name: request.tool_name.clone(),
                     execution_id: request.execution_id,
                     result: ExecutionResult::failure(ExecutionError {
@@ -267,7 +305,6 @@ pub fn handle_tool_execution(
 
 /// System to remove tools from agents
 pub fn handle_tool_removal(
-    _commands: Commands,
     mut removal_requests: EventReader<RemoveToolRequest>,
     mut query: Query<(&AgentEntity, &mut ToolsComponent)>,
     mut tools_changed: EventWriter<AgentToolsChanged>,
@@ -279,7 +316,7 @@ pub fn handle_tool_removal(
         {
             if tools.available_tools.remove(&request.tool_name).is_some() {
                 // Trigger event
-                tools_changed.send(AgentToolsChanged {
+                tools_changed.write(AgentToolsChanged {
                     agent_id: AgentId::from_uuid(agent.agent_id),
                     enabled: vec![],
                     disabled: vec![request.tool_name.clone()],
@@ -298,56 +335,33 @@ pub struct RemoveToolRequest {
 }
 
 /// Mock tool execution function
-fn execute_tool_mock(tool: &Tool, parameters: &serde_json::Value) -> ExecutionResult {
-    // Simulate different tool behaviors based on category
+fn execute_tool(tool: &Tool, parameters: &serde_json::Value) -> ExecutionResult {
+    // Simulate execution based on tool type
     match &tool.category {
         ToolCategory::Analysis => {
+            // Simulate analysis
             ExecutionResult::success(serde_json::json!({
-                "analysis": "Mock analysis result",
-                "parameters": parameters,
-                "tool": tool.name
-            }))
-        }
-        ToolCategory::Transformation => {
-            ExecutionResult::success(serde_json::json!({
-                "transformed": "Mock transformation result",
-                "parameters": parameters,
-                "tool": tool.name
+                "analysis_complete": true,
+                "insights": ["Pattern detected", "Anomaly found"],
+                "confidence": 0.85
             }))
         }
         ToolCategory::Query => {
+            // Simulate query
             ExecutionResult::success(serde_json::json!({
-                "query_result": "Mock query result",
-                "parameters": parameters,
-                "tool": tool.name
+                "results": [
+                    {"id": 1, "name": "Result 1"},
+                    {"id": 2, "name": "Result 2"}
+                ],
+                "count": 2
             }))
         }
-        ToolCategory::Communication => {
+        _ => {
+            // Default success
             ExecutionResult::success(serde_json::json!({
-                "message": "Mock communication sent",
-                "parameters": parameters,
-                "tool": tool.name
-            }))
-        }
-        ToolCategory::DataManipulation => {
-            ExecutionResult::success(serde_json::json!({
-                "manipulated": "Mock data manipulation complete",
-                "parameters": parameters,
-                "tool": tool.name
-            }))
-        }
-        ToolCategory::Integration => {
-            ExecutionResult::success(serde_json::json!({
-                "integrated": "Mock integration complete",
-                "parameters": parameters,
-                "tool": tool.name
-            }))
-        }
-        ToolCategory::Custom(_) => {
-            ExecutionResult::success(serde_json::json!({
-                "custom": "Mock custom tool executed",
-                "parameters": parameters,
-                "tool": tool.name
+                "status": "completed",
+                "tool": tool.name.clone(),
+                "parameters": parameters.clone()
             }))
         }
     }
@@ -375,6 +389,24 @@ impl Plugin for ToolsPlugin {
                 ),
             );
     }
+}
+
+/// Audit component for tool executions
+#[derive(Component, Debug, Clone)]
+pub struct ToolExecutionAudit {
+    pub execution_id: Uuid,
+    pub agent_id: AgentId,
+    pub tool_name: String,
+    pub started_at: Duration,
+    pub completed_at: Option<Duration>,
+    pub success: bool,
+}
+
+/// Component to mark execution completion
+#[derive(Component, Debug, Clone)]
+pub struct ToolExecutionCompleted {
+    pub completed_at: Duration,
+    pub success: bool,
 }
 
 #[cfg(test)]
@@ -407,7 +439,7 @@ mod tests {
         );
         
         let params = serde_json::json!({ "test": true });
-        let result = execute_tool_mock(&tool, &params);
+        let result = execute_tool(&tool, &params);
         
         assert!(result.success);
         assert!(result.output.is_some());

@@ -366,7 +366,7 @@ pub fn generate_monitoring_reports(
             .find(|(a, _, _)| AgentId::from_uuid(a.agent_id) == request.agent_id)
         {
             let report = MonitoringReport {
-                agent_id: request.agent_id.clone(),
+                agent_id: request.agent_id,
                 timestamp: SystemTime::now(),
                 health_score: metrics.health_score,
                 performance_summary: metrics.performance.clone(),

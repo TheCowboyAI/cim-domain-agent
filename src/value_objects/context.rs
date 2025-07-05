@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 /// Context in which an agent operates
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Default)]
 pub struct AgentContext {
     /// Current task being executed
     pub current_task: Option<TaskContext>,
@@ -84,18 +85,6 @@ pub struct UserContext {
     pub timezone: Option<String>,
 }
 
-impl Default for AgentContext {
-    fn default() -> Self {
-        Self {
-            current_task: None,
-            conversation_history: Vec::new(),
-            environment: HashMap::new(),
-            session_data: HashMap::new(),
-            user_context: None,
-            domain_context: HashMap::new(),
-        }
-    }
-}
 
 impl AgentContext {
     /// Add a conversation turn

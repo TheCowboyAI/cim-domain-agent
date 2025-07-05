@@ -50,8 +50,8 @@ impl fmt::Display for AgentTaskStatus {
             Self::Processing { task_id, progress } => {
                 write!(f, "Processing task {} ({:.1}%)", task_id, progress * 100.0)
             }
-            Self::Waiting { reason, .. } => write!(f, "Waiting: {}", reason),
-            Self::Error { message, .. } => write!(f, "Error: {}", message),
+            Self::Waiting { reason, .. } => write!(f, "Waiting: {reason}"),
+            Self::Error { message, .. } => write!(f, "Error: {message}"),
             Self::Configuring => write!(f, "Configuring"),
             Self::Terminating => write!(f, "Terminating"),
             Self::Terminated => write!(f, "Terminated"),

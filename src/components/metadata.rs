@@ -154,6 +154,7 @@ impl Default for AgentMetrics {
 
 /// Component for agent documentation
 #[derive(Component, Debug, Clone)]
+#[derive(Default)]
 pub struct AgentDocumentation {
     /// API documentation
     pub api_docs: String,
@@ -213,16 +214,6 @@ pub enum LinkType {
     External,
 }
 
-impl Default for AgentDocumentation {
-    fn default() -> Self {
-        Self {
-            api_docs: String::new(),
-            examples: Vec::new(),
-            faqs: Vec::new(),
-            links: Vec::new(),
-        }
-    }
-}
 
 /// Component for agent versioning
 #[derive(Component, Debug, Clone)]

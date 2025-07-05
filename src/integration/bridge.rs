@@ -51,7 +51,7 @@ impl AgentBridge {
                 // For now, we'll create a capabilities changed event
                 // In a real implementation, this would need to fetch current capabilities
                 Some(AgentDomainEvent::CapabilitiesChanged(AgentCapabilitiesChanged {
-                    agent_id: cmd.id.into(),
+                    agent_id: cmd.id,
                     added: cmd.add_capabilities,
                     removed: cmd.remove_capabilities,
                     changed_at: Utc::now(),
@@ -59,7 +59,7 @@ impl AgentBridge {
             }
             AgentCommand::GrantPermissions(cmd) => {
                 Some(AgentDomainEvent::PermissionsChanged(AgentPermissionsChanged {
-                    agent_id: cmd.id.into(),
+                    agent_id: cmd.id,
                     granted: cmd.permissions,
                     revoked: vec![],
                     changed_at: Utc::now(),
@@ -67,7 +67,7 @@ impl AgentBridge {
             }
             AgentCommand::RevokePermissions(cmd) => {
                 Some(AgentDomainEvent::PermissionsChanged(AgentPermissionsChanged {
-                    agent_id: cmd.id.into(),
+                    agent_id: cmd.id,
                     granted: vec![],
                     revoked: cmd.permissions,
                     changed_at: Utc::now(),
@@ -75,7 +75,7 @@ impl AgentBridge {
             }
             AgentCommand::EnableTools(cmd) => {
                 Some(AgentDomainEvent::ToolsChanged(AgentToolsChanged {
-                    agent_id: cmd.id.into(),
+                    agent_id: cmd.id,
                     enabled: cmd.tools,
                     disabled: vec![],
                     changed_at: Utc::now(),
@@ -83,7 +83,7 @@ impl AgentBridge {
             }
             AgentCommand::DisableTools(cmd) => {
                 Some(AgentDomainEvent::ToolsChanged(AgentToolsChanged {
-                    agent_id: cmd.id.into(),
+                    agent_id: cmd.id,
                     enabled: vec![],
                     disabled: cmd.tool_ids,
                     changed_at: Utc::now(),
