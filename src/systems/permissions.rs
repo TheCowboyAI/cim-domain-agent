@@ -4,6 +4,7 @@
 //! including permission checks, updates, and enforcement.
 
 use bevy::prelude::*;
+use tracing::{info, warn};
 use crate::components::{AgentEntity, AgentCapabilities};
 use crate::events::AgentPermissionsChanged;
 use crate::value_objects::{AgentId, Permission, PermissionScope, AccessLevel};

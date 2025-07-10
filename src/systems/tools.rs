@@ -14,6 +14,7 @@ use crate::systems::permissions::PermissionsComponent;
 use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
 use std::time::Duration;
+use tracing::{info, warn};
 
 /// Component representing available tools for an agent
 #[derive(Component, Debug, Clone)]
@@ -214,8 +215,8 @@ pub fn handle_tool_execution(
             // Check if agent has the tool
             if let Some(tool) = tools.available_tools.get(&request.tool_name).cloned() {
                 // Check if agent has required capabilities
-                let has_capabilities = tool.required_capabilities.is_empty() ||
-                    tool.required_capabilities.iter().all(|cap| capabilities.has(cap));
+                let has_capabilities = tool.required_permissions.is_empty() ||
+                    tool.required_permissions.iter().all(|cap| capabilities.has(cap));
                 
                 if !has_capabilities {
                     execution_responses.write(ExecuteToolResponse {
@@ -257,18 +258,21 @@ pub fn handle_tool_execution(
                 // Update execution audit
                 commands.entity(execution_entity).insert(ToolExecutionCompleted {
                     completed_at: time.elapsed(),
-                    success: result.is_success(),
+                    success: result.success,
                 });
                 
                 // Record usage
                 tools.tool_usage_history.push(ToolUsage {
                     tool_id: tool.id.clone(),
+                    agent_id: request.agent_id.into(),
                     used_at: chrono::Utc::now(),
                     duration_ms: 100, // Mock duration
-                    success: result.is_success(),
-                    error_message: if result.is_success() { None } else { 
+                    success: result.success,
+                    error: if result.success { None } else { 
                         result.error.as_ref().map(|e| e.message.clone()) 
                     },
+                    input_summary: Some(request.parameters.clone()),
+                    output_summary: result.output.clone(),
                 });
                 
                 // Remove from active executions

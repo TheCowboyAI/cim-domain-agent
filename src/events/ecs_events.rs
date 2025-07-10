@@ -1,6 +1,6 @@
 //! ECS event wrappers for domain events
 
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use super::*;
 
 // Re-export domain events with ECS Event trait

@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 use crate::value_objects::{AgentId, ToolAccess};
-use bevy_ecs::prelude::Event;
+use bevy::prelude::Event;
 use cim_domain::DomainEvent;
 
 /// Agent tools changed event

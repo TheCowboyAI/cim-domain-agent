@@ -3,7 +3,7 @@
 //! This module provides ECS systems for handling agent authentication,
 //! including token validation, session management, and authentication state updates.
 
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use bevy::prelude::{Time, EventReader, EventWriter, Plugin, App, Update};
 use crate::components::{AgentEntity, AgentCapabilities};
 use crate::events::AuthenticationEvent;

@@ -3,7 +3,7 @@
 //! This module provides ECS systems that enable agents to leverage conceptual spaces
 //! for semantic reasoning, similarity analysis, and knowledge representation.
 
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use bevy::prelude::{Time, Plugin, App, Update};
 use crate::{
     components::{AgentEntity, AgentCapabilities, AgentStatus},
@@ -22,8 +22,9 @@ use cim_domain_conceptualspaces::{
 };
 use cim_domain_graph::GraphId;
 use std::collections::HashMap;
+use std::time::Duration;
 use tracing::{debug, info, warn};
-use uuid;
+use uuid::Uuid;
 
 /// Resource for managing conceptual reasoning engines
 #[derive(Resource)]
@@ -232,33 +233,33 @@ pub fn process_conceptual_analysis_system(
                 Some(&content_summary)
             );
             
-            // Update reasoning agent metrics
-            reasoning_agent.last_analysis = Some(time.elapsed());
-            reasoning_agent.analysis_count += 1;
+            // Cache the analysis result
+            if reasoning_agent.recent_analyses.len() >= reasoning_agent.max_cache_size {
+                reasoning_agent.recent_analyses.remove(0);
+            }
             
             // Perform the actual analysis
-            let reasoning = GraphConceptualAnalysis {
-                complexity_score: graph_metrics.calculate_complexity(),
-                semantic_density: content_summary.calculate_semantic_density(),
-                structural_insights: vec![
+            let reasoning = ConceptualAnalysis {
+                graph_id: GraphId::new(),
+                conceptual_position: graph_point.clone(),
+                similar_graphs: vec![],
+                patterns_found: vec![
                     "The graph shows a workflow structure with clear sequential processing steps".to_string(),
                     "High clustering coefficient indicates well-organized process groups".to_string(),
                     "Low modularity suggests integrated rather than siloed processes".to_string(),
                 ],
-                content_themes: vec![
-                    "Order Processing".to_string(),
-                    "Payment Validation".to_string(),
-                    "Customer Service".to_string(),
+                insights: vec![
+                    "Order Processing workflow detected".to_string(),
+                    "Payment Validation patterns found".to_string(),
+                    "Customer Service integration identified".to_string(),
                 ],
-                recommended_improvements: vec![
-                    "Consider adding error handling nodes for payment failures".to_string(),
-                    "Add parallel processing for independent validation steps".to_string(),
-                ],
-                confidence_score: 0.85,
+                recommendations: vec![],
             };
             
-            info!("Conceptual analysis completed for agent {:?} with confidence {}", 
-                request.agent_id, reasoning.confidence_score);
+            // Cache the analysis
+            reasoning_agent.recent_analyses.push(reasoning.clone());
+            
+            info!("Conceptual analysis completed for agent {:?}", request.agent_id);
             
             // Send the result
             analysis_results.write(ConceptualAnalysisResult {
@@ -498,7 +499,7 @@ impl Plugin for ConceptualReasoningPlugin {
 mod tests {
     use super::*;
     use bevy_ecs::world::World;
-    use bevy_ecs::system::SystemState;
+    use bevy::ecs::system::SystemState;
     use crate::components::status::AgentState;
     
     #[test]

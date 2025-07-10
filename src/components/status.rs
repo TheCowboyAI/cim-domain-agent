@@ -1,6 +1,6 @@
 //! Status-related ECS components
 
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 /// Component for agent operational status

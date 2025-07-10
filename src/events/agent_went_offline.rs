@@ -1,7 +1,7 @@
 //! Agent went offline event
 
 use serde::{Deserialize, Serialize};
-use bevy_ecs::prelude::Event;
+use bevy::prelude::Event;
 use cim_domain::DomainEvent;
 
 /// Agent went offline event

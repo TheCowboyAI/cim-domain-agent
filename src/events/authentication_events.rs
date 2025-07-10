@@ -1,7 +1,7 @@
 //! Authentication-related events for the agent domain
 
 use serde::{Deserialize, Serialize};
-use bevy_ecs::prelude::Event;
+use bevy::prelude::Event;
 use crate::value_objects::{AgentId, SessionId};
 
 /// Events related to agent authentication

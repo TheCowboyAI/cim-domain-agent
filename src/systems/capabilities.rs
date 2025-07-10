@@ -1,6 +1,6 @@
 //! Capabilities management systems
 
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use crate::components::*;
 use crate::events::*;
 use uuid::Uuid;
@@ -67,15 +67,15 @@ pub fn manage_capabilities_system(
 /// ```
 pub fn update_capability_usage_system(
     mut usage_events: EventReader<CapabilityUsedEvent>,
-    mut agent_query: Query<(&AgentEntity, Option<&mut CapabilityUsageStats>)>,
+    mut agent_query: Query<(Entity, &AgentEntity, Option<&mut CapabilityUsageStats>)>,
     mut commands: Commands,
 ) {
     for usage_event in usage_events.read() {
         // Find the agent
         let agent_found = agent_query.iter_mut()
-            .find(|(entity, _)| entity.agent_id == usage_event.agent_id);
+            .find(|(_, agent_entity, _)| agent_entity.agent_id == usage_event.agent_id);
 
-        if let Some((agent_entity, usage_stats)) = agent_found {
+        if let Some((entity, agent_entity, usage_stats)) = agent_found {
             if let Some(mut stats) = usage_stats {
                 // Update existing stats
                 let count = {
@@ -114,11 +114,8 @@ pub fn update_capability_usage_system(
                     if usage_event.success { 1.0 } else { 0.0 }
                 );
 
-                // Find the entity in the query and add the component
-                if let Some((entity, _)) = agent_query.iter()
-                    .find(|(e, _)| e.agent_id == usage_event.agent_id) {
-                    commands.entity(entity).insert(new_stats);
-                }
+                // Add the component to the entity
+                commands.entity(entity).insert(new_stats);
             }
         }
     }
@@ -193,15 +190,15 @@ pub fn check_capability_requirements_system(
 /// ```
 pub fn categorize_capabilities_system(
     mut categorize_events: EventReader<CapabilityCategorizeCommand>,
-    mut agent_query: Query<(&AgentEntity, &AgentCapabilities, Option<&mut CapabilityCategories>)>,
+    mut agent_query: Query<(Entity, &AgentEntity, &AgentCapabilities, Option<&mut CapabilityCategories>)>,
     mut commands: Commands,
 ) {
     for categorize_cmd in categorize_events.read() {
         // Find the agent
         let agent_found = agent_query.iter_mut()
-            .find(|(entity, _, _)| entity.agent_id == categorize_cmd.agent_id);
+            .find(|(_, agent_entity, _, _)| agent_entity.agent_id == categorize_cmd.agent_id);
 
-        if let Some((_, capabilities, categories)) = agent_found {
+        if let Some((entity, _, _capabilities, categories)) = agent_found {
             if let Some(mut cats) = categories {
                 // Update existing categories
                 cats.add_to_category(
@@ -217,8 +214,8 @@ pub fn categorize_capabilities_system(
                 );
                 
                 // Find the entity in the query and add the component
-                if let Some((entity, _, _)) = agent_query.iter()
-                    .find(|(e, _, _)| e.agent_id == categorize_cmd.agent_id) {
+                if let Some((entity, agent_entity, _, _)) = agent_query.iter()
+                    .find(|(_, agent_entity, _, _)| agent_entity.agent_id == categorize_cmd.agent_id) {
                     commands.entity(entity).insert(new_cats);
                 }
             }
