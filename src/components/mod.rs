@@ -10,6 +10,7 @@ pub mod permissions;
 pub mod tools;
 pub mod metadata;
 pub mod status;
+pub mod constraints;
 
 // Re-export all components
 pub use agent::*;
@@ -18,4 +19,5 @@ pub use authentication::*;
 pub use permissions::*;
 pub use tools::*;
 pub use metadata::*;
-pub use status::*; 
+pub use status::*;
+pub use constraints::*; 

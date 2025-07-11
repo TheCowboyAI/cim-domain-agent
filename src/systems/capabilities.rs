@@ -198,7 +198,7 @@ pub fn categorize_capabilities_system(
         let agent_found = agent_query.iter_mut()
             .find(|(_, agent_entity, _, _)| agent_entity.agent_id == categorize_cmd.agent_id);
 
-        if let Some((entity, _, _capabilities, categories)) = agent_found {
+        if let Some((_entity, _, _capabilities, categories)) = agent_found {
             if let Some(mut cats) = categories {
                 // Update existing categories
                 cats.add_to_category(

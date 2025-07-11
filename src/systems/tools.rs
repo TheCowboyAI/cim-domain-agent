@@ -12,9 +12,9 @@ use crate::value_objects::{
 };
 use crate::systems::permissions::PermissionsComponent;
 use std::collections::{HashMap, HashSet};
-use uuid::Uuid;
 use std::time::Duration;
 use tracing::{info, warn};
+use uuid::Uuid;
 
 /// Component representing available tools for an agent
 #[derive(Component, Debug, Clone)]
@@ -208,7 +208,7 @@ pub fn handle_tool_execution(
     time: Res<Time>,
 ) {
     for request in execution_requests.read() {
-        if let Some((agent, mut tools, capabilities)) = query
+        if let Some((_agent, mut tools, capabilities)) = query
             .iter_mut()
             .find(|(a, _, _)| AgentId::from_uuid(a.agent_id) == request.agent_id)
         {

@@ -5,6 +5,7 @@
 
 use async_trait::async_trait;
 use std::collections::HashMap;
+use serde::{Serialize, Deserialize};
 use serde_json::{json, Value};
 use thiserror::Error;
 use crate::value_objects::{
@@ -175,7 +176,7 @@ impl AIProviderFactory {
 }
 
 /// Configuration for AI providers
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ProviderConfig {
     /// Mock provider for testing
     Mock,

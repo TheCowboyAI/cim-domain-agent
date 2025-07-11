@@ -24,7 +24,6 @@ use cim_domain_graph::GraphId;
 use std::collections::HashMap;
 use std::time::Duration;
 use tracing::{debug, info, warn};
-use uuid::Uuid;
 
 /// Resource for managing conceptual reasoning engines
 #[derive(Resource)]

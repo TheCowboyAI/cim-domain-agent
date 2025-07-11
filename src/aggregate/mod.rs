@@ -291,6 +291,7 @@ impl Agent {
                 // Store the capabilities as a component
                 let ai_component = AICapabilitiesComponent {
                     capabilities: capabilities.clone(),
+                    provider_config: crate::ai_providers::ProviderConfig::Mock, // Default to mock
                     last_updated: chrono::Utc::now(),
                 };
                 
@@ -309,6 +310,17 @@ impl Agent {
                 format!("Cannot configure AI capabilities for agent in {:?} state", self.status)
             )),
         }
+    }
+    
+    /// Check if the agent has AI capabilities configured
+    pub fn has_ai_capabilities(&self) -> bool {
+        self.has_component::<AICapabilitiesComponent>()
+    }
+    
+    /// Get the agent's AI capabilities if configured
+    pub fn get_ai_capabilities(&self) -> Option<&crate::value_objects::AICapabilities> {
+        self.get_component::<AICapabilitiesComponent>()
+            .map(|comp| &comp.capabilities)
     }
 }
 
@@ -564,6 +576,8 @@ impl Component for ConfigurationComponent {
 pub struct AICapabilitiesComponent {
     /// AI capabilities configuration
     pub capabilities: crate::value_objects::AICapabilities,
+    /// Provider configuration for AI services
+    pub provider_config: crate::ai_providers::ProviderConfig,
     /// Last updated timestamp
     pub last_updated: chrono::DateTime<chrono::Utc>,
 }

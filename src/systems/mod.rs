@@ -11,6 +11,7 @@ pub mod tools;
 pub mod monitoring;
 pub mod query;
 pub mod conceptual_reasoning;
+pub mod rate_limiter;
 
 // Re-export all systems
 pub use lifecycle::*;
@@ -21,6 +22,7 @@ pub use tools::*;
 pub use monitoring::*;
 pub use query::*;
 pub use conceptual_reasoning::*;
+pub use rate_limiter::*;
 
 // Re-export commonly used systems
 pub use lifecycle::update_agent_status;
