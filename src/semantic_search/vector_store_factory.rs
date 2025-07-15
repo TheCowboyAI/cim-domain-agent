@@ -6,7 +6,7 @@
 use super::{VectorStore, InMemoryVectorStore, QdrantVectorStore, SemanticSearchResult, SemanticSearchError};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use qdrant_client::prelude::*;
+use qdrant_client::Qdrant;
 
 /// Configuration for vector store backend
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,11 +57,11 @@ impl VectorStoreFactory {
                 url,
                 collection_name,
                 vector_size,
-                api_key,
-                timeout_secs,
+                api_key: _,
+                timeout_secs: _,
             } => {
                 // Build client directly with the URL
-                let client = QdrantClient::from_url(url).build()
+                let client = Qdrant::from_url(url).build()
                     .map_err(|e| SemanticSearchError::VectorStoreError(e.to_string()))?;
                 
                 let store = QdrantVectorStore::with_client(

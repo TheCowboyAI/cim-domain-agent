@@ -5,7 +5,7 @@
 
 use super::{Embedding, SearchFilter, SemanticSearchError, SemanticSearchResult, VectorStore};
 use async_trait::async_trait;
-use qdrant_client::prelude::*;
+use qdrant_client::Qdrant;
 use qdrant_client::qdrant::{
     vectors_config::Config, CreateCollection, Distance, PointStruct, 
     ScalarQuantization, SearchPoints, VectorParams, VectorsConfig,
@@ -18,7 +18,7 @@ use uuid::Uuid;
 
 /// Qdrant-backed vector store implementation
 pub struct QdrantVectorStore {
-    client: QdrantClient,
+    client: Qdrant,
     collection_name: String,
     vector_size: usize,
 }
@@ -26,7 +26,7 @@ pub struct QdrantVectorStore {
 impl QdrantVectorStore {
     /// Create a new Qdrant vector store
     pub async fn new(url: &str, collection_name: String, vector_size: usize) -> SemanticSearchResult<Self> {
-        let client = QdrantClient::from_url(url).build()
+        let client = Qdrant::from_url(url).build()
             .map_err(|e| SemanticSearchError::VectorStoreError(format!("Failed to create Qdrant client: {}", e)))?;
         
         let store = Self {
@@ -43,7 +43,7 @@ impl QdrantVectorStore {
     
     /// Create with pre-built client
     pub async fn with_client(
-        client: QdrantClient,
+        client: Qdrant,
         collection_name: String,
         vector_size: usize,
     ) -> SemanticSearchResult<Self> {
@@ -73,7 +73,7 @@ impl QdrantVectorStore {
         if !exists {
             // Create collection with optimized settings
             self.client
-                .create_collection(&CreateCollection {
+                .create_collection(CreateCollection {
                     collection_name: self.collection_name.clone(),
                     vectors_config: Some(VectorsConfig {
                         config: Some(Config::Params(VectorParams {
@@ -301,8 +301,12 @@ impl VectorStore for QdrantVectorStore {
         
         let point = self.embedding_to_point(&embedding);
         
+        use qdrant_client::qdrant::UpsertPointsBuilder;
+        
+        let upsert_request = UpsertPointsBuilder::new(self.collection_name.clone(), vec![point]).build();
+        
         self.client
-            .upsert_points_blocking(&self.collection_name, None, vec![point], None)
+            .upsert_points(upsert_request)
             .await
             .map_err(|e| SemanticSearchError::VectorStoreError(format!("Failed to store embedding: {}", e)))?;
         
@@ -325,11 +329,15 @@ impl VectorStore for QdrantVectorStore {
             .map(|e| self.embedding_to_point(e))
             .collect();
         
+        use qdrant_client::qdrant::UpsertPointsBuilder;
+        
         // Batch upload with chunking for large datasets
         const BATCH_SIZE: usize = 100;
         for chunk in points.chunks(BATCH_SIZE) {
+            let upsert_request = UpsertPointsBuilder::new(self.collection_name.clone(), chunk.to_vec()).build();
+            
             self.client
-                .upsert_points_blocking(&self.collection_name, None, chunk.to_vec(), None)
+                .upsert_points(upsert_request)
                 .await
                 .map_err(|e| SemanticSearchError::VectorStoreError(format!("Failed to store batch: {}", e)))?;
         }
@@ -367,7 +375,7 @@ impl VectorStore for QdrantVectorStore {
         };
         
         let results = self.client
-            .search_points(&search_request)
+            .search_points(search_request)
             .await
             .map_err(|e| SemanticSearchError::SearchFailed(format!("Search failed: {}", e)))?;
         
@@ -412,7 +420,7 @@ impl VectorStore for QdrantVectorStore {
         };
         
         let results = self.client
-            .search_points(&search_request)
+            .search_points(search_request)
             .await
             .map_err(|e| SemanticSearchError::SearchFailed(format!("Search failed: {}", e)))?;
         
@@ -432,13 +440,26 @@ impl VectorStore for QdrantVectorStore {
     }
     
     async fn delete(&self, id: &Uuid) -> SemanticSearchResult<()> {
+        use qdrant_client::qdrant::{PointsSelector, PointsIdsList};
+        
+        let points_list = PointsIdsList {
+            ids: vec![qdrant_client::qdrant::PointId::from(id.to_string())],
+        };
+        
+        let selector = PointsSelector {
+            points_selector_one_of: Some(qdrant_client::qdrant::points_selector::PointsSelectorOneOf::Points(points_list)),
+        };
+        
+        let delete_request = qdrant_client::qdrant::DeletePoints {
+            collection_name: self.collection_name.clone(),
+            wait: None,
+            points: Some(selector),
+            ordering: None,
+            shard_key_selector: None,
+        };
+        
         self.client
-            .delete_points(
-                &self.collection_name,
-                None,
-                &vec![id.to_string().into()].into(),
-                None,
-            )
+            .delete_points(delete_request)
             .await
             .map_err(|e| SemanticSearchError::VectorStoreError(format!("Failed to delete embedding: {}", e)))?;
         
@@ -451,13 +472,23 @@ impl VectorStore for QdrantVectorStore {
         
         let count_before = self.count().await?;
         
+        use qdrant_client::qdrant::{DeletePointsBuilder, PointsSelector};
+        
+        // For filter-based deletion, we need to create a PointsSelector with the filter
+        let selector = PointsSelector {
+            points_selector_one_of: Some(qdrant_client::qdrant::points_selector::PointsSelectorOneOf::Filter(filter)),
+        };
+        
+        let delete_request = qdrant_client::qdrant::DeletePoints {
+            collection_name: self.collection_name.clone(),
+            wait: None,
+            points: Some(selector),
+            ordering: None,
+            shard_key_selector: None,
+        };
+        
         self.client
-            .delete_points(
-                &self.collection_name,
-                None,
-                &filter.into(),
-                None,
-            )
+            .delete_points(delete_request)
             .await
             .map_err(|e| SemanticSearchError::VectorStoreError(format!("Failed to delete by source: {}", e)))?;
         
