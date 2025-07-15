@@ -2,9 +2,10 @@
 
 use super::{
     EmbeddingRequest, EmbeddingService, 
-    SemanticSearchConfig, SemanticSearchResult,
+    SemanticSearchResult,
     VectorStore,
 };
+use crate::semantic_search::SemanticSearchConfig;
 use super::vector_store::SearchFilter;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};

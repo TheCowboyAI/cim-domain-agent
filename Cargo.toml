@@ -40,6 +40,9 @@ reqwest = { version = "0.11", features = ["json", "stream"] }
 tokio = { version = "1.32", features = ["full"] }
 futures = "0.3"
 
+# Vector database dependencies
+qdrant-client = { version = "1.12", features = ["download_snapshots"] }
+
 # Domain dependencies
 cim-domain = { path = "../cim-domain" }
 cim-domain-graph = { path = "../cim-domain-graph" }
@@ -64,7 +67,20 @@ rand = "0.8"
 
 # For terminal UI demos
 ratatui = "0.28"
+
+[dev-dependencies]
+tracing-subscriber = "0.3"
+tokio-test = "0.4"
 crossterm = "0.28"
+mockall = "0.11"
+dotenv = "0.15"
+pollster = "0.3"
+
+[[example]]
+name = "semantic_search_demo"
+
+[[example]]
+name = "production_embeddings_demo"
 
 # AI/ML dependencies (optional for now)
 # These will be activated when implementing actual AI integrations
@@ -72,13 +88,6 @@ crossterm = "0.28"
 # ollama-rs = { version = "0.1", optional = true }
 # candle = { version = "0.3", optional = true }
 # ort = { version = "1.15", optional = true }  # ONNX Runtime
-
-[dev-dependencies]
-tokio-test = "0.4"
-mockall = "0.11"
-tracing-subscriber = "0.3"
-dotenv = "0.15"
-pollster = "0.3"
 
 [features]
 default = []

@@ -6,8 +6,7 @@ use crate::{
     Agent, 
     commands::ai_commands::*,
     aggregate::{AgentMarker, AICapabilitiesComponent},
-    ai_providers::{ProviderConfig, AIProviderFactory, GraphAnalysisProvider, GraphData, NodeData, EdgeData},
-    value_objects::AnalysisResult,
+    ai_providers::{ProviderConfig, AIProviderFactory, GraphAnalysisProvider, GraphData},
 };
 use cim_domain::{CommandHandler, CommandEnvelope, CommandAcknowledgment, CommandStatus, EntityId};
 use cim_domain::AggregateRepository;

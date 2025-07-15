@@ -75,7 +75,7 @@ pub fn update_capability_usage_system(
         let agent_found = agent_query.iter_mut()
             .find(|(_, agent_entity, _)| agent_entity.agent_id == usage_event.agent_id);
 
-        if let Some((entity, agent_entity, usage_stats)) = agent_found {
+        if let Some((entity, _agent_entity, usage_stats)) = agent_found {
             if let Some(mut stats) = usage_stats {
                 // Update existing stats
                 let count = {
@@ -214,7 +214,7 @@ pub fn categorize_capabilities_system(
                 );
                 
                 // Find the entity in the query and add the component
-                if let Some((entity, agent_entity, _, _)) = agent_query.iter()
+                if let Some((entity, _agent_entity, _, _)) = agent_query.iter()
                     .find(|(_, agent_entity, _, _)| agent_entity.agent_id == categorize_cmd.agent_id) {
                     commands.entity(entity).insert(new_cats);
                 }

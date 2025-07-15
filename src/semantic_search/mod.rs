@@ -11,10 +11,20 @@ use uuid::Uuid;
 pub mod vector_store;
 pub mod embedding_service;
 pub mod search_engine;
+pub mod qdrant_store;
+pub mod vector_store_factory;
+pub mod openai_embeddings;
+pub mod anthropic_embeddings;
+pub mod embedding_factory;
 
-pub use vector_store::{VectorStore, InMemoryVectorStore};
-pub use embedding_service::{EmbeddingService, AIProviderEmbeddingService};
+pub use vector_store::{VectorStore, InMemoryVectorStore, SearchFilter};
+pub use embedding_service::{EmbeddingService, AIProviderEmbeddingService, MockEmbeddingService};
 pub use search_engine::{SemanticSearchEngine, SearchQuery, SearchResult};
+pub use qdrant_store::QdrantVectorStore;
+pub use vector_store_factory::{VectorStoreFactory, VectorStoreConfig};
+pub use openai_embeddings::OpenAIEmbeddingService;
+pub use anthropic_embeddings::AnthropicEmbeddingService;
+pub use embedding_factory::{EmbeddingServiceFactory, EmbeddingServiceConfig};
 
 /// Errors that can occur during semantic search operations
 #[derive(Debug, Error)]
