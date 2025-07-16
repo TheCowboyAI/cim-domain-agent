@@ -47,7 +47,7 @@ qdrant-client = { version = "1.12", features = ["download_snapshots"] }
 cim-domain = { path = "../cim-domain" }
 cim-domain-graph = { path = "../cim-domain-graph" }
 cim-domain-conceptualspaces = { path = "../cim-domain-conceptualspaces" }
-cim-domain-dialog = { path = "../cim-domain-dialog" }
+# Dialog communication happens through NATS events, not direct dependency
 cim-infrastructure = { path = "../cim-infrastructure" }
 
 # For semver in metadata component

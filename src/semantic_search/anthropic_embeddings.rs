@@ -8,7 +8,6 @@ use super::{Embedding, EmbeddingRequest, EmbeddingService, SemanticSearchError, 
 use async_trait::async_trait;
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Semaphore;
 use uuid::Uuid;
@@ -152,7 +151,7 @@ Semantic vector:"#,
         let words: Vec<&str> = text.split_whitespace().collect();
         
         // Unigrams
-        for (i, word) in words.iter().enumerate() {
+        for word in words.iter() {
             let mut hasher = DefaultHasher::new();
             word.hash(&mut hasher);
             let hash = hasher.finish();

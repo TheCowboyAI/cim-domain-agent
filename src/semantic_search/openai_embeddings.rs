@@ -7,9 +7,8 @@ use super::{Embedding, EmbeddingRequest, EmbeddingService, SemanticSearchError, 
 use async_trait::async_trait;
 use reqwest::{Client, StatusCode};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::{RwLock, Semaphore};
+use tokio::sync::Semaphore;
 use uuid::Uuid;
 
 /// OpenAI embedding service implementation
@@ -232,17 +231,21 @@ struct OpenAIApiRequest {
 #[derive(Debug, Deserialize)]
 struct EmbeddingResponse {
     data: Vec<EmbeddingData>,
+    #[allow(dead_code)]
     model: String,
+    #[allow(dead_code)]
     usage: Usage,
 }
 
 #[derive(Debug, Deserialize)]
 struct EmbeddingData {
     embedding: Vec<f32>,
+    #[allow(dead_code)]
     index: i32,
 }
 
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 struct Usage {
     prompt_tokens: i32,
     total_tokens: i32,
