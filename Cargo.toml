@@ -44,7 +44,7 @@ futures = "0.3"
 qdrant-client = { version = "1.12", features = ["download_snapshots"] }
 
 # Domain dependencies
-cim-domain = { path = "../cim-domain" }
+cim-domain = { git = "https://github.com/TheCowboyAI/cim-domain.git", branch = "main" }
 cim-domain-graph = { path = "../cim-domain-graph" }
 cim-domain-conceptualspaces = { path = "../cim-domain-conceptualspaces" }
 # Dialog communication happens through NATS events, not direct dependency
