@@ -1,72 +1,42 @@
 [package]
 name = "cim-domain-agent"
-version = "0.1.0"
+version = "0.8.1"
 edition = "2021"
 
 [dependencies]
-# Core dependencies
-uuid = { version = "1.17", features = ["v4", "serde"] }
+# Core dependencies - v0.8.1 standards
+uuid = { version = "1.11", features = ["v7", "serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0"
 tracing = "0.1"
 async-trait = "0.1"
-bevy = { version = "0.16.1", default-features = false, features = [
-    "bevy_pbr",
-    "bevy_render",
-    "bevy_ui",
-    "bevy_text",
-    "bevy_asset",
-    "bevy_winit",
-    "bevy_core_pipeline",
-    "bevy_sprite",
-    "default_font",
-    "png",
-    "multi_threaded",
-    "bevy_gltf",
-    "bevy_scene",
-    "bevy_gizmos",
-    "x11",
-    "wayland",
-    "tonemapping_luts",
-    "ktx2",
-    "zstd",
-] }
-bevy_egui = "0.31"
 chrono = { version = "0.4", features = ["serde"] }
 
-# AI provider dependencies
-reqwest = { version = "0.11", features = ["json", "stream"] }
+# NATS - v0.8.1 standard
+async-nats = "0.38"
 tokio = { version = "1.32", features = ["full"] }
 futures = "0.3"
+tracing-subscriber = "0.3"
 
-# Vector database dependencies
-qdrant-client = { version = "1.12", features = ["download_snapshots"] }
-
-# Domain dependencies
+# Domain dependencies - v0.8.1 (using git until published)
 cim-domain = { git = "https://github.com/TheCowboyAI/cim-domain.git", branch = "main" }
-cim-domain-graph = { path = "../cim-domain-graph" }
-cim-domain-conceptualspaces = { path = "../cim-domain-conceptualspaces" }
-# Dialog communication happens through NATS events, not direct dependency
-cim-infrastructure = { path = "../cim-infrastructure" }
+
+# Infrastructure adapters (Ports & Adapters pattern)
+# These are optional - only needed when using specific capabilities
+reqwest = { version = "0.11", features = ["json", "stream"], optional = true }
+qdrant-client = { version = "1.12", features = ["download_snapshots"], optional = true }
+dotenvy = { version = "0.15", optional = true }
+
+# Legacy dependencies (will be removed or made optional)
+# cim-graph = { git = "https://github.com/TheCowboyAI/cim-graph.git", branch = "main", optional = true }
+# cim-domain-spaces - removed (private repo, not needed for core domain)
 
 # For semver in metadata component
 semver = "1.0"
 
-# Environment variables for API keys
-dotenvy = "0.15"
-
 # For colored terminal output in demos
-colored = "2.0"
-
-# For async-sync bridge in Bevy demos
-crossbeam = "0.8"
-
-# For particle effects in demos
-rand = "0.8"
-
-# For terminal UI demos
-ratatui = "0.28"
+colored = { version = "2.0", optional = true }
 
 [dev-dependencies]
 tracing-subscriber = "0.3"
@@ -91,10 +61,26 @@ name = "production_embeddings_demo"
 
 [features]
 default = []
-ai-openai = []
-ai-anthropic = []
-ai-ollama = []
-all-ai-providers = ["ai-openai", "ai-anthropic", "ai-ollama"]
+
+# Capability Adapters (Ports & Adapters pattern)
+# Core domain is independent of these - they're infrastructure concerns
+ai-providers = ["reqwest", "dotenvy"]
+vector-store = ["qdrant-client"]
+examples = ["colored", "dotenvy"]
+
+# Specific AI provider adapters
+adapter-openai = ["ai-providers"]
+adapter-anthropic = ["ai-providers"]
+adapter-ollama = ["ai-providers"]
+adapter-mock = []  # Always available for testing
+
+# Convenience feature for all adapters
+all-adapters = ["adapter-openai", "adapter-anthropic", "adapter-ollama", "vector-store"]
+
+# Service binaries
+[[bin]]
+name = "agent-service"
+path = "src/bin/agent-service.rs"
 
 [[example]]
 name = "ai_agent_demo"
@@ -129,10 +115,6 @@ name = "ai_visual_demo_simple"
 path = "examples/ai_visual_demo_simple.rs"
 
 [[example]]
-name = "ai_visual_bevy_demo"
-path = "examples/ai_visual_bevy_demo.rs"
-
-[[example]]
 name = "ai_graph_analysis_integration"
 path = "examples/ai_graph_analysis_integration.rs"
 
@@ -151,23 +133,3 @@ path = "examples/test_all_providers.rs"
 [[example]]
 name = "test_ollama_only"
 path = "examples/test_ollama_only.rs"
-
-[[example]]
-name = "interactive_ai_graph_demo"
-path = "examples/interactive_ai_graph_demo.rs"
-
-[[example]]
-name = "interactive_chat_demo"
-path = "examples/interactive_chat_demo.rs"
-
-[[example]]
-name = "simple_bevy_graph_demo"
-path = "examples/simple_bevy_graph_demo.rs"
-
-[[example]]
-name = "cim_3d_graph_demo"
-path = "examples/cim_3d_graph_demo.rs"
-
-[[example]]
-name = "interactive_bevy_demo"
-path = "examples/interactive_bevy_demo.rs"

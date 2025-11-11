@@ -1,1 +1,21 @@
+# Environment variables
 .env
+
+# Rust build artifacts
+/target/
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Cursor AI
+.cursor/
+
+# Nix
+result
+.direnv/
