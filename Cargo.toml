@@ -20,7 +20,7 @@ futures = "0.3"
 tracing-subscriber = "0.3"
 
 # Domain dependencies - v0.8.1 (using git until published)
-cim-domain = { git = "https://github.com/TheCowboyAI/cim-domain.git", branch = "main" }
+cim-domain = { path = "../cim-domain" }
 
 # Infrastructure adapters (Ports & Adapters pattern)
 # These are optional - only needed when using specific capabilities
