@@ -52,15 +52,15 @@ Deployed → Activated → Running ↔ Suspended → Decommissioned
 - `DisableAgentTools`: Restrict tool usage
 
 ### Events
-All events are published to NATS subjects under `agent.events.*`:
-- `AgentDeployed`: New agent created
-- `AgentActivated`: Agent started
-- `AgentSuspended`: Agent paused
-- `AgentDecommissioned`: Agent removed
-- `AgentWentOffline`: Connection lost
-- `AgentCapabilitiesAdded`: New skills added
-- `AgentPermissionsGranted`: Access granted
-- `AgentToolsEnabled`: Tools activated
+All events are published to NATS subjects under `agent.events.*` using the subject algebra in `src/subjects.rs`:
+- `agent.events.deployed`
+- `agent.events.activated`
+- `agent.events.suspended`
+- `agent.events.decommissioned`
+- `agent.events.went_offline`
+- `agent.events.capabilities_changed`
+- `agent.events.permissions_changed`
+- `agent.events.tools_changed`
 
 ## Usage Examples
 
@@ -115,6 +115,7 @@ let active_agents = query_handler.handle(query).await?;
 - Commands: `agent.commands.*`
 - Events: `agent.events.*`
 - Queries: `agent.queries.*`
+See `src/subjects.rs` for canonical builders and patterns.
 
 ### Domain Dependencies
 - **Policy Domain**: Permission validation and enforcement
@@ -184,9 +185,9 @@ pub struct AgentConfig {
 
 ## Testing
 
-Run tests with:
+Run checks with Nix:
 ```bash
-cargo test -p cim-domain-agent
+nix flake check
 ```
 
 ### Test Coverage

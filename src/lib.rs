@@ -1,45 +1,111 @@
-//! Agent domain for CIM
-//!
-//! This domain manages AI agents that can analyze and transform graphs.
-//!
-//! # v0.8.1 Pure Functional Event Sourcing
-//!
-//! This crate provides a complete event-sourced agent domain with:
-//! - Pure functional aggregate (Agent)
-//! - CQRS command handlers
-//! - Event sourcing with snapshots
-//! - NATS JetStream integration
-//! - Ports & Adapters for capabilities
+// Copyright (c) 2025 - Cowboy AI, LLC.
 
-// v0.8.1 Pure Functional Modules (Primary API)
-pub mod aggregate_new;
-pub mod commands_new;
-pub mod events_new;
-pub mod value_objects_new;
-pub mod infrastructure_new;
+//! # CIM Domain Agent v0.9.2 - State Machine Driven Design
+//!
+//! Agent domain for the Composable Information Machine (CIM).
+//!
+//! An Agent is a Person's automaton that configures and loads an AI model,
+//! forwarding messages and streaming responses via NATS pub/sub.
+//!
+//! ## Design Principles
+//!
+//! 1. **Agent = Person's Automaton**: Strict `PersonId` binding enforced at deployment
+//! 2. **State Machine Driven**: Agent lifecycle is a formal MealyStateMachine
+//! 3. **Stateless Messages**: Message processing is stream transformation, NOT aggregate state
+//! 4. **Event-Driven**: Lifecycle events persisted; message events to NATS only
+//! 5. **Capability-Based Routing**: Lattice algebra for provider selection
+//! 6. **All Modalities**: Chat, completion, vision, embeddings, image generation
+//!
+//! ## Architecture
+//!
+//! ```text
+//! ┌─────────────────────────────────────────────────────────────────────┐
+//! │                          NATS Domain Channel                        │
+//! │  agent.commands.{cmd} ←───────────────────→ agent.events.{id}.{evt} │
+//! └────────────┬────────────────────────────────────────────────────────┘
+//!              │
+//!              v
+//! ┌────────────────────────────────────────────────────────────────────┐
+//! │              Agent Aggregate (MealyStateMachine)                    │
+//! │  ┌─────────┐    ┌────────────┐    ┌─────────┐                      │
+//! │  │ Draft   │───>│ Configured │───>│ Active  │<──┐                  │
+//! │  └─────────┘    └────────────┘    └────┬────┘   │                  │
+//! │                                        │        │                  │
+//! │                                   ┌────v────┐   │                  │
+//! │                                   │Suspended│───┘                  │
+//! │                                   └────┬────┘                      │
+//! │                                        v                           │
+//! │                               ┌──────────────┐                     │
+//! │                               │Decommissioned│                     │
+//! │                               └──────────────┘                     │
+//! └────────────────────────────────────────────────────────────────────┘
+//!              │
+//!              │ (only Active agents)
+//!              v
+//! ┌────────────────────────────────────────────────────────────────────┐
+//! │          AgentMessageService (Domain Service)                       │
+//! │                                                                     │
+//! │  MessageIntent ──> CapabilityRouter ──> Provider Adapter           │
+//! │                         │                    │                      │
+//! │               ┌─────────┴─────────┐          │                      │
+//! │               │ Capability Lattice │          │                      │
+//! │               │   meet/join/satisfies        │                      │
+//! │               └───────────────────┘          v                      │
+//! │                              ┌──────────────────────┐               │
+//! │                              │   Stream Transform   │               │
+//! │                              └──────────┬───────────┘               │
+//! │                                         │                           │
+//! │  Message Events (NATS only, not persisted) ─────────────>          │
+//! └────────────────────────────────────────────────────────────────────┘
+//! ```
+//!
+//! ## Module Structure
+//!
+//! - `state_machine`: Agent lifecycle MealyStateMachine implementation
+//! - `capabilities`: Capability lattice for provider routing
+//! - `intent`: Multi-modal message intents (chat, vision, embeddings, etc.)
+//! - `adapters`: Provider adapters (genai-based multi-provider support)
+//! - `services`: Domain services (AgentMessageService, CapabilityRouter)
+//! - `ports`: Hexagonal port interfaces (ChatPort, ChatStream)
+//! - `aggregate`: Agent aggregate with event sourcing
+//! - `commands`/`events`: CQRS command and event types
+//! - `value_objects`: Domain value objects
+//! - `infrastructure`: Event store, NATS integration
 
-// Re-export v0.8.1 types as primary API
-pub use aggregate_new::Agent;
-pub use commands_new::*;
-pub use events_new::*;
-pub use value_objects_new::*;
-pub use infrastructure_new::*;
+// Core domain modules
+pub mod aggregate;
+pub mod commands;
+pub mod events;
+pub mod value_objects;
+pub mod infrastructure;
 
-// Legacy modules (temporarily commented out to enable compilation)
-// These will be migrated to v0.8.1 patterns or removed in future sessions
-// pub mod aggregate;
-// pub mod commands;
-// pub mod components;
-// pub mod events;
-// pub mod handlers;
-// pub mod projections;
-// pub mod queries;
-// pub mod systems;
-// pub mod value_objects;
-// pub mod integration;
-// #[cfg(feature = "ai-providers")]
-// pub mod ai_providers;
-// #[cfg(feature = "ai-providers")]
-// pub mod semantic_search;
-// pub mod subjects;
-// pub mod infrastructure;
+// State machine for agent lifecycle
+pub mod state_machine;
+
+// Capability lattice for provider routing
+pub mod capabilities;
+
+// Message intents for multi-modal AI
+pub mod intent;
+
+// Hexagonal architecture - Ports & Adapters for AI providers
+pub mod ports;
+
+// AI Provider Adapters (genai-based)
+pub mod adapters;
+
+// Domain Services
+pub mod services;
+
+// Re-export primary types
+pub use aggregate::Agent;
+pub use commands::*;
+pub use events::*;
+pub use value_objects::*;
+pub use infrastructure::*;
+pub use ports::*;
+pub use state_machine::*;
+pub use capabilities::*;
+pub use intent::*;
+pub use adapters::*;
+pub use services::*;

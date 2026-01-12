@@ -1,41 +1,37 @@
-//! Value objects for the Agent domain
+// Copyright (c) 2025 - Cowboy AI, LLC.
 
-pub mod agent_id;
-pub mod agent_type;
-pub mod ai_capabilities;
-pub mod analysis_result;
-pub mod transformation;
-pub mod status;
-pub mod tool;
-pub mod tool_access;
-pub mod metadata;
-pub mod constraint;
-pub mod context;
-pub mod execution_result;
-pub mod performance_metrics;
-pub mod permission;
-pub mod authentication;
+//! Value objects for agent domain v2.0
+//!
+//! Pure functional, immutable value objects following DDD principles.
+//!
+//! ## Core Types
+//!
+//! - `AgentId` - Unique identifier for agents (UUID v7)
+//! - `PersonId` - Required binding to owning person (UUID v7)
+//! - `MessageId` - Tracks request/response pairs (UUID v7)
+//! - `AgentStatus` - Agent lifecycle state
+//! - `ModelConfig` - Full AI model configuration
+//! - `StreamingChunk` - Partial response from model
 
-// Re-export types
+mod agent_id;
+mod person_id;
+mod message_id;
+mod agent_status;
+mod model_config;
+mod streaming_chunk;
+
+// Core identifiers
 pub use agent_id::AgentId;
-pub use agent_type::AgentType;
-pub use ai_capabilities::{AICapabilities, ModelParameters, AnalysisCapability};
-pub use analysis_result::{
-    AnalysisResult, Recommendation, RecommendedAction,
-    Priority, Impact, EffortLevel, Insight,
-    Finding, RecommendationType
-};
-pub use transformation::TransformationSuggestion;
-pub use status::AgentTaskStatus;
-pub use tool::{Tool, ToolCategory, ToolPermission, ToolUsage};
-pub use tool_access::{ToolAccess, ToolType, ToolConfig, AuthMethod, RateLimit, RetryPolicy};
-pub use metadata::AgentMetadata;
-pub use constraint::AgentConstraint;
-pub use context::AgentContext;
-pub use execution_result::{ExecutionResult, ExecutionError, ExecutionMetrics, LogEntry, LogLevel, SideEffect, SideEffectType, TokenUsage};
-pub use performance_metrics::PerformanceMetrics;
-pub use permission::{Permission, PermissionScope, AccessLevel};
-pub use authentication::{AuthToken, SessionId};
+pub use person_id::PersonId;
+pub use message_id::MessageId;
 
-// Re-export commonly used types
-pub use agent_type::{AgentCapability, AgentPermission};
+// Agent state
+pub use agent_status::AgentStatus;
+
+// Model configuration
+pub use model_config::{ModelConfig, ProviderType};
+
+// Streaming types
+pub use streaming_chunk::{
+    ContextMessage, FinishReason, MessageRole, StreamingChunk, TokenUsage,
+};

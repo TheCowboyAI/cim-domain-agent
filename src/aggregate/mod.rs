@@ -1,114 +1,117 @@
-//! Agent aggregate - represents autonomous agents in the system
+// Copyright (c) 2025 - Cowboy AI, LLC.
+
+//! Agent aggregate v2.0
 //!
-//! Agents are entities that can perform actions on behalf of users or organizations.
-//! They have capabilities, permissions, and can use tools/functions.
+//! Pure functional event-sourced aggregate representing an autonomous agent
+//! that is a Person's automaton for AI model interaction.
+//!
+//! # Design Principles
+//!
+//! 1. **Agent = Person's Automaton**: Every agent is bound to a PersonId
+//! 2. **Single Model**: One model configuration per agent
+//! 3. **Stateless Messages**: No conversation state maintained
+//! 4. **Event-Sourced**: All state changes through immutable events
 
-use cim_domain::{
-    Component, ComponentStorage,
-    AggregateRoot, Entity, EntityId,
-    DomainError, DomainResult,
-};
+use crate::events::*;
+use crate::value_objects::*;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::any::Any;
-use std::collections::{HashMap, HashSet};
-use std::fmt;
-use uuid::Uuid;
-use bevy::prelude::*;
 
-/// Agent ID type
-pub type AgentId = Uuid;
-
-/// Marker type for Agent entities
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AgentMarker;
-
-/// Agent aggregate root
-#[derive(Debug, Clone)]
+/// Agent aggregate - Person's automaton for AI model interaction
+///
+/// # Lifecycle
+///
+/// ```text
+/// Deployed → (ModelConfigured) → Active ↔ Suspended → Decommissioned
+/// ```
+///
+/// - `Deployed`: Created, bound to a Person
+/// - `Active`: Model configured, ready to process messages
+/// - `Suspended`: Temporarily paused
+/// - `Decommissioned`: Terminal state (cannot recover)
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Agent {
-    /// Entity base
-    entity: Entity<AgentMarker>,
+    /// Agent unique identifier
+    id: AgentId,
 
-    /// Agent type
-    agent_type: AgentType,
+    /// The owning person (REQUIRED - agent is person's automaton)
+    person_id: PersonId,
 
-    /// Current status
+    /// Agent name
+    name: String,
+
+    /// Optional description
+    description: Option<String>,
+
+    /// Current operational status
     status: AgentStatus,
 
-    /// Owner (person or organization)
-    owner_id: Uuid,
+    /// Model configuration (required for activation)
+    model_config: Option<ModelConfig>,
 
-    /// Components attached to this agent
-    components: ComponentStorage,
+    /// When the agent was created
+    created_at: DateTime<Utc>,
 
-    /// Version for optimistic concurrency
+    /// Event sourcing version
     version: u64,
 }
 
-/// Types of agents in the system
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum AgentType {
-    /// Human-controlled agent
-    Human,
-    /// AI/ML model agent
-    AI,
-    /// System/service agent
-    System,
-    /// External integration agent
-    External,
-}
-
-impl fmt::Display for AgentType {
-    /// Format the agent type for display
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            AgentType::Human => write!(f, "Human"),
-            AgentType::AI => write!(f, "AI"),
-            AgentType::System => write!(f, "System"),
-            AgentType::External => write!(f, "External"),
-        }
-    }
-}
-
-/// Agent operational status
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum AgentStatus {
-    /// Agent is being initialized
-    Initializing,
-    /// Agent is active and operational
-    Active,
-    /// Agent is temporarily suspended
-    Suspended,
-    /// Agent is offline/unavailable
-    Offline,
-    /// Agent has been decommissioned
-    Decommissioned,
-}
-
 impl Agent {
-    /// Create a new agent
-    pub fn new(
-        id: Uuid,
-        agent_type: AgentType,
-        owner_id: Uuid,
-    ) -> Self {
+    /// Create an empty agent for event replay
+    ///
+    /// This is the starting point for reconstructing agent state from events.
+    pub fn empty() -> Self {
         Self {
-            entity: Entity::with_id(EntityId::from_uuid(id)),
-            agent_type,
-            status: AgentStatus::Initializing,
-            owner_id,
-            components: ComponentStorage::new(),
+            id: AgentId::new(),
+            person_id: PersonId::new(),
+            name: String::new(),
+            description: None,
+            status: AgentStatus::Deployed,
+            model_config: None,
+            created_at: Utc::now(),
             version: 0,
         }
     }
 
-    /// Get the agent's ID
-    pub fn id(&self) -> Uuid {
-        *self.entity.id.as_uuid()
+    /// Create a new agent (for command handlers)
+    ///
+    /// Prefer using `apply_event` with an `AgentDeployed` event for proper
+    /// event sourcing. This constructor is provided for convenience.
+    pub fn new(agent_id: AgentId, person_id: PersonId, name: impl Into<String>) -> Self {
+        Self {
+            id: agent_id,
+            person_id,
+            name: name.into(),
+            description: None,
+            status: AgentStatus::Deployed,
+            model_config: None,
+            created_at: Utc::now(),
+            version: 0,
+        }
     }
 
-    /// Get the agent type
-    pub fn agent_type(&self) -> AgentType {
-        self.agent_type
+    // ========================================================================
+    // Accessors
+    // ========================================================================
+
+    /// Get the agent ID
+    pub fn id(&self) -> AgentId {
+        self.id
+    }
+
+    /// Get the owning person ID
+    pub fn person_id(&self) -> PersonId {
+        self.person_id
+    }
+
+    /// Get the agent name
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    /// Get the agent description
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
     }
 
     /// Get the current status
@@ -116,512 +119,135 @@ impl Agent {
         self.status
     }
 
-    /// Get the owner ID
-    pub fn owner_id(&self) -> Uuid {
-        self.owner_id
+    /// Get the model configuration
+    pub fn model_config(&self) -> Option<&ModelConfig> {
+        self.model_config.as_ref()
     }
 
-    /// Get the version
+    /// Get when the agent was created
+    pub fn created_at(&self) -> DateTime<Utc> {
+        self.created_at
+    }
+
+    /// Get the event sourcing version
     pub fn version(&self) -> u64 {
         self.version
     }
 
-    /// Add a component to the agent
-    pub fn add_component<C: Component>(&mut self, component: C) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
-        self.components.add(component)?;
-        self.entity.touch();
-        self.version += 1;
-        
-        // For now, we'll return an empty vec since component changes might not always generate events
-        // In a real implementation, you might want to generate specific events for certain components
-        Ok(vec![])
+    // ========================================================================
+    // State Queries
+    // ========================================================================
+
+    /// Check if the agent is operational (can process messages)
+    pub fn is_operational(&self) -> bool {
+        self.status == AgentStatus::Active && self.model_config.is_some()
     }
 
-    /// Get a component by type
-    pub fn get_component<C: Component>(&self) -> Option<&C> {
-        self.components.get::<C>()
+    /// Check if the agent has a model configured
+    pub fn has_model_config(&self) -> bool {
+        self.model_config.is_some()
     }
 
-    /// Remove a component by type
-    pub fn remove_component<C: Component>(&mut self) -> Option<Box<dyn Component>> {
-        let result = self.components.remove::<C>();
-        if result.is_some() {
-            self.entity.touch();
-            self.version += 1;
-        }
-        result
+    /// Check if the agent can be activated
+    pub fn can_activate(&self) -> bool {
+        self.model_config.is_some()
+            && matches!(
+                self.status,
+                AgentStatus::Deployed | AgentStatus::Suspended
+            )
     }
 
-    /// Check if the agent has a specific component
-    pub fn has_component<C: Component>(&self) -> bool {
-        self.components.has::<C>()
+    /// Check if the agent can be suspended
+    pub fn can_suspend(&self) -> bool {
+        self.status == AgentStatus::Active
     }
 
-    /// Activate the agent
-    pub fn activate(&mut self) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
-        match self.status {
-            AgentStatus::Initializing | AgentStatus::Suspended | AgentStatus::Offline => {
-                self.status = AgentStatus::Active;
-                self.entity.touch();
-                self.version += 1;
-                
-                let event = crate::events::AgentActivated {
-                    agent_id: self.id(),
-                    activated_at: chrono::Utc::now(),
-                    event_metadata: cim_domain::EventMetadata {
-                        source: "agent-domain".to_string(),
-                        version: "v1".to_string(),
-                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
-                        properties: std::collections::HashMap::new(),
-                    },
-                };
-                
-                Ok(vec![Box::new(event)])
+    /// Check if the agent is decommissioned (terminal state)
+    pub fn is_decommissioned(&self) -> bool {
+        self.status == AgentStatus::Decommissioned
+    }
+
+    // ========================================================================
+    // Event Application (Pure Functional)
+    // ========================================================================
+
+    /// Apply an event to produce a new agent state
+    ///
+    /// This is a pure function - it does not modify self, but returns a new Agent.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the event cannot be applied to the current state.
+    pub fn apply_event(&self, event: &AgentEvent) -> Result<Self, String> {
+        let mut new_agent = self.clone();
+
+        match event {
+            AgentEvent::AgentDeployed(e) => {
+                new_agent.id = e.agent_id;
+                new_agent.person_id = e.person_id;
+                new_agent.name = e.name.clone();
+                new_agent.description = e.description.clone();
+                new_agent.status = AgentStatus::Deployed;
+                new_agent.created_at = e.deployed_at;
             }
-            AgentStatus::Active => Err(DomainError::InvalidStateTransition {
-                from: "Active".to_string(),
-                to: "Active".to_string(),
-            }),
-            AgentStatus::Decommissioned => Err(DomainError::InvalidStateTransition {
-                from: "Decommissioned".to_string(),
-                to: "Active".to_string(),
-            }),
-        }
-    }
 
-    /// Suspend the agent
-    pub fn suspend(&mut self, reason: String) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
-        match self.status {
-            AgentStatus::Active => {
-                self.status = AgentStatus::Suspended;
-                self.entity.touch();
-                self.version += 1;
-                
-                let event = crate::events::AgentSuspended {
-                    agent_id: self.id(),
-                    reason,
-                    suspended_at: chrono::Utc::now(),
-                    event_metadata: cim_domain::EventMetadata {
-                        source: "agent-domain".to_string(),
-                        version: "v1".to_string(),
-                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
-                        properties: std::collections::HashMap::new(),
-                    },
-                };
-                
-                Ok(vec![Box::new(event)])
+            AgentEvent::ModelConfigured(e) => {
+                if new_agent.is_decommissioned() {
+                    return Err("Cannot configure model for decommissioned agent".to_string());
+                }
+                new_agent.model_config = Some(e.config.clone());
             }
-            AgentStatus::Decommissioned => Err(DomainError::InvalidStateTransition {
-                from: "Decommissioned".to_string(),
-                to: "Suspended".to_string(),
-            }),
-            _ => Err(DomainError::InvalidStateTransition {
-                from: format!("{:?}", self.status),
-                to: "Suspended".to_string(),
-            }),
-        }
-    }
 
-    /// Decommission the agent
-    pub fn decommission(&mut self) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
-        if self.status == AgentStatus::Decommissioned {
-            return Err(DomainError::InvalidStateTransition {
-                from: "Decommissioned".to_string(),
-                to: "Decommissioned".to_string(),
-            });
-        }
-        self.status = AgentStatus::Decommissioned;
-        self.entity.touch();
-        self.version += 1;
-        
-        let event = crate::events::AgentDecommissioned {
-            agent_id: self.id(),
-            decommissioned_at: chrono::Utc::now(),
-            event_metadata: cim_domain::EventMetadata {
-                source: "agent-domain".to_string(),
-                version: "v1".to_string(),
-                propagation_scope: cim_domain::PropagationScope::LocalOnly,
-                properties: std::collections::HashMap::new(),
-            },
-        };
-        
-        Ok(vec![Box::new(event)])
-    }
-
-    /// Set agent offline
-    pub fn set_offline(&mut self) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
-        match self.status {
-            AgentStatus::Active | AgentStatus::Suspended => {
-                self.status = AgentStatus::Offline;
-                self.entity.touch();
-                self.version += 1;
-                
-                let event = crate::events::AgentWentOffline {
-                    agent_id: self.id(),
-                    offline_at: chrono::Utc::now(),
-                    event_metadata: cim_domain::EventMetadata {
-                        source: "agent-domain".to_string(),
-                        version: "v1".to_string(),
-                        propagation_scope: cim_domain::PropagationScope::LocalOnly,
-                        properties: std::collections::HashMap::new(),
-                    },
-                };
-                
-                Ok(vec![Box::new(event)])
+            AgentEvent::AgentActivated(_) => {
+                if new_agent.model_config.is_none() {
+                    return Err("Cannot activate agent without model configuration".to_string());
+                }
+                if new_agent.is_decommissioned() {
+                    return Err("Cannot activate decommissioned agent".to_string());
+                }
+                new_agent.status = AgentStatus::Active;
             }
-            _ => Err(DomainError::InvalidStateTransition {
-                from: format!("{:?}", self.status),
-                to: "Offline".to_string(),
-            }),
-        }
-    }
 
-    /// Configure AI capabilities for the agent
-    pub fn configure_ai_capabilities(&mut self, capabilities: crate::value_objects::AICapabilities) -> DomainResult<Vec<Box<dyn cim_domain::DomainEvent>>> {
-        // Only AI agents can have AI capabilities
-        if self.agent_type != AgentType::AI {
-            return Err(DomainError::ValidationError(
-                format!("Cannot configure AI capabilities for {:?} agent", self.agent_type)
-            ));
-        }
-
-        // Agent must be in a valid state
-        match self.status {
-            AgentStatus::Active | AgentStatus::Initializing | AgentStatus::Suspended => {
-                // Store the capabilities as a component
-                let ai_component = AICapabilitiesComponent {
-                    capabilities: capabilities.clone(),
-                    provider_config: crate::ai_providers::ProviderConfig::Mock, // Default to mock
-                    last_updated: chrono::Utc::now(),
-                };
-                
-                self.add_component(ai_component)?;
-                self.version += 1;
-                
-                let event = crate::events::AICapabilitiesConfigured {
-                    agent_id: crate::value_objects::AgentId::from_uuid(self.id()),
-                    capabilities,
-                    configured_at: chrono::Utc::now(),
-                };
-                
-                Ok(vec![Box::new(event)])
+            AgentEvent::AgentSuspended(_) => {
+                if new_agent.is_decommissioned() {
+                    return Err("Cannot suspend decommissioned agent".to_string());
+                }
+                new_agent.status = AgentStatus::Suspended;
             }
-            _ => Err(DomainError::ValidationError(
-                format!("Cannot configure AI capabilities for agent in {:?} state", self.status)
-            )),
+
+            AgentEvent::AgentDecommissioned(_) => {
+                new_agent.status = AgentStatus::Decommissioned;
+            }
+
+            // Message events do NOT modify agent state
+            // They are purely for NATS consumers
+            AgentEvent::MessageSent(_)
+            | AgentEvent::ResponseChunkReceived(_)
+            | AgentEvent::ResponseCompleted(_)
+            | AgentEvent::ResponseFailed(_) => {
+                // No state change - these are side-effect events
+            }
         }
-    }
-    
-    /// Check if the agent has AI capabilities configured
-    pub fn has_ai_capabilities(&self) -> bool {
-        self.has_component::<AICapabilitiesComponent>()
-    }
-    
-    /// Get the agent's AI capabilities if configured
-    pub fn get_ai_capabilities(&self) -> Option<&crate::value_objects::AICapabilities> {
-        self.get_component::<AICapabilitiesComponent>()
-            .map(|comp| &comp.capabilities)
-    }
-}
 
-impl AggregateRoot for Agent {
-    type Id = EntityId<AgentMarker>;
-
-    fn id(&self) -> Self::Id {
-        self.entity.id
+        new_agent.version += 1;
+        Ok(new_agent)
     }
 
-    fn version(&self) -> u64 {
-        self.version
-    }
-
-    fn increment_version(&mut self) {
-        self.version += 1;
-        self.entity.touch();
-    }
-}
-
-// Agent Components
-
-/// Capabilities component - what the agent can do
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CapabilitiesComponent {
-    /// Set of capability identifiers
-    pub capabilities: HashSet<String>,
-    /// Capability metadata (descriptions, versions, etc.)
-    pub metadata: HashMap<String, serde_json::Value>,
-}
-
-impl CapabilitiesComponent {
-    /// Create a new capabilities component with the given capabilities
-    pub fn new(capabilities: Vec<String>) -> Self {
-        Self {
-            capabilities: capabilities.into_iter().collect(),
-            metadata: HashMap::new(),
+    /// Apply multiple events in sequence
+    ///
+    /// Returns the final agent state after all events are applied.
+    pub fn apply_events(&self, events: &[AgentEvent]) -> Result<Self, String> {
+        let mut current = self.clone();
+        for event in events {
+            current = current.apply_event(event)?;
         }
-    }
-
-    /// Add a new capability
-    pub fn add_capability(&mut self, capability: String) {
-        self.capabilities.insert(capability);
-    }
-
-    /// Remove a capability, returns true if it was present
-    pub fn remove_capability(&mut self, capability: &str) -> bool {
-        self.capabilities.remove(capability)
-    }
-
-    /// Check if the agent has a specific capability
-    pub fn has_capability(&self, capability: &str) -> bool {
-        self.capabilities.contains(capability)
+        Ok(current)
     }
 }
 
-impl Component for CapabilitiesComponent {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn clone_box(&self) -> Box<dyn Component> {
-        Box::new(self.clone())
-    }
-
-    fn type_name(&self) -> &'static str {
-        "CapabilitiesComponent"
-    }
-}
-
-/// Authentication component - how the agent authenticates
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthenticationComponent {
-    /// Authentication method
-    pub auth_method: AuthMethod,
-    /// Credentials or token (encrypted in production)
-    pub credentials: serde_json::Value,
-    /// Last authentication timestamp
-    pub last_authenticated: Option<chrono::DateTime<chrono::Utc>>,
-}
-
-/// Authentication methods supported by agents
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum AuthMethod {
-    /// API key authentication
-    ApiKey,
-    /// OAuth2 token
-    OAuth2,
-    /// JWT token
-    JWT,
-    /// Certificate-based
-    Certificate,
-    /// Custom authentication
-    Custom(String),
-}
-
-impl Component for AuthenticationComponent {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn clone_box(&self) -> Box<dyn Component> {
-        Box::new(self.clone())
-    }
-
-    fn type_name(&self) -> &'static str {
-        "AuthenticationComponent"
-    }
-}
-
-/// Permissions component - what the agent is allowed to do
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PermissionsComponent {
-    /// Granted permissions
-    pub permissions: HashSet<String>,
-    /// Denied permissions (explicit denials)
-    pub denials: HashSet<String>,
-    /// Permission groups/roles
-    pub roles: HashSet<String>,
-}
-
-impl Default for PermissionsComponent {
+impl Default for Agent {
     fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl PermissionsComponent {
-    /// Create a new empty permissions component
-    pub fn new() -> Self {
-        Self {
-            permissions: HashSet::new(),
-            denials: HashSet::new(),
-            roles: HashSet::new(),
-        }
-    }
-
-    /// Grant a permission to the agent
-    pub fn grant_permission(&mut self, permission: String) {
-        self.permissions.insert(permission.clone());
-        self.denials.remove(&permission);
-    }
-
-    /// Explicitly deny a permission
-    pub fn deny_permission(&mut self, permission: String) {
-        self.denials.insert(permission.clone());
-        self.permissions.remove(&permission);
-    }
-
-    /// Check if the agent has a specific permission
-    pub fn has_permission(&self, permission: &str) -> bool {
-        !self.denials.contains(permission) && self.permissions.contains(permission)
-    }
-
-    /// Add a role to the agent
-    pub fn add_role(&mut self, role: String) {
-        self.roles.insert(role);
-    }
-}
-
-impl Component for PermissionsComponent {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn clone_box(&self) -> Box<dyn Component> {
-        Box::new(self.clone())
-    }
-
-    fn type_name(&self) -> &'static str {
-        "PermissionsComponent"
-    }
-}
-
-/// Tool access component - tools/functions the agent can use
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolAccessComponent {
-    /// Available tools
-    pub tools: HashMap<String, ToolDefinition>,
-    /// Usage statistics
-    pub usage_stats: HashMap<String, ToolUsageStats>,
-}
-
-/// Definition of a tool that an agent can use
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolDefinition {
-    /// Tool name identifier
-    pub name: String,
-    /// Human-readable description of what the tool does
-    pub description: String,
-    /// Tool version
-    pub version: String,
-    /// JSON schema for tool parameters
-    pub parameters: serde_json::Value,
-    /// Whether the tool is currently enabled for use
-    pub enabled: bool,
-}
-
-/// Statistics about tool usage by an agent
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolUsageStats {
-    /// Total number of times the tool has been invoked
-    pub invocation_count: u64,
-    /// When the tool was last used
-    pub last_used: Option<chrono::DateTime<chrono::Utc>>,
-    /// Number of successful invocations
-    pub success_count: u64,
-    /// Number of failed invocations
-    pub failure_count: u64,
-}
-
-impl Component for ToolAccessComponent {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn clone_box(&self) -> Box<dyn Component> {
-        Box::new(self.clone())
-    }
-
-    fn type_name(&self) -> &'static str {
-        "ToolAccessComponent"
-    }
-}
-
-/// Configuration component - agent-specific configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ConfigurationComponent {
-    /// Configuration values
-    pub config: serde_json::Value,
-    /// Configuration version
-    pub version: String,
-    /// Last updated
-    pub updated_at: chrono::DateTime<chrono::Utc>,
-}
-
-impl Component for ConfigurationComponent {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn clone_box(&self) -> Box<dyn Component> {
-        Box::new(self.clone())
-    }
-
-    fn type_name(&self) -> &'static str {
-        "ConfigurationComponent"
-    }
-}
-
-/// AI capabilities component - AI-specific configuration
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AICapabilitiesComponent {
-    /// AI capabilities configuration
-    pub capabilities: crate::value_objects::AICapabilities,
-    /// Provider configuration for AI services
-    pub provider_config: crate::ai_providers::ProviderConfig,
-    /// Last updated timestamp
-    pub last_updated: chrono::DateTime<chrono::Utc>,
-}
-
-impl Component for AICapabilitiesComponent {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn clone_box(&self) -> Box<dyn Component> {
-        Box::new(self.clone())
-    }
-
-    fn type_name(&self) -> &'static str {
-        "AICapabilitiesComponent"
-    }
-}
-
-/// Metadata component for agents
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AgentMetadata {
-    /// Human-readable name
-    pub name: String,
-    /// Description of the agent's purpose
-    pub description: String,
-    /// Tags for categorization
-    pub tags: HashSet<String>,
-    /// Creation timestamp
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    /// Last activity timestamp
-    pub last_active: Option<chrono::DateTime<chrono::Utc>>,
-}
-
-impl Component for AgentMetadata {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn clone_box(&self) -> Box<dyn Component> {
-        Box::new(self.clone())
-    }
-
-    fn type_name(&self) -> &'static str {
-        "AgentMetadata"
+        Self::empty()
     }
 }
 
@@ -629,143 +255,150 @@ impl Component for AgentMetadata {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_create_agent() {
-        let agent_id = Uuid::new_v4();
-        let owner_id = Uuid::new_v4();
-
-        let agent = Agent::new(agent_id, AgentType::AI, owner_id);
-
-        assert_eq!(agent.id(), agent_id);
-        assert_eq!(agent.agent_type(), AgentType::AI);
-        assert_eq!(agent.status(), AgentStatus::Initializing);
-        assert_eq!(agent.owner_id(), owner_id);
-        assert_eq!(agent.version(), 0);
+    fn create_deployed_agent() -> (Agent, AgentId, PersonId) {
+        let agent_id = AgentId::new();
+        let person_id = PersonId::new();
+        let event = AgentEvent::AgentDeployed(AgentDeployedEvent::new(
+            agent_id,
+            person_id,
+            "TestAgent",
+            Some("A test agent".to_string()),
+        ));
+        let agent = Agent::empty().apply_event(&event).unwrap();
+        (agent, agent_id, person_id)
     }
 
     #[test]
-    fn test_agent_status_transitions() {
-        let agent_id = Uuid::new_v4();
-        let owner_id = Uuid::new_v4();
-
-        let mut agent = Agent::new(agent_id, AgentType::System, owner_id);
-
-        // Activate from initializing
-        assert!(agent.activate().is_ok());
-        assert_eq!(agent.status(), AgentStatus::Active);
+    fn test_agent_deployment() {
+        let (agent, agent_id, person_id) = create_deployed_agent();
+        assert_eq!(agent.id(), agent_id);
+        assert_eq!(agent.person_id(), person_id);
+        assert_eq!(agent.name(), "TestAgent");
+        assert_eq!(agent.status(), AgentStatus::Deployed);
         assert_eq!(agent.version(), 1);
+    }
 
-        // Cannot activate when already active
-        assert!(agent.activate().is_err());
+    #[test]
+    fn test_model_configuration() {
+        let (agent, agent_id, _) = create_deployed_agent();
 
-        // Suspend active agent
-        assert!(agent.suspend("Maintenance".to_string()).is_ok());
-        assert_eq!(agent.status(), AgentStatus::Suspended);
+        let config_event = AgentEvent::ModelConfigured(ModelConfiguredEvent::new(
+            agent_id,
+            ModelConfig::mock(),
+        ));
+
+        let agent = agent.apply_event(&config_event).unwrap();
+        assert!(agent.has_model_config());
         assert_eq!(agent.version(), 2);
+    }
 
-        // Reactivate
-        assert!(agent.activate().is_ok());
+    #[test]
+    fn test_agent_activation_requires_model() {
+        let (agent, agent_id, _) = create_deployed_agent();
+
+        // Try to activate without model config
+        let activate_event = AgentEvent::AgentActivated(AgentActivatedEvent::new(agent_id));
+        let result = agent.apply_event(&activate_event);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_agent_full_lifecycle() {
+        let (agent, agent_id, _) = create_deployed_agent();
+
+        // Configure model
+        let config_event = AgentEvent::ModelConfigured(ModelConfiguredEvent::new(
+            agent_id,
+            ModelConfig::mock(),
+        ));
+        let agent = agent.apply_event(&config_event).unwrap();
+
+        // Activate
+        let activate_event = AgentEvent::AgentActivated(AgentActivatedEvent::new(agent_id));
+        let agent = agent.apply_event(&activate_event).unwrap();
         assert_eq!(agent.status(), AgentStatus::Active);
-        assert_eq!(agent.version(), 3);
+        assert!(agent.is_operational());
 
-        // Set offline
-        assert!(agent.set_offline().is_ok());
-        assert_eq!(agent.status(), AgentStatus::Offline);
-        assert_eq!(agent.version(), 4);
+        // Suspend
+        let suspend_event =
+            AgentEvent::AgentSuspended(AgentSuspendedEvent::new(agent_id, "Maintenance"));
+        let agent = agent.apply_event(&suspend_event).unwrap();
+        assert_eq!(agent.status(), AgentStatus::Suspended);
+        assert!(!agent.is_operational());
 
         // Decommission
-        assert!(agent.decommission().is_ok());
+        let decommission_event =
+            AgentEvent::AgentDecommissioned(AgentDecommissionedEvent::new(agent_id, None));
+        let agent = agent.apply_event(&decommission_event).unwrap();
         assert_eq!(agent.status(), AgentStatus::Decommissioned);
-        assert_eq!(agent.version(), 5);
-
-        // Cannot activate decommissioned agent
-        assert!(agent.activate().is_err());
+        assert!(agent.is_decommissioned());
     }
 
     #[test]
-    fn test_agent_components() {
-        let agent_id = Uuid::new_v4();
-        let owner_id = Uuid::new_v4();
+    fn test_cannot_activate_decommissioned_agent() {
+        let (agent, agent_id, _) = create_deployed_agent();
 
-        let mut agent = Agent::new(agent_id, AgentType::AI, owner_id);
+        // Configure and decommission
+        let config_event = AgentEvent::ModelConfigured(ModelConfiguredEvent::new(
+            agent_id,
+            ModelConfig::mock(),
+        ));
+        let agent = agent.apply_event(&config_event).unwrap();
 
-        // Add capabilities
-        let capabilities = CapabilitiesComponent::new(vec![
-            "text_generation".to_string(),
-            "code_analysis".to_string(),
-        ]);
-        assert!(agent.add_component(capabilities).is_ok());
-        assert_eq!(agent.version(), 1);
+        let decommission_event =
+            AgentEvent::AgentDecommissioned(AgentDecommissionedEvent::new(agent_id, None));
+        let agent = agent.apply_event(&decommission_event).unwrap();
 
-        // Check component exists
-        assert!(agent.has_component::<CapabilitiesComponent>());
+        // Try to activate
+        let activate_event = AgentEvent::AgentActivated(AgentActivatedEvent::new(agent_id));
+        let result = agent.apply_event(&activate_event);
+        assert!(result.is_err());
+    }
 
-        // Get component
-        let caps = agent.get_component::<CapabilitiesComponent>().unwrap();
-        assert!(caps.has_capability("text_generation"));
-        assert!(caps.has_capability("code_analysis"));
+    #[test]
+    fn test_message_events_dont_change_state() {
+        let (agent, agent_id, _) = create_deployed_agent();
+        let initial_version = agent.version();
 
-        // Add metadata
-        let metadata = AgentMetadata {
-            name: "Code Assistant".to_string(),
-            description: "AI agent for code analysis and generation".to_string(),
-            tags: ["ai", "code", "assistant"].iter().map(|s| s.to_string()).collect(),
-            created_at: chrono::Utc::now(),
-            last_active: None,
-        };
-        assert!(agent.add_component(metadata).is_ok());
-        assert_eq!(agent.version(), 2);
+        let message_event = AgentEvent::MessageSent(MessageSentEvent::new(
+            agent_id,
+            MessageId::new(),
+            "Hello",
+        ));
 
-        // Remove component
-        let removed = agent.remove_component::<CapabilitiesComponent>();
-        assert!(removed.is_some());
-        assert!(!agent.has_component::<CapabilitiesComponent>());
+        let agent = agent.apply_event(&message_event).unwrap();
+        // Version increments but status unchanged
+        assert_eq!(agent.version(), initial_version + 1);
+        assert_eq!(agent.status(), AgentStatus::Deployed);
+    }
+
+    #[test]
+    fn test_apply_events_batch() {
+        let agent_id = AgentId::new();
+        let person_id = PersonId::new();
+
+        let events = vec![
+            AgentEvent::AgentDeployed(AgentDeployedEvent::new(
+                agent_id,
+                person_id,
+                "BatchAgent",
+                None,
+            )),
+            AgentEvent::ModelConfigured(ModelConfiguredEvent::new(agent_id, ModelConfig::mock())),
+            AgentEvent::AgentActivated(AgentActivatedEvent::new(agent_id)),
+        ];
+
+        let agent = Agent::empty().apply_events(&events).unwrap();
+        assert_eq!(agent.status(), AgentStatus::Active);
         assert_eq!(agent.version(), 3);
     }
 
     #[test]
-    fn test_permissions_component() {
-        let mut perms = PermissionsComponent::new();
-
-        // Grant permissions
-        perms.grant_permission("read_files".to_string());
-        perms.grant_permission("write_files".to_string());
-
-        assert!(perms.has_permission("read_files"));
-        assert!(perms.has_permission("write_files"));
-
-        // Deny permission
-        perms.deny_permission("write_files".to_string());
-        assert!(!perms.has_permission("write_files"));
-        assert!(perms.has_permission("read_files"));
-
-        // Add role
-        perms.add_role("developer".to_string());
-        assert!(perms.roles.contains("developer"));
-    }
-
-    #[test]
-    fn test_aggregate_root_implementation() {
-        let agent_id = Uuid::new_v4();
-        let owner_id = Uuid::new_v4();
-
-        let mut agent = Agent::new(agent_id, AgentType::Human, owner_id);
-
-        // Test ID
-        let aggregate_id = AggregateRoot::id(&agent);
-        assert_eq!(*aggregate_id.as_uuid(), agent_id);
-
-        // Test version
-        assert_eq!(agent.version(), 0);
-
-        // Test increment version
-        agent.increment_version();
-        assert_eq!(agent.version(), 1);
-
-        // Verify entity was touched
-        let updated_at = agent.entity.updated_at;
-        std::thread::sleep(std::time::Duration::from_millis(10));
-        agent.increment_version();
-        assert!(agent.entity.updated_at > updated_at);
+    fn test_agent_serialization() {
+        let (agent, _, _) = create_deployed_agent();
+        let json = serde_json::to_string(&agent).unwrap();
+        let deserialized: Agent = serde_json::from_str(&json).unwrap();
+        assert_eq!(agent.id(), deserialized.id());
+        assert_eq!(agent.person_id(), deserialized.person_id());
     }
 }
