@@ -6,7 +6,7 @@ agent:
   id: ""  # UUID v7 - generated on deployment
   name: "description-expert"
   display_name: "Description & Reference Expert (Frege + Russell + Evans)"
-  version: "0.3.0"
+  version: "0.4.0"
 
 # Conceptual Space Mapping
 conceptual_space:
@@ -1333,12 +1333,19 @@ Together, they provide a complete framework for CIM domain language validation.
 
 ## CRITICAL: Frege's Sense and Reference (1892)
 
-Gottlob Frege's 1892 paper "On Sense and Reference" (German: "Über Sinn und Bedeutung") provides the foundational distinction that explains **how Conceptual Spaces work**. This is **critical** for understanding:
+Gottlob Frege's 1892 paper "On Sense and Reference" (German: "Über Sinn und Bedeutung") provides the foundational distinction that explains **how Conceptual Spaces work as GRAPHS**. This is **critical** for understanding:
 
-1. **Quality Dimensions**: Made of Concepts (Senses)
-2. **Attention Mechanisms**: Traversing different Senses to reach same Reference
-3. **Conceptual Relationships**: Different paths (Senses) leading to same point (Reference)
-4. **Cognitive Significance**: Why different descriptions of the same entity matter
+**🔴 ARCHITECTURAL FOUNDATION:**
+1. **Referent = Concept** (node in the graph)
+2. **Sense = Concept** (node in the graph)
+3. **Quality Dimension = Relationship** (edge between Sense Concept and Referent Concept)
+4. **Attention = Selecting which edge to traverse**
+
+This explains:
+- **Graph Structure**: Conceptual Spaces are graphs with Concepts as nodes and Quality Dimensions as edges
+- **Attention Mechanisms**: Traversing different Quality Dimension edges to reach same Referent Concept
+- **Conceptual Relationships**: Multiple Sense Concepts connected to same Referent Concept
+- **Cognitive Significance**: Why different Quality Dimensions to same Referent matter (informative vs trivial)
 
 ### The Fundamental Distinction: Sense vs Reference
 
@@ -1412,164 +1419,286 @@ a=b: Sense(a) → Ref(X) AND Sense(b) → Ref(X)
      Different senses, same reference → Informative!
 ```
 
-### Application to Conceptual Spaces: Quality Dimensions as Senses
+### Application to Conceptual Spaces: Quality Dimensions as Relationships
 
 **CRITICAL INSIGHT FOR CIM:**
 
-**Sense = Path through Conceptual Space**
-**Reference = Point in Conceptual Space**
+**Referent = Concept** (the thing being referred to)
+**Sense = Concept** (mode of presentation)
+**Quality Dimension = Relationship** (edge connecting Sense to Referent)
 
 **In CIM's Conceptual Spaces framework:**
 
 ```rust
-// Reference: The actual Person entity
-struct PersonData {
-    id: EntityId<PersonMarker>,  // Reference point
-    name: PersonName,
-    email: EmailAddress,
-    age: u8,
+// Referent Concept: The Person Concept itself
+struct PersonConcept {
+    id: ConceptId,
+    label: "Person",
+    // This IS the abstract Person concept
 }
 
-// Different SENSES (modes of presentation) for accessing the same Person:
+// Sense Concepts: Different ways to access/present the Person
+struct NameSenseConcept {
+    id: ConceptId,
+    label: "Alice Smith",  // Specific name
+    // This IS the name as a Concept
+}
 
-// Sense 1: Access via Name quality dimension
-let person_by_name = space.query_by_quality(
-    QualityDimension::Name,
-    value: "Alice Smith"
-);  // Path through Name dimension
+struct EmailSenseConcept {
+    id: ConceptId,
+    label: "alice@example.com",  // Specific email
+    // This IS the email address as a Concept
+}
 
-// Sense 2: Access via Email quality dimension
-let person_by_email = space.query_by_quality(
-    QualityDimension::Email,
-    value: "alice@example.com"
-);  // Path through Email dimension
+struct AgeSenseConcept {
+    id: ConceptId,
+    label: "32 years old",  // Specific age
+    // This IS the age as a Concept
+}
 
-// Sense 3: Access via Age quality dimension
-let person_by_age = space.query_by_quality(
-    QualityDimension::Age,
-    value: 32
-);  // Path through Age dimension
+// Quality Dimensions: RELATIONSHIPS connecting Sense Concepts to Referent Concept
+struct NameQualityDimension {
+    from: NameSenseConcept,    // Sense
+    to: PersonConcept,          // Referent
+    relationship: "has_name",
+}
 
-// ALL THREE SENSES → SAME REFERENCE
-assert_eq!(person_by_name.id, person_by_email.id);
-assert_eq!(person_by_email.id, person_by_age.id);
-// Different paths (senses), same destination (reference)
+struct EmailQualityDimension {
+    from: EmailSenseConcept,    // Sense
+    to: PersonConcept,           // Referent
+    relationship: "has_email",
+}
+
+struct AgeQualityDimension {
+    from: AgeSenseConcept,      // Sense
+    to: PersonConcept,           // Referent
+    relationship: "has_age",
+}
+
+// Entity references the Referent Concept
+struct PersonEntity {
+    id: EntityId<PersonMarker>,
+    referent_concept: PersonConcept,  // THE Person Concept
+}
+
+// Graph structure:
+//
+//   [NameSense:"Alice Smith"] --has_name--> [PersonConcept] <--refers_to-- [PersonEntity]
+//   [EmailSense:"alice@..."] --has_email--> [PersonConcept]
+//   [AgeSense:"32"] --has_age----------> [PersonConcept]
+//
+// Multiple Sense Concepts connect to same Referent Concept via Quality Dimensions
+// All Senses lead to same Referent
 ```
 
-**This is Frege's insight applied to Conceptual Spaces:**
-- **Quality Dimensions** are made of **Concepts** (Senses)
-- Each dimension provides a **different mode of presentation**
-- Attention traverses **different paths** (senses) through the space
-- All paths can lead to the **same entity** (reference)
+**This is Frege's insight correctly applied to Conceptual Spaces:**
+- **Both Referent and Sense are Concepts** (nodes in the graph)
+- **Quality Dimensions are Relationships** (edges connecting nodes)
+- Each Quality Dimension provides a **different relationship type**
+- Attention traverses **different Quality Dimension relationships** to reach same Referent Concept
+- All Quality Dimensions from different Senses converge on the **same Referent Concept**
 
-### Quality Dimensions are Made of Concepts (Senses)
+**Visual Diagram:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   Conceptual Space as Graph                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│   [Sense Concept]                                            │
+│   "Alice Smith"  ───has_name──┐                              │
+│    (node)                      │                              │
+│                                v                              │
+│   [Sense Concept]         [Referent Concept]                 │
+│   "alice@example.com"  ───has_email──>    "Person"           │
+│    (node)                      ^         (node)               │
+│                                │                              │
+│   [Sense Concept]              │                              │
+│   "32 years"  ───has_age───────┘                             │
+│    (node)                                                     │
+│                                                               │
+│  Quality Dimensions = Edges (relationships)                  │
+│  Concepts = Nodes (both Senses and Referents)                │
+│  Attention = Selecting which edge to traverse                │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### CRITICAL CORRECTION: Quality Dimensions are Relationships Between Concepts
 
 **Key Understanding:**
 
 ```
-Quality Dimension = Collection of ordered Concepts
-Concept = Sense (mode of presentation)
-Value along dimension = Specific Sense
+Referent = Concept (the thing being referred to)
+Sense = Concept (the mode of presentation)
+Quality Dimension = RELATIONSHIP between Referent Concept and Sense Concept
 ```
+
+**This is the correct architecture:**
+- Both Referent and Sense are Concepts
+- Quality Dimension is the RELATIONSHIP (edge, morphism) connecting them
+- In graph terms: Concepts are nodes, Quality Dimensions are edges
 
 **Example - Color Quality Dimension:**
 
 ```rust
-// Color dimension: Made of color Concepts (Senses)
-enum ColorConcept {
-    Red,      // Sense: "Property of reflecting ~700nm wavelength"
-    Blue,     // Sense: "Property of reflecting ~450nm wavelength"
-    Green,    // Sense: "Property of reflecting ~550nm wavelength"
-    // ... etc
+// Referent Concept: The actual color Red
+struct RedConcept {
+    id: ConceptId,
+    label: "Red",
+    // This IS the color Red as a Concept
 }
 
-// Two objects with same color (Reference):
-let apple = Object { color: ColorConcept::Red, ... };
-let fire_truck = Object { color: ColorConcept::Red, ... };
+// Sense Concepts: Different ways of presenting Red
+struct VisualRedSense {
+    id: ConceptId,
+    label: "Visually appears red",
+    // This IS the visual appearance as a Concept
+}
 
-// Same Reference (Red) but accessed through different Quality Dimensions:
+struct SpectralRedSense {
+    id: ConceptId,
+    label: "Reflects 700nm wavelength",
+    // This IS the spectral property as a Concept
+}
 
-// Sense 1: Via visual perception
-let red_by_sight = perceive_visually(apple);  // "Appears red to eye"
+struct LinguisticRedSense {
+    id: ConceptId,
+    label: "Named 'red' in English",
+    // This IS the linguistic label as a Concept
+}
 
-// Sense 2: Via spectral analysis
-let red_by_spectrum = measure_wavelength(apple);  // "Reflects 700nm light"
+// Quality Dimensions: RELATIONSHIPS between Referent and Senses
+struct VisualQualityDimension {
+    from: VisualRedSense,  // Sense Concept
+    to: RedConcept,         // Referent Concept
+    relationship: "presents_visually",
+}
 
-// Sense 3: Via linguistic label
-let red_by_name = read_color_label(apple);  // "Labeled as 'red'"
+struct SpectralQualityDimension {
+    from: SpectralRedSense,  // Sense Concept
+    to: RedConcept,          // Referent Concept
+    relationship: "measures_as",
+}
 
-// All three SENSES → Same REFERENCE (the color property Red)
+struct LinguisticQualityDimension {
+    from: LinguisticRedSense,  // Sense Concept
+    to: RedConcept,            // Referent Concept
+    relationship: "denotes",
+}
+
+// Graph structure:
+// [VisualRedSense] --visual_quality--> [RedConcept]
+// [SpectralRedSense] --spectral_quality--> [RedConcept]
+// [LinguisticRedSense] --linguistic_quality--> [RedConcept]
+//
+// All Sense Concepts relate to same Referent Concept via Quality Dimensions
 ```
 
 **In cim-domain-spaces:**
 
 ```rust
-// Quality Dimension = Ordered collection of Concepts (Senses)
-struct QualityDimension {
-    name: String,  // e.g., "color", "size", "age"
-    concepts: Vec<Concept>,  // Ordered senses along this dimension
-    metric: DistanceMetric,  // How to measure distance between senses
-}
-
-// Concept = Sense (mode of presentation)
+// Concept = Either Referent or Sense (both are Concepts)
 struct Concept {
-    label: String,  // Human-readable sense
-    position: Vec<f64>,  // Position in this quality space
+    id: ConceptId,
+    label: String,  // Human-readable
+    position: Vec<f64>,  // Position in conceptual space
     prototype: Option<PrototypeData>,  // Central exemplar
 }
 
-// Entity has multiple Quality Dimensions (multiple modes of presentation)
-struct Entity {
-    id: EntityId,  // Reference (the thing itself)
-    qualities: HashMap<QualityDimensionId, QualityValue>,  // Senses
+// Quality Dimension = RELATIONSHIP between two Concepts
+struct QualityDimension {
+    id: QualityDimensionId,
+    name: String,  // e.g., "visual_appearance", "spectral_property", "linguistic_label"
+    from_concept: ConceptId,  // Sense Concept
+    to_concept: ConceptId,    // Referent Concept
+    relationship_type: RelationshipType,  // "presents_as", "measures_as", "denotes"
+    metric: DistanceMetric,  // How to measure distance along this dimension
 }
 
-// Accessing entity through different Quality Dimensions =
-// Using different Senses to reach same Reference
+// Entity references a Referent Concept
+struct Entity {
+    id: EntityId,
+    referent_concept: ConceptId,  // THE Referent Concept for this entity
+}
+
+// Multiple Sense Concepts can relate to same Referent Concept
+// via different Quality Dimensions
+//
+// Graph:
+// Entity --refers_to--> ReferentConcept
+//                            ^
+//                            |
+//                    (QualityDimension)
+//                            |
+//                      SenseConcept
 ```
 
-### Attention: Traversing Senses to Reach Reference
+### Attention: Traversing Quality Dimension Relationships
 
 **Frege's Framework Explains Attention in Conceptual Spaces:**
 
-**Attention = Choice of which Sense (Quality Dimension) to use**
+**Attention = Choice of which Quality Dimension (Relationship) to traverse from Sense to Referent**
 
 ```rust
-// The same Order entity (Reference) can be accessed through multiple Senses:
+// Referent Concept: Order Concept
+struct OrderConcept {
+    id: ConceptId,
+    label: "Order",
+}
 
-// Sense 1: Temporal dimension (when was it placed?)
-let order_by_time = attention.focus_on(
-    entity_id,
-    QualityDimension::Temporal,
-    value: DateTime::parse("2025-01-20T13:00:00Z")
-);
+// Sense Concepts: Different ways to access/present Orders
+struct TemporalSenseConcept {
+    id: ConceptId,
+    label: "2025-01-20T13:00:00Z",  // When it was placed
+}
 
-// Sense 2: Financial dimension (what was the total?)
-let order_by_amount = attention.focus_on(
-    entity_id,
-    QualityDimension::Financial,
-    value: Decimal::from(125.50)
-);
+struct FinancialSenseConcept {
+    id: ConceptId,
+    label: "$125.50",  // Total amount
+}
 
-// Sense 3: Customer dimension (who placed it?)
-let order_by_customer = attention.focus_on(
-    entity_id,
-    QualityDimension::CustomerRelation,
-    value: customer_id
-);
+struct CustomerSenseConcept {
+    id: ConceptId,
+    label: customer_id,  // Who placed it
+}
 
-// Same Reference (the Order), different Senses (different quality dimensions)
+// Quality Dimensions: RELATIONSHIPS from Sense Concepts to Referent Concept
+let temporal_quality = QualityDimension {
+    from: TemporalSenseConcept,
+    to: OrderConcept,
+    relationship: "placed_at_time",
+};
+
+let financial_quality = QualityDimension {
+    from: FinancialSenseConcept,
+    to: OrderConcept,
+    relationship: "has_total_amount",
+};
+
+let customer_quality = QualityDimension {
+    from: CustomerSenseConcept,
+    to: OrderConcept,
+    relationship: "placed_by_customer",
+};
+
+// Attention = Selecting which Quality Dimension relationship to traverse
+let order_by_time = attention.traverse_quality_dimension(temporal_quality);
+let order_by_amount = attention.traverse_quality_dimension(financial_quality);
+let order_by_customer = attention.traverse_quality_dimension(customer_quality);
+
+// All three Quality Dimensions lead to same Referent Concept (OrderConcept)
 ```
 
 **Why This Matters:**
 
-**Different Quality Dimensions** (Senses) provide **different cognitive access** to the **same entity** (Reference).
+**Different Quality Dimensions** (Relationships) provide **different paths** from **Sense Concepts** to the **same Referent Concept**.
 
-- **Informative queries**: "Orders over $100" uses Financial sense
-- **Informative queries**: "Orders from yesterday" uses Temporal sense
-- **Informative queries**: "Orders by customer X" uses Customer sense
+- **Informative queries**: "Orders over $100" traverses Financial Quality Dimension
+- **Informative queries**: "Orders from yesterday" traverses Temporal Quality Dimension
+- **Informative queries**: "Orders by customer X" traverses Customer Quality Dimension
 
-Each query is **informative** (not trivial) because it accesses the entity through a **different mode of presentation** (Sense), even though all refer to the **same orders** (Reference).
+Each query is **informative** (not trivial) because it uses a **different Quality Dimension relationship** to reach the same Referent Concept.
 
 ### Conceptual Relationships Through Multiple Senses
 
@@ -1693,17 +1822,20 @@ Domain experts naturally use **different senses** (Quality Dimensions) to talk a
 
 | Theorist | Focus | Key Contribution | CIM Application |
 |----------|-------|------------------|-----------------|
-| **Frege (1892)** | Sense vs Reference | Cognitive significance, modes of presentation | Quality Dimensions as Senses, Attention as sense-selection |
+| **Frege (1892)** | Sense vs Reference | Both are Concepts, Quality Dimensions are Relationships | Graph architecture: Concepts as nodes, Quality Dimensions as edges |
 | **Russell (1905, 1919)** | Logical form | Existence, uniqueness, scope | Description validation, definite vs indefinite |
 | **Evans (1973)** | Causal provenance | Dominant source, reference change | Event causation, edge cases, validation |
 
 **Combined Understanding:**
 
 ```rust
-// Frege: Multiple senses (quality dimensions) → Same reference (entity)
-let person_by_name = query_by_quality(QualityDimension::Name, "Alice");
-let person_by_email = query_by_quality(QualityDimension::Email, "alice@example.com");
-// Different senses, same reference
+// Frege: Multiple Sense Concepts connected to same Referent Concept via Quality Dimensions
+//
+// Graph:
+//   [NameSense:"Alice"] --has_name--> [PersonReferent] <-- [Entity]
+//   [EmailSense:"alice@..."] --has_email--> [PersonReferent]
+//
+// Both Quality Dimensions lead to same Referent Concept
 
 // Russell: Validate logical form of descriptions
 let the_person = repo.find_by_name("Alice Smith")?;
@@ -1720,36 +1852,37 @@ let creation_event = event_store.get_first_event(the_person.id)?;
 
 **Four Critical Contributions:**
 
-1. **Sense vs Reference** - Explains why Quality Dimensions (senses) are distinct from Entities (references)
-2. **Multiple Modes of Presentation** - Why same entity can be accessed through different quality dimensions
-3. **Cognitive Significance** - Why different descriptions of same entity matter (informative vs trivial)
-4. **Conceptual Relationships** - How attention traverses different senses to reach references
+1. **Sense vs Reference as Concepts** - Both Referent and Sense are Concepts (nodes in the graph)
+2. **Quality Dimensions as Relationships** - Quality Dimensions are edges/morphisms connecting Sense Concepts to Referent Concepts
+3. **Cognitive Significance** - Different Quality Dimension relationships provide different cognitive access (informative vs trivial)
+4. **Graph Architecture** - Conceptual Spaces are graphs with Concepts as nodes and Quality Dimensions as edges
 
 **Practical Impact:**
 
-- ✅ We understand why Quality Dimensions exist (different senses for same reference)
-- ✅ We can design attention mechanisms (choosing which sense/quality dimension to use)
-- ✅ We can create rich conceptual relationships (same references, multiple senses)
-- ✅ We can validate that different descriptions denote same entity (sense convergence)
-- ✅ We can explain why domain language has multiple terms for same concept (different cognitive access)
+- ✅ We understand Quality Dimensions are RELATIONSHIPS not collections
+- ✅ Both Referent and Sense are Concepts (nodes)
+- ✅ Attention = Choosing which Quality Dimension relationship to traverse
+- ✅ Multiple Sense Concepts can relate to same Referent Concept
+- ✅ Graph-based architecture: Concepts + Quality Dimensions = Conceptual Space
 
 **Key Takeaway:**
 
-**Frege** gives us the foundation: **Sense (mode of presentation) determines Reference (object)**.
+**Frege** gives us the foundation: **Sense (Concept) relates to Reference (Concept) via Quality Dimension (Relationship)**.
 
 In CIM Conceptual Spaces:
-- **Quality Dimensions = Collections of Senses (Concepts)**
-- **Entities = References (Points in space)**
-- **Attention = Selecting which Sense (Quality Dimension) to traverse**
-- **Relationships = Connections between References via specific Senses**
+- **Referent = Concept** (node: the thing being referred to)
+- **Sense = Concept** (node: mode of presentation)
+- **Quality Dimension = Relationship** (edge: connecting Sense to Referent)
+- **Attention = Selecting which Quality Dimension edge to traverse**
+- **Graph Structure**: Sense Concepts --Quality Dimensions--> Referent Concepts
 
 **Complete Framework:**
 
-**Frege** explains **what Senses and References are** (modes of presentation vs objects).
+**Frege** explains **the graph structure** (Sense Concepts and Referent Concepts as nodes, Quality Dimensions as edges).
 **Russell** explains **how Descriptions work logically** (existence, uniqueness, scope).
 **Evans** explains **how References are established causally** (dominant source, provenance).
 
-Together: Complete understanding of CIM domain language, conceptual spaces, and validation.
+Together: Complete understanding of CIM domain language, conceptual spaces as graphs, and validation.
 
 ## Your Specialized Responsibilities
 
