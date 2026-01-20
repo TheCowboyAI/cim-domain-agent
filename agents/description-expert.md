@@ -6,7 +6,7 @@ agent:
   id: ""  # UUID v7 - generated on deployment
   name: "description-expert"
   display_name: "Description & Reference Expert (Frege + Russell + Evans)"
-  version: "0.4.0"
+  version: "0.5.0"
 
 # Conceptual Space Mapping
 conceptual_space:
@@ -1595,6 +1595,124 @@ struct LinguisticQualityDimension {
 // All Sense Concepts relate to same Referent Concept via Quality Dimensions
 ```
 
+### Cross-Linguistic Similarity and Composition
+
+**This demonstrates the Notion of Composition and how we make relationships to mathematically observe quality dimensions and similarity in Concepts.**
+
+**Example: "Green" vs "Verde" - Cross-Linguistic Sense Concepts**
+
+When an American refers to a color as "Green" and someone in Mexico calls the same referent "Verde", we have:
+
+- Two **distinct Sense Concepts** ("Green" and "Verde")
+- **Same Referent Concept** (The Color itself)
+- **~90% overlap** between the Sense Concepts (similar but not identical)
+- **Different Quality Dimensions** connecting each Sense to the Referent
+
+```rust
+// Referent Concept: The Color (independent of language)
+struct ColorConcept {
+    id: ConceptId,
+    label: "The Color",  // The actual color concept
+    // Exists independent of any language
+}
+
+// Sense Concept: English linguistic presentation
+struct GreenSenseConcept {
+    id: ConceptId,
+    label: "Green",  // American English term
+    position: Vec<f64>,  // Position in conceptual space
+    overlap_regions: vec![
+        (verde_concept_id, 0.9),  // ~90% overlap with "Verde"
+    ],
+}
+
+// Sense Concept: Spanish linguistic presentation
+struct VerdeSenseConcept {
+    id: ConceptId,
+    label: "Verde",  // Mexican Spanish term
+    position: Vec<f64>,  // Position in conceptual space
+    overlap_regions: vec![
+        (green_concept_id, 0.9),  // ~90% overlap with "Green"
+    ],
+}
+
+// Quality Dimension: English linguistic relationship
+struct EnglishLinguisticQualityDimension {
+    id: QualityDimensionId,
+    name: "linguistic_label_english",
+    from_concept: GreenSenseConcept.id,  // "Green" Sense
+    to_concept: ColorConcept.id,          // The Color Referent
+    relationship_type: "denotes",
+    strength: 0.9,  // High but not perfect correlation
+}
+
+// Quality Dimension: Spanish linguistic relationship
+struct SpanishLinguisticQualityDimension {
+    id: QualityDimensionId,
+    name: "linguistic_label_spanish",
+    from_concept: VerdeSenseConcept.id,  // "Verde" Sense
+    to_concept: ColorConcept.id,          // The Color Referent
+    relationship_type: "denotes",
+    strength: 0.9,  // High but not perfect correlation
+}
+
+// Graph structure showing composition:
+//
+//   [Sense: "Green"] ────linguistic_english────┐
+//        │                                      │
+//        │ ~90% overlap                         v
+//        │                              [Referent: "The Color"]
+//        │ ~90% overlap                         ^
+//        v                                      │
+//   [Sense: "Verde"] ────linguistic_spanish────┘
+//
+// Multiple Sense Concepts with partial overlap both denote same Referent
+// Quality Dimensions enable mathematical observation of similarity
+```
+
+**Visual Diagram:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│         Cross-Linguistic Conceptual Space                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│   [Sense Concept: "Green"]                                   │
+│   American English ────────┐                                 │
+│   ~90% overlap with Verde  │                                 │
+│                     linguistic_label_english                 │
+│                            │                                 │
+│                            v                                 │
+│   [Sense Concept]    [Referent Concept]                     │
+│   "Verde" ──────────> "The Color"                           │
+│   Mexican Spanish      (node)                                │
+│   ~90% overlap              linguistic_label_spanish         │
+│   with Green                                                 │
+│                                                               │
+│  Key Insights:                                               │
+│  - Sense Concepts are distinct nodes with spatial overlap    │
+│  - Same Referent Concept for both linguistic Senses         │
+│  - Quality Dimensions = linguistic relationships (edges)     │
+│  - Composition enables mathematical similarity measurement   │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Mathematical Observation of Similarity:**
+
+The ~90% overlap between "Green" and "Verde" Sense Concepts demonstrates:
+
+1. **Compositional Structure**: Multiple Sense Concepts can denote same Referent
+2. **Measurable Similarity**: Overlap regions quantify conceptual similarity
+3. **Quality Dimension Independence**: Each linguistic community has distinct Quality Dimension
+4. **Referent Stability**: The Color Referent remains constant across languages
+5. **Graph Composition**: Relationships compose to show how different Senses relate to same Referent
+
+This is **Frege's insight applied to cross-linguistic semantics** within Conceptual Spaces:
+- Sense Concepts can overlap without being identical
+- Quality Dimensions provide language-specific relationships to universal Referents
+- Mathematical observation of similarity through geometric overlap in conceptual space
+
 **In cim-domain-spaces:**
 
 ```rust
@@ -1604,6 +1722,7 @@ struct Concept {
     label: String,  // Human-readable
     position: Vec<f64>,  // Position in conceptual space
     prototype: Option<PrototypeData>,  // Central exemplar
+    overlap_regions: Vec<(ConceptId, f64)>,  // Similarity with other Concepts (e.g., ~90% with "Verde")
 }
 
 // Quality Dimension = RELATIONSHIP between two Concepts
