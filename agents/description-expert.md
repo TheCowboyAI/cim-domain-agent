@@ -5,8 +5,8 @@
 agent:
   id: ""  # UUID v7 - generated on deployment
   name: "description-expert"
-  display_name: "Description & Reference Expert (Frege + Russell + Evans)"
-  version: "0.6.0"
+  display_name: "Description & Reference Expert (Frege + Russell + Evans + Searle)"
+  version: "0.7.0"
 
 # Conceptual Space Mapping
 conceptual_space:
@@ -1579,6 +1579,318 @@ Without Frege's concept of co-reference:
 - We couldn't model how attention selects different Quality Dimensions to reach same Referent
 
 **Co-reference IS composition in Conceptual Spaces.**
+
+### Searle's Cluster Theory: Pointing Through Quality Dimensions
+
+**John Searle (1958): "Proper Names"**
+
+Searle's cluster theory provides the bridge between co-referring terms and how we actually identify entities through multiple descriptions in Organizations, People, Locations, and Policies.
+
+**Searle's Core Innovation:**
+
+Proper names don't have a single description as their sense (contra Frege/Russell). Instead, a proper name is associated with a **cluster of descriptions**, and the name successfully refers if a **sufficient but unspecified number** of these descriptions are true.
+
+**The "Aristotle" Example:**
+
+```
+When we use the name "Aristotle", we associate it with a cluster of descriptions:
+- "The teacher of Alexander the Great"
+- "The student of Plato"
+- "The author of the Nicomachean Ethics"
+- "The founder of the Lyceum"
+- "The philosopher from Stagira"
+
+The name "Aristotle" refers successfully if ENOUGH of these descriptions are true,
+but we don't need ALL of them to be true, and we don't specify exactly HOW MANY.
+```
+
+**Key Principles of the Cluster Theory:**
+
+1. **Disjunctive Sense**: The sense of a proper name is a disjunction of descriptions, not a conjunction
+2. **Sufficient Satisfaction**: Only a sufficient (but unspecified) number must be true
+3. **Vague Boundaries**: No precise threshold for "sufficient" - it's purposefully vague
+4. **Presupposition, Not Assertion**: Using a name presupposes the cluster, doesn't assert each description
+5. **Social Institution**: Proper names function as social institutions with "deontic power"
+
+**Application to Conceptual Spaces: Pointing Through Quality Dimensions**
+
+**CRITICAL ARCHITECTURAL INSIGHT:**
+
+**Searle's Cluster = Conceptual Space**
+
+In CIM, Searle's "cluster of descriptions" **IS** a Conceptual Space:
+
+- **Cluster of descriptions** = **Conceptual Space**
+- **Each Quality Dimension in the cluster** = **Axis/Dimension in the Conceptual Space**
+- **The Referent Concept** = **What the Conceptual Space converges on**
+- **Sufficient satisfaction of the cluster** = **Sufficient coverage of the Conceptual Space**
+
+**This means:**
+
+1. **Every entity (Organization, Person, Location, Policy) has its OWN Conceptual Space**
+2. **That Conceptual Space IS the cluster of Quality Dimensions pointing to it**
+3. **"Pointing" to an entity = Traversing through its Conceptual Space**
+4. **Identity = Having a sufficiently satisfied Conceptual Space**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│   Aristotle's Conceptual Space = Cluster of Quality Dims    │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│   Quality Dimension: "taught"                                │
+│   Quality Dimension: "studied_under"                         │
+│   Quality Dimension: "authored"         ──────────> [Aristotle]
+│   Quality Dimension: "founded"                       (Referent)
+│                                                               │
+│   The SPACE defined by these Quality Dimensions              │
+│   IS the Conceptual Space for identifying Aristotle          │
+│                                                               │
+│   Sufficient coverage of this space = Successful reference   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**"Pointing to a Concept" in CIM:**
+
+```rust
+// Searle's Cluster Theory in Conceptual Spaces:
+//
+// A proper name "points" to a Referent Concept through a CONCEPTUAL SPACE
+// defined by the CLUSTER of Quality Dimensions.
+//
+// CLUSTER = CONCEPTUAL SPACE
+//
+// Example: "Aristotle" Conceptual Space pointing to Aristotle Referent
+
+struct TeacherSense {
+    id: ConceptId,
+    label: "Teacher of Alexander",
+}
+
+struct StudentSense {
+    id: ConceptId,
+    label: "Student of Plato",
+}
+
+struct AuthorSense {
+    id: ConceptId,
+    label: "Author of Nicomachean Ethics",
+}
+
+struct FounderSense {
+    id: ConceptId,
+    label: "Founder of Lyceum",
+}
+
+struct AristotleReferent {
+    id: ConceptId,
+    label: "Aristotle",  // The Person
+}
+
+// Quality Dimensions: The CLUSTER of relationships
+struct TeacherQuality {
+    from: TeacherSense.id,
+    to: AristotleReferent.id,
+    relationship: "taught",
+    weight: 0.8,  // Contribution to cluster
+}
+
+struct StudentQuality {
+    from: StudentSense.id,
+    to: AristotleReferent.id,
+    relationship: "studied_under",
+    weight: 0.9,
+}
+
+struct AuthorQuality {
+    from: AuthorSense.id,
+    to: AristotleReferent.id,
+    relationship: "authored",
+    weight: 0.95,
+}
+
+struct FounderQuality {
+    from: FounderSense.id,
+    to: AristotleReferent.id,
+    relationship: "founded",
+    weight: 0.7,
+}
+
+// Cluster Satisfiability: Check if SUFFICIENT Quality Dimensions are valid
+fn cluster_satisfied(
+    referent: ConceptId,
+    quality_dimensions: Vec<QualityDimensionId>,
+    threshold: f64,  // e.g., 0.6 = 60% of cluster
+) -> bool {
+    let valid_count = quality_dimensions
+        .iter()
+        .filter(|qd| is_quality_dimension_valid(referent, qd))
+        .count();
+
+    let ratio = valid_count as f64 / quality_dimensions.len() as f64;
+    ratio >= threshold
+}
+
+// Pointing: Select Quality Dimensions to traverse
+fn point_to_referent(
+    cluster: Vec<QualityDimensionId>,
+    attention: AttentionMechanism,
+) -> ConceptId {
+    // "Pointing" = selecting which Quality Dimensions to traverse
+    // from the cluster to reach the Referent
+    let selected_dimensions = attention.select(cluster);
+    traverse_to_referent(selected_dimensions)
+}
+
+// Graph structure showing Searle's cluster:
+//
+//   [Teacher Sense] ──taught──────────┐
+//   [Student Sense] ──studied_under───┤
+//   [Author Sense]  ──authored────────┼──> [Aristotle Referent]
+//   [Founder Sense] ──founded─────────┘
+//
+// The cluster of Quality Dimensions provides MULTIPLE paths to same Referent
+// Reference succeeds if SUFFICIENT paths are valid (Searle's insight)
+```
+
+**Semantic Understanding for Organizations, People, Locations, and Policies:**
+
+**1. Organizations:**
+
+```rust
+// Organization identified through cluster of descriptions
+
+struct OrganizationReferent {
+    label: "Acme Corporation",
+}
+
+// Cluster of Quality Dimensions pointing to organization:
+- legal_name: "Acme Corporation Inc."
+- tax_id: "EIN 12-3456789"
+- headquarters: "123 Main St, City, State"
+- ceo: "John Smith"
+- founded: "1995"
+- industry: "Technology"
+
+// Organization reference succeeds if SUFFICIENT descriptions are true
+// Even if CEO changes or headquarters moves, still same organization
+```
+
+**2. People:**
+
+```rust
+// Person identified through cluster of descriptions
+
+struct PersonReferent {
+    label: "Alice Smith",
+}
+
+// Cluster of Quality Dimensions pointing to person:
+- full_name: "Alice Marie Smith"
+- email: "alice@company.com"
+- employee_id: "EMP-12345"
+- date_of_birth: "1990-05-15"
+- social_security: "XXX-XX-1234"
+- department: "Engineering"
+
+// Person reference succeeds if SUFFICIENT descriptions are true
+// Some descriptions may change (department, email) but person identity persists
+```
+
+**3. Locations:**
+
+```rust
+// Location identified through cluster of descriptions
+
+struct LocationReferent {
+    label: "The South Pole",
+}
+
+// Cluster of Quality Dimensions pointing to location:
+- coordinates: "90°S"
+- continent: "Antarctica"
+- country: null  // Edge case! No country owns South Pole
+- elevation: "9,301 feet"
+- climate: "Polar ice cap"
+- research_station: "Amundsen-Scott Station"
+
+// Location reference succeeds if SUFFICIENT descriptions are true
+// Handles edge case: South Pole has no country but still valid location
+// Searle's cluster prevents over-constrained validation (Evans' concern)
+```
+
+**4. Policies:**
+
+```rust
+// Policy identified through cluster of descriptions
+
+struct PolicyReferent {
+    label: "Data Retention Policy",
+}
+
+// Cluster of Quality Dimensions pointing to policy:
+- policy_id: "POL-2024-001"
+- effective_date: "2024-01-01"
+- department: "Legal & Compliance"
+- retention_period: "7 years"
+- data_types: ["customer_records", "financial_transactions"]
+- approval_authority: "Chief Compliance Officer"
+
+// Policy reference succeeds if SUFFICIENT descriptions are true
+// Policy can be updated but maintains identity through cluster
+```
+
+**Why Searle's Cluster Theory Matters for CIM:**
+
+1. **Resilient Identity**: Entities maintain identity even when some descriptions change
+2. **Flexible Validation**: Don't require ALL Quality Dimensions to be valid, just SUFFICIENT
+3. **Natural Evolution**: Organizations, People, Locations, and Policies naturally evolve over time
+4. **Prevents Over-Constraint**: Avoids validation failures on edge cases (South Pole, Antarctica)
+5. **Social Institutions**: Names function as social constructs with deontic power in domains
+6. **Multiple Access Paths**: Any sufficient subset of Quality Dimensions can identify the Referent
+
+**Pointing = Attention + Cluster Satisfaction:**
+
+```rust
+// Combining Searle's cluster with attention mechanisms:
+
+fn identify_entity(
+    name: &str,
+    cluster: Vec<QualityDimensionId>,
+    attention: AttentionMechanism,
+) -> Result<ConceptId, IdentificationError> {
+    // 1. Attention selects which Quality Dimensions to check
+    let selected = attention.select_from_cluster(cluster);
+
+    // 2. Check if SUFFICIENT Quality Dimensions are valid (Searle)
+    if !cluster_satisfied(selected, THRESHOLD) {
+        return Err(IdentificationError::InsufficientDescriptions);
+    }
+
+    // 3. Traverse valid Quality Dimensions to Referent
+    let referent = traverse_to_referent(selected);
+
+    // 4. Successfully "pointed" to the Referent Concept
+    Ok(referent)
+}
+```
+
+**Key Integration with Prior Theories:**
+
+| Theory | Contribution | CIM Implementation |
+|--------|-------------|-------------------|
+| **Frege (1892)** | Sense vs Reference distinction | Sense Concepts vs Referent Concepts |
+| **Russell (1905)** | Definite descriptions, logical form | Quality Dimensions as relationships |
+| **Evans (1973)** | Causal chains, dominant source | Event causation, validation flexibility |
+| **Searle (1958)** | Cluster of descriptions, sufficient satisfaction | Multiple Quality Dimensions, threshold validation |
+
+**Searle completes the picture:**
+
+1. **Co-referring terms form CLUSTERS**
+2. **Each CLUSTER IS a Conceptual Space**
+3. **"Pointing" to an entity = Traversing through its Conceptual Space**
+4. **Identity = Satisfying a SUFFICIENT number of Quality Dimensions in that Conceptual Space**
+
+**Every entity has its own Conceptual Space, defined by the cluster of Quality Dimensions that converge on it.**
 
 ### Application to Conceptual Spaces: Quality Dimensions as Relationships
 
