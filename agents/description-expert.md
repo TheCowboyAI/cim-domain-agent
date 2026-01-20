@@ -6,7 +6,7 @@ agent:
   id: ""  # UUID v7 - generated on deployment
   name: "description-expert"
   display_name: "Description & Reference Expert (Frege + Russell + Evans)"
-  version: "0.5.0"
+  version: "0.6.0"
 
 # Conceptual Space Mapping
 conceptual_space:
@@ -1418,6 +1418,167 @@ a=a: Sense(a) → Ref(a) AND Sense(a) → Ref(a)
 a=b: Sense(a) → Ref(X) AND Sense(b) → Ref(X)
      Different senses, same reference → Informative!
 ```
+
+### Co-Referring Terms: The Foundation of Conceptual Spaces
+
+**CRITICAL CONCEPT: Co-referring terms are terms with different senses but the same reference.**
+
+This is the **fundamental pattern** that Conceptual Spaces must represent and understand:
+
+**Definition:**
+```
+Co-referring terms = Multiple expressions with DIFFERENT Senses → SAME Referent
+
+Examples:
+- "Morning Star" and "Evening Star" → Venus
+- "Green" and "Verde" → The Color
+- "The author of Waverley" and "Sir Walter Scott" → The Person
+- "alice@example.com" and "Employee #12345" → The Employee Entity
+```
+
+**Why Co-Referring Terms Matter for CIM:**
+
+1. **Multiple Access Paths**: Different ways to reach the same domain entity
+2. **Cognitive Significance**: Understanding which descriptions are informative vs trivial
+3. **Quality Dimension Composition**: How different dimensions converge on same Referent
+4. **Similarity Measurement**: Overlapping co-referring terms reveal conceptual structure
+5. **Attention Mechanisms**: Selecting which co-referring path to traverse
+
+**Representing Co-Referring Terms in Conceptual Spaces:**
+
+```rust
+// Co-referring terms as graph structure:
+//
+// [Sense Concept A] ───Quality_Dimension_A───┐
+//                                             v
+// [Sense Concept B] ───Quality_Dimension_B──> [Referent Concept]
+//                                             ^
+// [Sense Concept C] ───Quality_Dimension_C───┘
+//
+// A, B, C are CO-REFERRING TERMS:
+// - Different Sense Concepts (nodes)
+// - Different Quality Dimensions (edges)
+// - Same Referent Concept (convergence point)
+
+// Example: Morning Star and Evening Star
+struct MorningStarSense {
+    id: ConceptId,
+    label: "Morning Star",
+    // Observational mode: visible at dawn
+}
+
+struct EveningStarSense {
+    id: ConceptId,
+    label: "Evening Star",
+    // Observational mode: visible at dusk
+}
+
+struct VenusReferent {
+    id: ConceptId,
+    label: "Venus",
+    // The actual celestial body
+}
+
+struct TemporalObservationQuality {
+    from: MorningStarSense.id,
+    to: VenusReferent.id,
+    relationship: "observed_at_dawn",
+}
+
+struct TemporalObservationQuality2 {
+    from: EveningStarSense.id,
+    to: VenusReferent.id,
+    relationship: "observed_at_dusk",
+}
+
+// Graph shows co-reference:
+//
+//   [Morning Star] ──observed_at_dawn──> [Venus]
+//   [Evening Star] ──observed_at_dusk──> [Venus]
+//
+// These are CO-REFERRING TERMS - different paths to same Referent
+```
+
+**Co-Reference as Composition:**
+
+The power of co-referring terms lies in **composition**:
+
+```
+Multiple Sense Concepts → compose via Quality Dimensions → Single Referent Concept
+
+This composition reveals:
+1. Which Senses denote the same Referent (identity discovery)
+2. How similar different Senses are (overlap measurement)
+3. Which Quality Dimensions connect which Senses to which Referents (relationship structure)
+4. How to traverse from any Sense to the Referent (attention paths)
+```
+
+**Mathematical Observation of Co-Reference:**
+
+```rust
+// We can measure co-reference relationships:
+
+fn are_co_referring(sense_a: ConceptId, sense_b: ConceptId) -> Option<ConceptId> {
+    // Find Referent that both Senses point to via Quality Dimensions
+    let ref_a = follow_quality_dimensions(sense_a);
+    let ref_b = follow_quality_dimensions(sense_b);
+
+    if ref_a == ref_b {
+        Some(ref_a)  // Co-referring! Same Referent
+    } else {
+        None  // Not co-referring
+    }
+}
+
+fn co_reference_similarity(sense_a: ConceptId, sense_b: ConceptId) -> f64 {
+    // Measure overlap between co-referring Sense Concepts
+    // Example: "Green" and "Verde" have ~90% overlap
+    calculate_overlap(sense_a, sense_b)
+}
+```
+
+**Domain Example: Entity Identification Through Co-Referring Terms**
+
+```rust
+// In a domain, many descriptions may co-refer to same entity:
+
+struct EmailSense {
+    label: "alice@company.com",
+}
+
+struct EmployeeIdSense {
+    label: "EMP-12345",
+}
+
+struct NameSense {
+    label: "Alice Smith",
+}
+
+struct PersonReferent {
+    label: "Person",  // The actual Person entity
+}
+
+// All three are CO-REFERRING TERMS:
+//
+//   [Email Sense] ──has_email──> [Person]
+//   [EmployeeId Sense] ──has_id──> [Person]
+//   [Name Sense] ──has_name──> [Person]
+//
+// This is how domain entities are identified through multiple descriptions!
+// Each description is a different Sense, but they all denote the same Person Referent.
+```
+
+**Key Insight for CIM:**
+
+**Co-referring terms are how we understand that multiple domain descriptions identify the same entity.**
+
+Without Frege's concept of co-reference:
+- We couldn't understand "alice@company.com" and "Employee #12345" denote the same Person
+- We couldn't measure similarity between "Green" and "Verde"
+- We couldn't explain why "Morning Star = Evening Star" is informative
+- We couldn't model how attention selects different Quality Dimensions to reach same Referent
+
+**Co-reference IS composition in Conceptual Spaces.**
 
 ### Application to Conceptual Spaces: Quality Dimensions as Relationships
 
