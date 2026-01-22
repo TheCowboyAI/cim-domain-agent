@@ -7,21 +7,39 @@
 //!
 //! ## Event Types
 //!
-//! ### Lifecycle Events
+//! ### Agent Lifecycle Events
 //! - `AgentDeployed` - Agent was created
-//! - `ModelConfigured` - Model configuration was set
+//! - `ModelConfigured` - Model configuration was set (deprecated)
+//! - `ModelConfigurationAssigned` - Model configuration ID was assigned (new pattern)
+//! - `SystemPromptConfigured` - System prompt was configured for agent
 //! - `AgentActivated` - Agent was activated
 //! - `AgentSuspended` - Agent was suspended
 //! - `AgentDecommissioned` - Agent was permanently decommissioned
 //!
-//! ### Message Events (streaming)
+//! ### Agent Message Events (streaming)
 //! - `MessageSent` - Message was sent to model
 //! - `ResponseChunkReceived` - Streaming chunk received from model
 //! - `ResponseCompleted` - Full response completed
 //! - `ResponseFailed` - Response generation failed
+//!
+//! ### Model Configuration Events
+//! - `ModelConfigurationCreated` - Configuration was created
+//! - `ModelParametersUpdated` - Parameters were updated
+//! - `ModelProviderChanged` - Provider was changed
+//! - `ModelConfigurationActivated` - Configuration was activated
+//! - `ModelConfigurationDeprecated` - Configuration was deprecated
+//! - `ModelConfigurationArchived` - Configuration was archived
+
+mod model_configuration;
+
+pub use model_configuration::{
+    ModelConfigurationActivatedEvent, ModelConfigurationArchivedEvent,
+    ModelConfigurationCreatedEvent, ModelConfigurationDeprecatedEvent,
+    ModelConfigurationEvent, ModelParametersUpdatedEvent, ModelProviderChangedEvent,
+};
 
 use crate::value_objects::{
-    AgentId, FinishReason, MessageId, ModelConfig, PersonId, StreamingChunk, TokenUsage,
+    AgentId, FinishReason, MessageId, ModelConfig, ModelConfigurationId, PersonId, StreamingChunk, TokenUsage,
 };
 use chrono::{DateTime, Utc};
 use cim_domain::DomainEvent;
@@ -35,6 +53,8 @@ pub enum AgentEvent {
     // Lifecycle events
     AgentDeployed(AgentDeployedEvent),
     ModelConfigured(ModelConfiguredEvent),
+    ModelConfigurationAssigned(ModelConfigurationAssignedEvent),
+    SystemPromptConfigured(SystemPromptConfiguredEvent),
     AgentActivated(AgentActivatedEvent),
     AgentSuspended(AgentSuspendedEvent),
     AgentDecommissioned(AgentDecommissionedEvent),
@@ -52,6 +72,8 @@ impl AgentEvent {
         match self {
             AgentEvent::AgentDeployed(e) => e.agent_id,
             AgentEvent::ModelConfigured(e) => e.agent_id,
+            AgentEvent::ModelConfigurationAssigned(e) => e.agent_id,
+            AgentEvent::SystemPromptConfigured(e) => e.agent_id,
             AgentEvent::AgentActivated(e) => e.agent_id,
             AgentEvent::AgentSuspended(e) => e.agent_id,
             AgentEvent::AgentDecommissioned(e) => e.agent_id,
@@ -67,6 +89,8 @@ impl AgentEvent {
         match self {
             AgentEvent::AgentDeployed(e) => e.deployed_at,
             AgentEvent::ModelConfigured(e) => e.configured_at,
+            AgentEvent::ModelConfigurationAssigned(e) => e.assigned_at,
+            AgentEvent::SystemPromptConfigured(e) => e.configured_at,
             AgentEvent::AgentActivated(e) => e.activated_at,
             AgentEvent::AgentSuspended(e) => e.suspended_at,
             AgentEvent::AgentDecommissioned(e) => e.decommissioned_at,
@@ -82,6 +106,8 @@ impl AgentEvent {
         match self {
             AgentEvent::AgentDeployed(_) => "deployed",
             AgentEvent::ModelConfigured(_) => "model_configured",
+            AgentEvent::ModelConfigurationAssigned(_) => "model_configuration_assigned",
+            AgentEvent::SystemPromptConfigured(_) => "system_prompt_configured",
             AgentEvent::AgentActivated(_) => "activated",
             AgentEvent::AgentSuspended(_) => "suspended",
             AgentEvent::AgentDecommissioned(_) => "decommissioned",
@@ -102,6 +128,8 @@ impl DomainEvent for AgentEvent {
         match self {
             AgentEvent::AgentDeployed(_) => "AgentDeployed",
             AgentEvent::ModelConfigured(_) => "ModelConfigured",
+            AgentEvent::ModelConfigurationAssigned(_) => "ModelConfigurationAssigned",
+            AgentEvent::SystemPromptConfigured(_) => "SystemPromptConfigured",
             AgentEvent::AgentActivated(_) => "AgentActivated",
             AgentEvent::AgentSuspended(_) => "AgentSuspended",
             AgentEvent::AgentDecommissioned(_) => "AgentDecommissioned",
@@ -155,7 +183,8 @@ impl AgentDeployedEvent {
     }
 }
 
-/// Model configuration was set
+/// Model configuration was set (deprecated - use ModelConfigurationAssigned)
+#[deprecated(since = "0.10.0", note = "Use ModelConfigurationAssigned instead")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModelConfiguredEvent {
     /// The agent ID
@@ -174,6 +203,61 @@ impl ModelConfiguredEvent {
         Self {
             agent_id,
             config,
+            configured_at: Utc::now(),
+        }
+    }
+}
+
+/// Model configuration ID was assigned to agent (new pattern)
+///
+/// This is the preferred way to assign configurations to agents.
+/// The agent stores a reference to a ModelConfiguration aggregate
+/// rather than embedding the configuration directly.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ModelConfigurationAssignedEvent {
+    /// The agent ID
+    pub agent_id: AgentId,
+
+    /// The model configuration ID being assigned
+    pub configuration_id: ModelConfigurationId,
+
+    /// When the configuration was assigned
+    pub assigned_at: DateTime<Utc>,
+}
+
+impl ModelConfigurationAssignedEvent {
+    /// Create a new ModelConfigurationAssigned event
+    pub fn new(agent_id: AgentId, configuration_id: ModelConfigurationId) -> Self {
+        Self {
+            agent_id,
+            configuration_id,
+            assigned_at: Utc::now(),
+        }
+    }
+}
+
+/// System prompt was configured for agent
+///
+/// This defines the agent's personality and behavior instructions.
+/// Each agent has its own system prompt, even when sharing ModelConfiguration.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SystemPromptConfiguredEvent {
+    /// The agent ID
+    pub agent_id: AgentId,
+
+    /// The system prompt content
+    pub system_prompt: String,
+
+    /// When the system prompt was configured
+    pub configured_at: DateTime<Utc>,
+}
+
+impl SystemPromptConfiguredEvent {
+    /// Create a new SystemPromptConfigured event
+    pub fn new(agent_id: AgentId, system_prompt: impl Into<String>) -> Self {
+        Self {
+            agent_id,
+            system_prompt: system_prompt.into(),
             configured_at: Utc::now(),
         }
     }

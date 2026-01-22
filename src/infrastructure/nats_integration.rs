@@ -260,6 +260,8 @@ impl NatsEventStore {
         let subject = match event {
             AgentEvent::AgentDeployed(_) => factory.agent_deployed_event(agent_id),
             AgentEvent::ModelConfigured(_) => factory.model_configured_event(agent_id),
+            AgentEvent::ModelConfigurationAssigned(_) => factory.model_configured_event(agent_id), // Reuse same subject
+            AgentEvent::SystemPromptConfigured(_) => factory.model_configured_event(agent_id), // Reuse same subject
             AgentEvent::AgentActivated(_) => factory.agent_activated_event(agent_id),
             AgentEvent::AgentSuspended(_) => factory.agent_suspended_event(agent_id),
             AgentEvent::AgentDecommissioned(_) => factory.agent_decommissioned_event(agent_id),
@@ -411,6 +413,8 @@ impl NatsEventPublisher {
         let subject = match event {
             AgentEvent::AgentDeployed(_) => factory.agent_deployed_event(agent_id),
             AgentEvent::ModelConfigured(_) => factory.model_configured_event(agent_id),
+            AgentEvent::ModelConfigurationAssigned(_) => factory.model_configured_event(agent_id), // Reuse same subject
+            AgentEvent::SystemPromptConfigured(_) => factory.model_configured_event(agent_id), // Reuse same subject
             AgentEvent::AgentActivated(_) => factory.agent_activated_event(agent_id),
             AgentEvent::AgentSuspended(_) => factory.agent_suspended_event(agent_id),
             AgentEvent::AgentDecommissioned(_) => factory.agent_decommissioned_event(agent_id),

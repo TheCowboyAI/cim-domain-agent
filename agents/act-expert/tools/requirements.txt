@@ -1,0 +1,27 @@
+# ACT Expert RAG Library Dependencies
+# Copyright (c) 2025 - Cowboy AI, LLC.
+
+# Embeddings and semantic search
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4  # Use faiss-gpu for GPU support
+transformers>=4.30.0
+
+# Keyword search
+rank-bm25>=0.2.2
+
+# Graph neural networks
+torch>=2.0.0
+torch-geometric>=2.3.0
+
+# Utilities
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Optional: FastAPI for RAG service
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pydantic>=2.0.0
+
+# Development
+pytest>=7.4.0
+black>=23.0.0

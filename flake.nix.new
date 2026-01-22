@@ -1,0 +1,235 @@
+{
+  description = "CIM Domain Agent - Agent domain for Composable Information Machine";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    extra-container = {
+      url = "github:erikarvstedt/extra-container";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { self, nixpkgs, flake-utils, rust-overlay, extra-container }:
+    # System-independent outputs
+    {
+      # NixOS modules for agent deployment
+      nixosModules = {
+        # Single agent deployment module
+        agent = import ./nix/modules/agent.nix;
+
+        # Complete deployment system (deprecated - use agent module directly)
+        # agent-deployment = import ./nix/modules/agent-deployment.nix;
+
+        # Default: single agent module
+        default = self.nixosModules.agent;
+      };
+    } //
+    # Per-system outputs
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        overlays = [ (import rust-overlay) ];
+        pkgs = import nixpkgs {
+          inherit system overlays;
+        };
+
+        rustVersion = pkgs.rust-bin.stable.latest.default.override {
+          extensions = [ "rust-src" "rust-analyzer" ];
+        };
+
+        buildInputs = with pkgs; [
+          openssl
+          pkg-config
+          protobuf
+        ] ++ lib.optionals stdenv.isDarwin [
+          darwin.apple_sdk.frameworks.Security
+          darwin.apple_sdk.frameworks.SystemConfiguration
+        ];
+
+        nativeBuildInputs = with pkgs; [
+          rustVersion
+          cargo-edit
+          cargo-watch
+          yq  # For agent .md file parsing (YAML front-matter)
+        ];
+
+        # Build cim-domain-agent package
+        cim-domain-agent = pkgs.rustPlatform.buildRustPackage {
+          pname = "cim-domain-agent";
+          version = "0.9.2";
+          src = ./.;
+
+          cargoLock = {
+            lockFile = ./Cargo.lock;
+          };
+
+          inherit buildInputs;
+          nativeBuildInputs = nativeBuildInputs ++ [ pkgs.makeWrapper ];
+
+          # Copy agent definitions into package
+          postInstall = ''
+            mkdir -p $out/share/cim-domain-agent
+            cp -r ${./agents} $out/share/cim-domain-agent/agents
+          '';
+
+          checkType = "debug";
+          doCheck = false;  # Tests require NATS
+
+          meta = with pkgs.lib; {
+            description = "CIM Domain Agent - Agent runtime for Composable Information Machine";
+            homepage = "https://github.com/thecowboyai/cim-domain-agent";
+            license = licenses.unfree;  # Cowboy AI, LLC proprietary
+            maintainers = [ ];
+            platforms = platforms.linux ++ platforms.darwin;
+          };
+        };
+
+      in
+      {
+        # Packages
+        packages = {
+          default = cim-domain-agent;
+          cim-domain-agent = cim-domain-agent;
+
+          # Agent deployment tools
+          deploy-agent = pkgs.writeScriptBin "deploy-cim-agent" ''
+            #!${pkgs.bash}/bin/bash
+            set -euo pipefail
+
+            # Deploy agent using nixos-rebuild or extra-container
+            # See: nix/examples/agent-deployment-extra-container.nix
+
+            echo "CIM Agent Deployment Tool"
+            echo "========================="
+            echo ""
+            echo "Usage:"
+            echo "  1. Add agents to your NixOS configuration"
+            echo "  2. nixos-rebuild switch"
+            echo ""
+            echo "Example configuration:"
+            echo "  containers.cim-agent-nats-expert = {"
+            echo "    config = { ... };"
+            echo "  };"
+            echo ""
+            echo "See: ${./nix/examples}/agent-deployment-extra-container.nix"
+          '';
+
+          # Agent file validator
+          validate-agent = pkgs.writeScriptBin "validate-cim-agent" ''
+            #!${pkgs.bash}/bin/bash
+            set -euo pipefail
+
+            if [ $# -ne 1 ]; then
+              echo "Usage: validate-cim-agent <agent-file.md>"
+              exit 1
+            fi
+
+            AGENT_FILE="$1"
+
+            if [ ! -f "$AGENT_FILE" ]; then
+              echo "Error: Agent file not found: $AGENT_FILE"
+              exit 1
+            fi
+
+            echo "Validating agent file: $AGENT_FILE"
+            echo ""
+
+            # Extract YAML front-matter
+            FRONT_MATTER=$(sed -n '/^---$/,/^---$/p' "$AGENT_FILE" | sed '1d;$d')
+
+            if [ -z "$FRONT_MATTER" ]; then
+              echo "❌ Error: Missing YAML front-matter"
+              exit 1
+            fi
+
+            # Validate YAML syntax
+            echo "$FRONT_MATTER" | ${pkgs.yq}/bin/yq -e '.' > /dev/null
+
+            if [ $? -eq 0 ]; then
+              echo "✓ YAML front-matter is valid"
+            else
+              echo "❌ Error: Invalid YAML syntax in front-matter"
+              exit 1
+            fi
+
+            # Check required fields
+            echo ""
+            echo "Checking required fields..."
+
+            check_field() {
+              local field="$1"
+              local value=$(echo "$FRONT_MATTER" | ${pkgs.yq}/bin/yq -r "$field" 2>/dev/null)
+              if [ "$value" != "null" ] && [ -n "$value" ]; then
+                echo "  ✓ $field: $value"
+              else
+                echo "  ❌ Missing: $field"
+                return 1
+              fi
+            }
+
+            check_field ".agent.name" && \
+            check_field ".agent.display_name" && \
+            check_field ".conceptual_space.boundary" && \
+            check_field ".model.provider" && \
+            check_field ".nats.url" && \
+            echo "" && \
+            echo "✅ Agent file is valid!" || \
+            (echo "" && echo "❌ Validation failed" && exit 1)
+          '';
+        };
+
+        # Development shell
+        devShells.default = pkgs.mkShell {
+          inherit buildInputs nativeBuildInputs;
+
+          shellHook = ''
+            echo "CIM Domain Agent Development Environment"
+            echo "========================================"
+            echo ""
+            echo "Rust version: $(rustc --version)"
+            echo ""
+            echo "Commands:"
+            echo "  cargo build --release              # Build agent-runtime"
+            echo "  cargo test                         # Run tests"
+            echo "  validate-cim-agent <file>          # Validate agent .md file"
+            echo ""
+            echo "NixOS Modules:"
+            echo "  nixosModules.agent                 # Single agent deployment"
+            echo "  nixosModules.default               # Default module"
+            echo ""
+            echo "Examples:"
+            echo "  nix/examples/agent-deployment-extra-container.nix"
+            echo "  nix/examples/extra-container-advanced.nix"
+            echo ""
+          '';
+        };
+
+        # Formatter
+        formatter = pkgs.nixpkgs-fmt;
+
+        # Checks
+        checks = {
+          # Format check
+          nixpkgs-fmt = pkgs.runCommand "check-nixpkgs-fmt" {
+            buildInputs = [ pkgs.nixpkgs-fmt ];
+          } ''
+            nixpkgs-fmt --check ${./nix}
+            touch $out
+          '';
+
+          # Validate agent files
+          validate-agents = pkgs.runCommand "validate-agents" {
+            buildInputs = [ self.packages.${system}.validate-agent ];
+          } ''
+            ${pkgs.lib.concatMapStringsSep "\n" (agent:
+              "validate-cim-agent ${./agents}/${agent}"
+            ) (builtins.attrNames (builtins.readDir ./agents))}
+            touch $out
+          '';
+        };
+      });
+}

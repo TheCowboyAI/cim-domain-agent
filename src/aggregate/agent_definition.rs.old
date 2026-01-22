@@ -1,0 +1,483 @@
+// Copyright (c) 2025 - Cowboy AI, LLC.
+
+//! AgentDefinition Aggregate
+//!
+//! Represents a complete agent definition loaded from a `.md` file with YAML
+//! front-matter and markdown system prompt.
+//!
+//! # Design Principles
+//!
+//! 1. **Content-Addressed**: Agent definitions are immutable, CID-identified
+//! 2. **Separate from Runtime**: AgentDefinition ≠ Agent (different lifecycles)
+//! 3. **System Prompt Injection**: Markdown body becomes model's system prompt
+//! 4. **Event-Sourced Catalog**: Loading definitions creates catalog events
+
+use crate::value_objects::{
+    agent_definition::*,
+    AgentId, ModelConfigurationId,
+};
+use cid::Cid;
+use serde::{Deserialize, Serialize};
+
+/// AgentDefinition aggregate - Complete agent specification
+///
+/// This aggregate represents the complete definition of an agent loaded from
+/// a `.md` file. It contains both the YAML front-matter (configuration) and
+/// the markdown body (system prompt).
+///
+/// # Lifecycle
+///
+/// ```text
+/// Loaded → Validated → Cataloged → Deployed
+/// ```
+///
+/// - `Loaded`: Parsed from `.md` file
+/// - `Validated`: All value objects validated
+/// - `Cataloged`: Stored in agent catalog with CID
+/// - `Deployed`: Agent runtime instance created
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AgentDefinition {
+    /// Unique CID of the definition (content-addressed)
+    pub cid: Option<Cid>,
+
+    /// Agent identity
+    pub identity: AgentIdentity,
+
+    /// Model configuration reference
+    pub model: ModelConfigurationReference,
+
+    /// Conceptual space position
+    pub conceptual_space: ConceptualSpacePosition,
+
+    /// Agent metadata
+    pub metadata: AgentMetadata,
+
+    /// Collaboration dependencies
+    pub collaboration: AgentCollaboration,
+
+    /// NATS subject routing
+    pub routing: SubjectRouting,
+
+    /// Deployment configuration
+    pub deployment: DeploymentConfig,
+
+    /// Testing configuration
+    pub testing: TestConfiguration,
+
+    /// Documentation
+    pub documentation: AgentDocumentation,
+
+    /// System prompt (markdown body)
+    pub system_prompt: String,
+
+    /// Knowledge base (optional sections from markdown)
+    pub knowledge_base: Vec<KnowledgeSection>,
+
+    /// Examples (optional sections from markdown)
+    pub examples: Vec<ExampleSection>,
+
+    /// Raw YAML front-matter (for debugging)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub raw_yaml: Option<String>,
+
+    /// File path this was loaded from
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_path: Option<String>,
+}
+
+impl AgentDefinition {
+    /// Create a new agent definition
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        identity: AgentIdentity,
+        model: ModelConfigurationReference,
+        conceptual_space: ConceptualSpacePosition,
+        metadata: AgentMetadata,
+        collaboration: AgentCollaboration,
+        routing: SubjectRouting,
+        deployment: DeploymentConfig,
+        testing: TestConfiguration,
+        documentation: AgentDocumentation,
+        system_prompt: String,
+    ) -> Self {
+        Self {
+            cid: None,
+            identity,
+            model,
+            conceptual_space,
+            metadata,
+            collaboration,
+            routing,
+            deployment,
+            testing,
+            documentation,
+            system_prompt,
+            knowledge_base: vec![],
+            examples: vec![],
+            raw_yaml: None,
+            source_path: None,
+        }
+    }
+
+    // ========================================================================
+    // Accessors
+    // ========================================================================
+
+    /// Get the agent ID
+    pub fn agent_id(&self) -> AgentId {
+        self.identity.id
+    }
+
+    /// Get the agent name
+    pub fn agent_name(&self) -> &str {
+        &self.identity.name
+    }
+
+    /// Get the display name
+    pub fn display_name(&self) -> &str {
+        &self.identity.display_name
+    }
+
+    /// Get the version
+    pub fn version(&self) -> &semver::Version {
+        &self.identity.version
+    }
+
+    /// Get the model configuration ID (if referencing existing config)
+    pub fn model_configuration_id(&self) -> Option<ModelConfigurationId> {
+        self.model.configuration_id
+    }
+
+    /// Get the system prompt
+    pub fn system_prompt(&self) -> &str {
+        &self.system_prompt
+    }
+
+    /// Check if deployment is enabled
+    pub fn is_deployment_enabled(&self) -> bool {
+        self.deployment.enabled
+    }
+
+    /// Check if auto-activation is enabled
+    pub fn should_auto_activate(&self) -> bool {
+        self.deployment.auto_activate
+    }
+
+    // ========================================================================
+    // Builder Methods
+    // ========================================================================
+
+    /// Set the CID (after content addressing)
+    pub fn with_cid(mut self, cid: Cid) -> Self {
+        self.cid = Some(cid);
+        self
+    }
+
+    /// Add knowledge section
+    pub fn with_knowledge(mut self, section: KnowledgeSection) -> Self {
+        self.knowledge_base.push(section);
+        self
+    }
+
+    /// Add example section
+    pub fn with_example(mut self, section: ExampleSection) -> Self {
+        self.examples.push(section);
+        self
+    }
+
+    /// Set raw YAML (for debugging)
+    pub fn with_raw_yaml(mut self, yaml: String) -> Self {
+        self.raw_yaml = Some(yaml);
+        self
+    }
+
+    /// Set source path
+    pub fn with_source_path(mut self, path: String) -> Self {
+        self.source_path = Some(path);
+        self
+    }
+
+    // ========================================================================
+    // Validation
+    // ========================================================================
+
+    /// Validate the complete definition
+    pub fn validate(&self) -> Result<(), String> {
+        // Validate identity
+        self.identity.validate()?;
+
+        // Validate model reference
+        self.model.validate()?;
+
+        // Validate conceptual space
+        self.conceptual_space.validate()?;
+
+        // Validate deployment config
+        self.deployment.validate()?;
+
+        // Validate system prompt is not empty
+        if self.system_prompt.trim().is_empty() {
+            return Err("System prompt cannot be empty".to_string());
+        }
+
+        Ok(())
+    }
+
+    // ========================================================================
+    // System Prompt Integration
+    // ========================================================================
+
+    /// Get the complete system prompt with interpolated variables
+    ///
+    /// This substitutes placeholder variables in the system prompt with
+    /// actual values from the definition.
+    pub fn interpolated_system_prompt(&self) -> String {
+        let mut prompt = self.system_prompt.clone();
+
+        // Replace common variables
+        prompt = prompt.replace("{Agent Display Name}", &self.identity.display_name);
+        prompt = prompt.replace("{agent_id}", &self.identity.id.to_string());
+        prompt = prompt.replace("{boundary}", &format!("{:?}", self.conceptual_space.boundary));
+
+        // Replace dimension list
+        let dimensions: Vec<String> = self
+            .conceptual_space
+            .quality_dimensions
+            .iter()
+            .map(|d| d.dimension.clone())
+            .collect();
+        prompt = prompt.replace("{list dimensions}", &dimensions.join(", "));
+        prompt = prompt.replace("{dimensions}", &dimensions.join(", "));
+
+        prompt
+    }
+
+    /// Get system prompt augmented with knowledge base
+    pub fn full_context_prompt(&self) -> String {
+        let mut prompt = self.interpolated_system_prompt();
+
+        // Append knowledge base sections
+        if !self.knowledge_base.is_empty() {
+            prompt.push_str("\n\n---\n\n# Knowledge Base\n\n");
+            for section in &self.knowledge_base {
+                prompt.push_str(&format!("## {}\n\n{}\n\n", section.title, section.content));
+            }
+        }
+
+        // Append examples
+        if !self.examples.is_empty() {
+            prompt.push_str("\n\n---\n\n# Examples\n\n");
+            for section in &self.examples {
+                prompt.push_str(&format!("## {}\n\n{}\n\n", section.title, section.content));
+            }
+        }
+
+        prompt
+    }
+
+    // ========================================================================
+    // Agent Collaboration
+    // ========================================================================
+
+    /// Get required agent dependencies
+    pub fn required_agents(&self) -> Vec<&str> {
+        self.collaboration
+            .required
+            .iter()
+            .map(|d| d.agent.as_str())
+            .collect()
+    }
+
+    /// Get optional agent dependencies
+    pub fn optional_agents(&self) -> Vec<&str> {
+        self.collaboration
+            .optional
+            .iter()
+            .map(|d| d.agent.as_str())
+            .collect()
+    }
+
+    /// Check if this agent requires another agent
+    pub fn requires_agent(&self, agent_name: &str) -> bool {
+        self.collaboration
+            .required
+            .iter()
+            .any(|d| d.agent == agent_name)
+    }
+
+    // ========================================================================
+    // Content Addressing
+    // ========================================================================
+
+    /// Calculate the CID of this definition
+    ///
+    /// This creates a content-addressed identifier based on the complete
+    /// definition. Any change to the definition produces a new CID.
+    pub fn calculate_cid(&self) -> Result<Cid, String> {
+        use serde_ipld_dagcbor::to_vec;
+        use sha2::{Digest, Sha256};
+
+        // Serialize to CBOR
+        let cbor = to_vec(&self).map_err(|e| format!("Failed to serialize: {}", e))?;
+
+        // Calculate SHA-256 hash
+        let hash_bytes = Sha256::digest(&cbor);
+
+        // Create multihash from hash bytes
+        let mh = multihash::Multihash::wrap(0x12, &hash_bytes)
+            .map_err(|e| format!("Failed to create multihash: {}", e))?;
+
+        // Create CID (version 1, dag-cbor codec=0x71, sha2-256 multihash)
+        let cid = Cid::new_v1(0x71, mh);
+
+        Ok(cid)
+    }
+
+    /// Update the CID based on current content
+    pub fn update_cid(mut self) -> Result<Self, String> {
+        let cid = self.calculate_cid()?;
+        self.cid = Some(cid);
+        Ok(self)
+    }
+}
+
+// ============================================================================
+// Knowledge and Example Sections
+// ============================================================================
+
+/// Knowledge base section
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct KnowledgeSection {
+    pub title: String,
+    pub content: String,
+}
+
+impl KnowledgeSection {
+    /// Create a new knowledge section
+    pub fn new(title: impl Into<String>, content: impl Into<String>) -> Self {
+        Self {
+            title: title.into(),
+            content: content.into(),
+        }
+    }
+}
+
+/// Example section
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ExampleSection {
+    pub title: String,
+    pub content: String,
+}
+
+impl ExampleSection {
+    /// Create a new example section
+    pub fn new(title: impl Into<String>, content: impl Into<String>) -> Self {
+        Self {
+            title: title.into(),
+            content: content.into(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn create_test_definition() -> AgentDefinition {
+        let agent_id = AgentId::new();
+        let version: semver::Version = "0.1.0".parse().unwrap();
+        let identity = AgentIdentity::new(agent_id, "test-agent", "Test Agent", version);
+
+        let model = ModelConfigurationReference::from_inline(InlineModelConfig {
+            provider: "ollama".to_string(),
+            model_name: "mistral:7b".to_string(),
+            temperature: 0.7,
+            top_p: 0.9,
+            max_tokens: 4096,
+            frequency_penalty: 0.0,
+            presence_penalty: 0.0,
+        });
+
+        let conceptual_space = ConceptualSpacePosition::new(ConceptualBoundary::Domain)
+            .with_dimension(QualityDimension::new("salience", 0.9, "Test dimension"));
+
+        let metadata = AgentMetadata::new("Test agent", "Test Author");
+
+        let collaboration = AgentCollaboration::empty();
+
+        let routing = SubjectRouting::for_agent("test-agent");
+
+        let deployment = DeploymentConfig::default_enabled();
+
+        let testing = TestConfiguration::empty();
+
+        let documentation = AgentDocumentation::empty();
+
+        let system_prompt = "You are {Agent Display Name}".to_string();
+
+        AgentDefinition::new(
+            identity,
+            model,
+            conceptual_space,
+            metadata,
+            collaboration,
+            routing,
+            deployment,
+            testing,
+            documentation,
+            system_prompt,
+        )
+    }
+
+    #[test]
+    fn test_create_definition() {
+        let def = create_test_definition();
+        assert_eq!(def.agent_name(), "test-agent");
+        assert!(def.validate().is_ok());
+    }
+
+    #[test]
+    fn test_interpolated_system_prompt() {
+        let def = create_test_definition();
+        let prompt = def.interpolated_system_prompt();
+        assert!(prompt.contains("Test Agent"));
+        assert!(!prompt.contains("{Agent Display Name}"));
+    }
+
+    #[test]
+    fn test_content_addressing() {
+        let def = create_test_definition();
+        let cid1 = def.calculate_cid().unwrap();
+
+        // Same definition should produce same CID
+        let cid2 = def.calculate_cid().unwrap();
+        assert_eq!(cid1, cid2);
+    }
+
+    #[test]
+    fn test_full_context_prompt() {
+        let mut def = create_test_definition();
+        def = def.with_knowledge(KnowledgeSection::new("Test", "Knowledge content"));
+        def = def.with_example(ExampleSection::new("Example 1", "Example content"));
+
+        let prompt = def.full_context_prompt();
+        assert!(prompt.contains("Knowledge Base"));
+        assert!(prompt.contains("Examples"));
+    }
+
+    #[test]
+    fn test_agent_dependencies() {
+        let mut def = create_test_definition();
+        def.collaboration = AgentCollaboration::empty().with_required(AgentDependency {
+            agent: "ddd-expert".to_string(),
+            relationship: RelationshipType::Prerequisite,
+            reason: "Test".to_string(),
+            boundary_adjacency: None,
+            enhances_dimension: None,
+        });
+
+        assert!(def.requires_agent("ddd-expert"));
+        assert!(!def.requires_agent("nats-expert"));
+        assert_eq!(def.required_agents(), vec!["ddd-expert"]);
+    }
+}

@@ -85,11 +85,15 @@ impl AgentMessageService {
             }
         };
 
-        // 5. Prepend system prompt if configured
-        let context = if !model_config.system_prompt.is_empty() {
-            let mut full_context = vec![ContextMessage::system(&model_config.system_prompt)];
-            full_context.extend(context);
-            full_context
+        // 5. Prepend system prompt if configured on agent
+        let context = if let Some(system_prompt) = agent.system_prompt() {
+            if !system_prompt.is_empty() {
+                let mut full_context = vec![ContextMessage::system(system_prompt)];
+                full_context.extend(context);
+                full_context
+            } else {
+                context
+            }
         } else {
             context
         };

@@ -12,8 +12,10 @@ mod inner {
     use crate::value_objects::{ContextMessage, FinishReason, ModelConfig, ProviderType, StreamingChunk};
     use async_trait::async_trait;
     use futures::stream;
+    use genai::adapter::AdapterKind;
     use genai::chat::{ChatMessage, ChatRequest, MessageContent};
-    use genai::Client;
+    use genai::resolver::{AuthData, Endpoint, ServiceTargetResolver};
+    use genai::{Client, ModelIden, ServiceTarget};
 
     /// genai-based adapter for multi-provider AI
     ///
@@ -26,7 +28,36 @@ mod inner {
     impl GenaiAdapter {
         /// Create a new genai adapter
         pub fn new() -> ChatResult<Self> {
-            let client = Client::default();
+            // Create a resolver that supports custom Ollama endpoints
+            let target_resolver = ServiceTargetResolver::from_resolver_fn(
+                |service_target: ServiceTarget| -> Result<ServiceTarget, genai::resolver::Error> {
+                    let ServiceTarget { model, endpoint, auth } = service_target;
+
+                    // If this is an Ollama model and OLLAMA_HOST is set, use custom endpoint
+                    if model.adapter_kind == AdapterKind::Ollama {
+                        if let Ok(ollama_host) = std::env::var("OLLAMA_HOST") {
+                            let custom_endpoint = Endpoint::from_owned(ollama_host);
+                            // For Ollama's OpenAI-compatible API:
+                            // 1. Strip the adapter prefix: "mistral:7b" not "ollama/mistral:7b"
+                            // 2. Use OpenAI adapter since Ollama uses OpenAI-compatible API
+                            let model_name_stripped = model.model_name.trim_start_matches("ollama/");
+                            let corrected_model = ModelIden::new(AdapterKind::OpenAI, model_name_stripped);
+                            return Ok(ServiceTarget {
+                                endpoint: custom_endpoint,
+                                auth, // Keep original auth
+                                model: corrected_model,
+                            });
+                        }
+                    }
+
+                    // Otherwise use default
+                    Ok(ServiceTarget { model, endpoint, auth })
+                },
+            );
+
+            let client = Client::builder()
+                .with_service_target_resolver(target_resolver)
+                .build();
 
             Ok(Self {
                 client,
@@ -36,7 +67,36 @@ mod inner {
 
         /// Create with specific capabilities
         pub fn with_capabilities(capabilities: RuntimeCapabilities) -> ChatResult<Self> {
-            let client = Client::default();
+            // Create a resolver that supports custom Ollama endpoints
+            let target_resolver = ServiceTargetResolver::from_resolver_fn(
+                |service_target: ServiceTarget| -> Result<ServiceTarget, genai::resolver::Error> {
+                    let ServiceTarget { model, endpoint, auth } = service_target;
+
+                    // If this is an Ollama model and OLLAMA_HOST is set, use custom endpoint
+                    if model.adapter_kind == AdapterKind::Ollama {
+                        if let Ok(ollama_host) = std::env::var("OLLAMA_HOST") {
+                            let custom_endpoint = Endpoint::from_owned(ollama_host);
+                            // For Ollama's OpenAI-compatible API:
+                            // 1. Strip the adapter prefix: "mistral:7b" not "ollama/mistral:7b"
+                            // 2. Use OpenAI adapter since Ollama uses OpenAI-compatible API
+                            let model_name_stripped = model.model_name.trim_start_matches("ollama/");
+                            let corrected_model = ModelIden::new(AdapterKind::OpenAI, model_name_stripped);
+                            return Ok(ServiceTarget {
+                                endpoint: custom_endpoint,
+                                auth, // Keep original auth
+                                model: corrected_model,
+                            });
+                        }
+                    }
+
+                    // Otherwise use default
+                    Ok(ServiceTarget { model, endpoint, auth })
+                },
+            );
+
+            let client = Client::builder()
+                .with_service_target_resolver(target_resolver)
+                .build();
 
             Ok(Self {
                 client,

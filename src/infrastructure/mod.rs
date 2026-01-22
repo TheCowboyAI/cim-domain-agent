@@ -17,14 +17,26 @@ use crate::events::AgentEvent;
 use crate::value_objects::AgentId;
 
 mod event_store;
+mod model_configuration_repository;
 mod nats_integration;
+mod nats_model_configuration;
 mod repository;
 mod snapshot_store;
 mod subject_factory;
 
 pub use event_store::{EventEnvelope, EventStore, InMemoryEventStore};
+pub use model_configuration_repository::{
+    ConfigurationEventEnvelope, ConfigurationSnapshot, InMemoryConfigurationEventStore,
+    InMemoryConfigurationSnapshotStore, ModelConfigurationEventStore,
+    ModelConfigurationRepository, ModelConfigurationSnapshotStore,
+};
 pub use nats_integration::{
     AgentCommandHandler, AgentSubjects, NatsEventPublisher, NatsEventStore,
+};
+pub use nats_model_configuration::{
+    ModelConfigurationCommandHandler, ModelConfigurationSubjects,
+    NatsModelConfigurationEventPublisher, NatsModelConfigurationEventStore,
+    NatsModelConfigurationSnapshotStore,
 };
 pub use repository::AgentRepository;
 pub use snapshot_store::{InMemorySnapshotStore, Snapshot, SnapshotStore};

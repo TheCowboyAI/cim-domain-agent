@@ -1,16 +1,28 @@
 // Copyright (c) 2025 - Cowboy AI, LLC.
 
-//! Agent aggregate v2.0
+//! Aggregates for agent domain v2.0
 //!
-//! Pure functional event-sourced aggregate representing an autonomous agent
-//! that is a Person's automaton for AI model interaction.
+//! Pure functional event-sourced aggregates.
+//!
+//! # Aggregates
+//!
+//! - **Agent**: Person's automaton for AI model interaction
+//! - **ModelConfiguration**: AI model configuration lifecycle
 //!
 //! # Design Principles
 //!
 //! 1. **Agent = Person's Automaton**: Every agent is bound to a PersonId
-//! 2. **Single Model**: One model configuration per agent
+//! 2. **Configuration Reuse**: Multiple agents can reference same ModelConfiguration
 //! 3. **Stateless Messages**: No conversation state maintained
 //! 4. **Event-Sourced**: All state changes through immutable events
+
+mod model_configuration;
+// Temporarily disabled - over-engineered, being replaced
+// mod agent_definition;
+
+pub use model_configuration::ModelConfiguration;
+// Temporarily disabled
+// pub use agent_definition::{AgentDefinition, KnowledgeSection, ExampleSection};
 
 use crate::events::*;
 use crate::value_objects::*;
@@ -22,11 +34,11 @@ use serde::{Deserialize, Serialize};
 /// # Lifecycle
 ///
 /// ```text
-/// Deployed → (ModelConfigured) → Active ↔ Suspended → Decommissioned
+/// Deployed → (ModelConfigurationAssigned) → Active ↔ Suspended → Decommissioned
 /// ```
 ///
 /// - `Deployed`: Created, bound to a Person
-/// - `Active`: Model configured, ready to process messages
+/// - `Active`: Model configuration assigned, ready to process messages
 /// - `Suspended`: Temporarily paused
 /// - `Decommissioned`: Terminal state (cannot recover)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,8 +58,18 @@ pub struct Agent {
     /// Current operational status
     status: AgentStatus,
 
-    /// Model configuration (required for activation)
+    /// Model configuration ID (new pattern - references ModelConfiguration aggregate)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    model_configuration_id: Option<ModelConfigurationId>,
+
+    /// Model configuration (deprecated - embedded config, use model_configuration_id)
+    #[deprecated(since = "0.10.0", note = "Use model_configuration_id instead")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     model_config: Option<ModelConfig>,
+
+    /// Agent's system prompt (personality definition)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    system_prompt: Option<String>,
 
     /// When the agent was created
     created_at: DateTime<Utc>,
@@ -67,7 +89,9 @@ impl Agent {
             name: String::new(),
             description: None,
             status: AgentStatus::Deployed,
+            model_configuration_id: None,
             model_config: None,
+            system_prompt: None,
             created_at: Utc::now(),
             version: 0,
         }
@@ -84,7 +108,9 @@ impl Agent {
             name: name.into(),
             description: None,
             status: AgentStatus::Deployed,
+            model_configuration_id: None,
             model_config: None,
+            system_prompt: None,
             created_at: Utc::now(),
             version: 0,
         }
@@ -119,9 +145,20 @@ impl Agent {
         self.status
     }
 
-    /// Get the model configuration
+    /// Get the model configuration ID (new pattern)
+    pub fn model_configuration_id(&self) -> Option<ModelConfigurationId> {
+        self.model_configuration_id
+    }
+
+    /// Get the model configuration (deprecated - use model_configuration_id)
+    #[deprecated(since = "0.10.0", note = "Use model_configuration_id instead")]
     pub fn model_config(&self) -> Option<&ModelConfig> {
         self.model_config.as_ref()
+    }
+
+    /// Get the system prompt
+    pub fn system_prompt(&self) -> Option<&str> {
+        self.system_prompt.as_deref()
     }
 
     /// Get when the agent was created
@@ -140,17 +177,18 @@ impl Agent {
 
     /// Check if the agent is operational (can process messages)
     pub fn is_operational(&self) -> bool {
-        self.status == AgentStatus::Active && self.model_config.is_some()
+        self.status == AgentStatus::Active
+            && (self.model_configuration_id.is_some() || self.model_config.is_some())
     }
 
     /// Check if the agent has a model configured
     pub fn has_model_config(&self) -> bool {
-        self.model_config.is_some()
+        self.model_configuration_id.is_some() || self.model_config.is_some()
     }
 
     /// Check if the agent can be activated
     pub fn can_activate(&self) -> bool {
-        self.model_config.is_some()
+        (self.model_configuration_id.is_some() || self.model_config.is_some())
             && matches!(
                 self.status,
                 AgentStatus::Deployed | AgentStatus::Suspended
@@ -198,8 +236,22 @@ impl Agent {
                 new_agent.model_config = Some(e.config.clone());
             }
 
+            AgentEvent::ModelConfigurationAssigned(e) => {
+                if new_agent.is_decommissioned() {
+                    return Err("Cannot assign configuration to decommissioned agent".to_string());
+                }
+                new_agent.model_configuration_id = Some(e.configuration_id);
+            }
+
+            AgentEvent::SystemPromptConfigured(e) => {
+                if new_agent.is_decommissioned() {
+                    return Err("Cannot configure system prompt for decommissioned agent".to_string());
+                }
+                new_agent.system_prompt = Some(e.system_prompt.clone());
+            }
+
             AgentEvent::AgentActivated(_) => {
-                if new_agent.model_config.is_none() {
+                if !new_agent.has_model_config() {
                     return Err("Cannot activate agent without model configuration".to_string());
                 }
                 if new_agent.is_decommissioned() {

@@ -97,6 +97,9 @@ pub mod adapters;
 // Domain Services
 pub mod services;
 
+// Pure functional configuration parser
+pub mod config;
+
 // Re-export primary types
 pub use aggregate::Agent;
 pub use commands::*;
@@ -109,3 +112,4 @@ pub use capabilities::*;
 pub use intent::*;
 pub use adapters::*;
 pub use services::*;
+pub use config::*;

@@ -1,0 +1,50 @@
+# Copyright (c) 2025 - Cowboy AI, Inc.
+
+# Systemd service for CIM Agents container
+# Auto-starts at boot, manages container lifecycle
+#
+# Agents are CID-addressed and run on local LLMs (Mistral-7b/Llama4-8b)
+
+[Unit]
+Description=CIM Agents Container - CID-addressed agents for local LLMs via NATS
+Documentation=https://github.com/thecowboyai/cim-domain-agent
+After=network-online.target nats.service ollama.service
+Wants=network-online.target
+Requires=nats.service ollama.service
+
+[Service]
+Type=simple
+User=root
+Restart=always
+RestartSec=10
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+# Container runtime (podman or docker)
+ExecStartPre=-/usr/bin/podman stop cim-agents
+ExecStartPre=-/usr/bin/podman rm cim-agents
+
+# Start container
+ExecStart=/usr/bin/podman run \
+  --name cim-agents \
+  --rm \
+  --network host \
+  -e NATS_URL=nats://10.0.20.1:4222 \
+  -e STREAM_NAME=AGENT_EVENTS \
+  -e LOG_LEVEL=info \
+  -v /git/thecowboyai/cim-domain-agent/agents:/agents:ro \
+  localhost/cim-agents:latest
+
+# Stop container
+ExecStop=/usr/bin/podman stop -t 10 cim-agents
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cim-agents
+
+# Security
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

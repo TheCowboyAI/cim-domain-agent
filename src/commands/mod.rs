@@ -7,12 +7,29 @@
 //!
 //! ## Command Types
 //!
+//! ### Agent Commands
 //! - `DeployAgent` - Create a new agent bound to a Person
 //! - `ConfigureModel` - Set the model configuration
 //! - `ActivateAgent` - Activate the agent (requires model config)
 //! - `SuspendAgent` - Temporarily pause the agent
 //! - `DecommissionAgent` - Permanently remove the agent
 //! - `SendMessage` - Send a message to the model
+//!
+//! ### Model Configuration Commands
+//! - `CreateModelConfiguration` - Create a new model configuration
+//! - `UpdateModelParameters` - Update generation parameters
+//! - `UpdateModelProvider` - Change provider/model
+//! - `ActivateModelConfiguration` - Activate configuration
+//! - `DeprecateModelConfiguration` - Phase out configuration
+//! - `ArchiveModelConfiguration` - Move to history
+
+mod model_configuration;
+
+pub use model_configuration::{
+    ActivateModelConfiguration, ArchiveModelConfiguration, CreateModelConfiguration,
+    DeprecateModelConfiguration, ModelConfigurationCommand, ModelParameters,
+    UpdateModelParameters, UpdateModelProvider,
+};
 
 use crate::value_objects::{
     AgentId, ContextMessage, MessageId, ModelConfig, PersonId,

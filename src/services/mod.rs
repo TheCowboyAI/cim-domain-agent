@@ -9,6 +9,7 @@
 //!
 //! - `AgentMessageService` - Validates agents and routes messages to providers
 //! - `CapabilityRouter` - Routes intents to capable providers via lattice matching
+//! - `ModelConfigurationService` - Manages model configuration lifecycle
 //!
 //! ## Architecture
 //!
@@ -51,6 +52,12 @@
 
 mod capability_router;
 mod message_service;
+mod model_configuration_service;
+// Temporarily disabled - over-engineered, being replaced
+// mod agent_definition_loader;
 
 pub use capability_router::CapabilityRouter;
 pub use message_service::AgentMessageService;
+pub use model_configuration_service::ModelConfigurationService;
+// Temporarily disabled
+// pub use agent_definition_loader::{AgentDefinitionLoader, LoaderError, LoaderResult};

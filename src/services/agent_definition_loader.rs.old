@@ -1,0 +1,687 @@
+// Copyright (c) 2025 - Cowboy AI, LLC.
+
+//! Agent Definition Loader Service
+//!
+//! Parses agent `.md` files with YAML front-matter and loads them into
+//! AgentDefinition aggregates.
+//!
+//! # File Format
+//!
+//! ```markdown
+//! ---
+//! # YAML front-matter (agent configuration)
+//! id: "uuid"
+//! name: "agent-name"
+//! ...
+//! ---
+//!
+//! # Markdown body (system prompt)
+//! You are an expert agent...
+//! ```
+
+use crate::aggregate::AgentDefinition;
+use crate::value_objects::{
+    agent_definition::*, AgentId, ModelConfigurationId,
+};
+use serde::Deserialize;
+use std::path::Path;
+use thiserror::Error;
+
+/// Errors that can occur during agent definition loading
+#[derive(Debug, Error)]
+pub enum LoaderError {
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("YAML parsing error: {0}")]
+    YamlParse(#[from] serde_yaml::Error),
+
+    #[error("Invalid front-matter: {0}")]
+    InvalidFrontMatter(String),
+
+    #[error("Missing system prompt")]
+    MissingSystemPrompt,
+
+    #[error("Validation error: {0}")]
+    Validation(String),
+}
+
+/// Result type for loader operations
+pub type LoaderResult<T> = Result<T, LoaderError>;
+
+/// Agent definition loader service
+///
+/// Responsible for:
+/// 1. Reading `.md` files
+/// 2. Parsing YAML front-matter
+/// 3. Extracting markdown system prompt
+/// 4. Constructing AgentDefinition aggregate
+/// 5. Validating the complete definition
+pub struct AgentDefinitionLoader;
+
+impl AgentDefinitionLoader {
+    /// Load an agent definition from a `.md` file
+    pub fn load_from_file(path: impl AsRef<Path>) -> LoaderResult<AgentDefinition> {
+        let path = path.as_ref();
+        let content = std::fs::read_to_string(path)?;
+        Self::load_from_string(&content, Some(path.to_string_lossy().to_string()))
+    }
+
+    /// Load an agent definition from a string
+    pub fn load_from_string(
+        content: &str,
+        source_path: Option<String>,
+    ) -> LoaderResult<AgentDefinition> {
+        // Split content into front-matter and body
+        let (yaml_str, body) = Self::extract_front_matter(content)?;
+
+        // Parse YAML front-matter into intermediate structure
+        let front_matter: FrontMatterRaw = serde_yaml::from_str(&yaml_str)?;
+
+        // Build AgentDefinition from parsed front-matter
+        let mut definition = Self::build_definition(front_matter, body)?;
+
+        // Add metadata
+        definition = definition.with_raw_yaml(yaml_str);
+        if let Some(path) = source_path {
+            definition = definition.with_source_path(path);
+        }
+
+        // Validate
+        definition
+            .validate()
+            .map_err(LoaderError::Validation)?;
+
+        // Calculate CID
+        definition = definition
+            .update_cid()
+            .map_err(LoaderError::Validation)?;
+
+        Ok(definition)
+    }
+
+    /// Extract YAML front-matter and markdown body
+    fn extract_front_matter(content: &str) -> LoaderResult<(String, String)> {
+        let lines: Vec<&str> = content.lines().collect();
+
+        // Find front-matter delimiters (---)
+        let mut start_idx = None;
+        let mut end_idx = None;
+
+        for (i, line) in lines.iter().enumerate() {
+            let trimmed = line.trim();
+            if trimmed == "---" {
+                if start_idx.is_none() {
+                    start_idx = Some(i);
+                } else if end_idx.is_none() {
+                    end_idx = Some(i);
+                    break;
+                }
+            }
+        }
+
+        match (start_idx, end_idx) {
+            (Some(start), Some(end)) if start < end => {
+                // Extract YAML (between delimiters)
+                let yaml_lines = &lines[start + 1..end];
+                let yaml_str = yaml_lines.join("\n");
+
+                // Extract body (after second delimiter)
+                let body_lines = &lines[end + 1..];
+                let body = body_lines.join("\n").trim().to_string();
+
+                if body.is_empty() {
+                    return Err(LoaderError::MissingSystemPrompt);
+                }
+
+                Ok((yaml_str, body))
+            }
+            _ => Err(LoaderError::InvalidFrontMatter(
+                "Missing or malformed front-matter delimiters (---)".to_string(),
+            )),
+        }
+    }
+
+    /// Build AgentDefinition from parsed front-matter
+    fn build_definition(
+        front_matter: FrontMatterRaw,
+        system_prompt: String,
+    ) -> LoaderResult<AgentDefinition> {
+        // Parse identity
+        let identity = Self::parse_identity(&front_matter)?;
+
+        // Parse model configuration
+        let model = Self::parse_model_config(&front_matter)?;
+
+        // Parse conceptual space
+        let conceptual_space = Self::parse_conceptual_space(&front_matter)?;
+
+        // Parse metadata
+        let metadata = Self::parse_metadata(&front_matter)?;
+
+        // Parse collaboration
+        let collaboration = Self::parse_collaboration(&front_matter)?;
+
+        // Parse routing
+        let routing = Self::parse_routing(&front_matter)?;
+
+        // Parse deployment
+        let deployment = Self::parse_deployment(&front_matter)?;
+
+        // Parse testing
+        let testing = Self::parse_testing(&front_matter)?;
+
+        // Parse documentation
+        let documentation = Self::parse_documentation(&front_matter)?;
+
+        Ok(AgentDefinition::new(
+            identity,
+            model,
+            conceptual_space,
+            metadata,
+            collaboration,
+            routing,
+            deployment,
+            testing,
+            documentation,
+            system_prompt,
+        ))
+    }
+
+    /// Parse identity from front-matter
+    fn parse_identity(fm: &FrontMatterRaw) -> LoaderResult<AgentIdentity> {
+        let id = if let Some(id_str) = &fm.id {
+            let uuid = uuid::Uuid::parse_str(id_str).map_err(|e| {
+                LoaderError::InvalidFrontMatter(format!("Invalid agent ID: {}", e))
+            })?;
+            AgentId::from_uuid(uuid)
+        } else {
+            AgentId::new() // Generate new ID if not provided
+        };
+
+        let name = fm.name.clone().ok_or_else(|| {
+            LoaderError::InvalidFrontMatter("Missing required field: name".to_string())
+        })?;
+
+        let display_name = fm.display_name.clone().ok_or_else(|| {
+            LoaderError::InvalidFrontMatter("Missing required field: display_name".to_string())
+        })?;
+
+        let version_str = fm
+            .version
+            .as_ref()
+            .ok_or_else(|| {
+                LoaderError::InvalidFrontMatter("Missing required field: version".to_string())
+            })?;
+
+        let version: semver::Version = version_str
+            .parse()
+            .map_err(|e| {
+                LoaderError::InvalidFrontMatter(format!("Invalid version: {}", e))
+            })?;
+
+        Ok(AgentIdentity::new(id, name, display_name, version))
+    }
+
+    /// Parse model configuration from front-matter
+    fn parse_model_config(fm: &FrontMatterRaw) -> LoaderResult<ModelConfigurationReference> {
+        let model_section = fm.model.as_ref().ok_or_else(|| {
+            LoaderError::InvalidFrontMatter("Missing required field: model".to_string())
+        })?;
+
+        // Check if referencing existing configuration
+        if let Some(config_id_str) = &model_section.configuration_id {
+            let uuid = uuid::Uuid::parse_str(config_id_str).map_err(|e| {
+                LoaderError::InvalidFrontMatter(format!("Invalid configuration_id: {}", e))
+            })?;
+            let config_id = ModelConfigurationId::from_uuid(uuid);
+
+            let mut reference = ModelConfigurationReference::from_id(config_id);
+
+            if let Some(rationale) = &model_section.rationale {
+                reference = reference.with_rationale(rationale.clone());
+            }
+
+            return Ok(reference);
+        }
+
+        // Otherwise, use inline configuration
+        let provider = model_section.provider.clone().ok_or_else(|| {
+            LoaderError::InvalidFrontMatter("Missing model.provider".to_string())
+        })?;
+
+        let model_name = model_section.model_name.clone().ok_or_else(|| {
+            LoaderError::InvalidFrontMatter("Missing model.model_name".to_string())
+        })?;
+
+        let inline_config = InlineModelConfig {
+            provider,
+            model_name,
+            temperature: model_section.temperature.unwrap_or(0.7),
+            top_p: model_section.top_p.unwrap_or(0.9),
+            max_tokens: model_section.max_tokens.unwrap_or(4096),
+            frequency_penalty: model_section.frequency_penalty.unwrap_or(0.0),
+            presence_penalty: model_section.presence_penalty.unwrap_or(0.0),
+        };
+
+        let mut reference = ModelConfigurationReference::from_inline(inline_config);
+
+        if let Some(rationale) = &model_section.rationale {
+            reference = reference.with_rationale(rationale.clone());
+        }
+
+        Ok(reference)
+    }
+
+    /// Parse conceptual space from front-matter
+    fn parse_conceptual_space(
+        fm: &FrontMatterRaw,
+    ) -> LoaderResult<ConceptualSpacePosition> {
+        let cs_section = fm.conceptual_space.as_ref().ok_or_else(|| {
+            LoaderError::InvalidFrontMatter("Missing required field: conceptual_space".to_string())
+        })?;
+
+        let boundary = cs_section.boundary;
+
+        let mut position = ConceptualSpacePosition::new(boundary);
+
+        // Add quality dimensions
+        if let Some(dimensions) = &cs_section.quality_dimensions {
+            for dim in dimensions {
+                position = position.with_dimension(QualityDimension::new(
+                    dim.dimension.clone(),
+                    dim.weight,
+                    dim.description.clone(),
+                ));
+            }
+        }
+
+        // Add topology
+        if let Some(topo) = &cs_section.topology {
+            let topology = ConceptualTopology {
+                centrality: topo.centrality,
+                connectivity: topo.connectivity.clone(),
+                distance_metrics: vec![], // TODO: Parse distance metrics
+            };
+            position = position.with_topology(topology);
+        }
+
+        Ok(position)
+    }
+
+    /// Parse metadata from front-matter
+    fn parse_metadata(fm: &FrontMatterRaw) -> LoaderResult<AgentMetadata> {
+        let description = fm.description.clone().unwrap_or_default();
+        let author = fm.author.clone().unwrap_or_else(|| "Unknown".to_string());
+
+        let mut metadata = AgentMetadata::new(description, author);
+
+        if let Some(caps) = &fm.capabilities {
+            for cap in caps {
+                metadata = metadata.with_capability(cap.clone());
+            }
+        }
+
+        if let Some(use_cases) = &fm.use_cases {
+            for uc in use_cases {
+                metadata = metadata.with_use_case(uc.clone());
+            }
+        }
+
+        if let Some(tags) = &fm.tags {
+            for tag in tags {
+                metadata = metadata.with_tag(tag.clone());
+            }
+        }
+
+        // Parse dates
+        if let Some(created_str) = &fm.created {
+            if let Ok(date) = chrono::DateTime::parse_from_rfc3339(created_str) {
+                metadata.created = date.with_timezone(&chrono::Utc);
+            }
+        }
+
+        if let Some(updated_str) = &fm.updated {
+            if let Ok(date) = chrono::DateTime::parse_from_rfc3339(updated_str) {
+                metadata.updated = date.with_timezone(&chrono::Utc);
+            }
+        }
+
+        Ok(metadata)
+    }
+
+    /// Parse collaboration from front-matter
+    fn parse_collaboration(fm: &FrontMatterRaw) -> LoaderResult<AgentCollaboration> {
+        let mut collaboration = AgentCollaboration::empty();
+
+        if let Some(deps) = &fm.dependencies {
+            // Required dependencies
+            if let Some(required) = &deps.required {
+                for dep_raw in required {
+                    collaboration = collaboration.with_required(AgentDependency {
+                        agent: dep_raw.agent.clone(),
+                        relationship: dep_raw.relationship,
+                        reason: dep_raw.reason.clone(),
+                        boundary_adjacency: dep_raw.boundary_adjacency.clone(),
+                        enhances_dimension: None,
+                    });
+                }
+            }
+
+            // Optional dependencies
+            if let Some(optional) = &deps.optional {
+                for dep_raw in optional {
+                    collaboration = collaboration.with_optional(AgentDependency {
+                        agent: dep_raw.agent.clone(),
+                        relationship: dep_raw.relationship,
+                        reason: dep_raw.reason.clone(),
+                        boundary_adjacency: dep_raw.boundary_adjacency.clone(),
+                        enhances_dimension: dep_raw.enhances_dimension.clone(),
+                    });
+                }
+            }
+        }
+
+        Ok(collaboration)
+    }
+
+    /// Parse routing from front-matter
+    fn parse_routing(fm: &FrontMatterRaw) -> LoaderResult<SubjectRouting> {
+        let agent_name = fm.name.as_ref().ok_or_else(|| {
+            LoaderError::InvalidFrontMatter("Missing name for routing".to_string())
+        })?;
+
+        let routing = if let Some(routing_section) = &fm.routing {
+            SubjectRouting {
+                request: routing_section.request.clone(),
+                events: routing_section.events.clone(),
+                commands: routing_section.commands.clone(),
+                patterns: vec![],
+            }
+        } else {
+            SubjectRouting::for_agent(agent_name)
+        };
+
+        Ok(routing)
+    }
+
+    /// Parse deployment from front-matter
+    fn parse_deployment(fm: &FrontMatterRaw) -> LoaderResult<DeploymentConfig> {
+        if let Some(deploy_section) = &fm.deployment {
+            Ok(DeploymentConfig {
+                enabled: deploy_section.enabled,
+                priority: deploy_section.priority,
+                auto_activate: deploy_section.auto_activate,
+                target_node: deploy_section.target_node.clone(),
+                resources: ResourceLimits::default(), // TODO: Parse resources
+                restart: RestartPolicy::default(),    // TODO: Parse restart
+                logging: LoggingConfig::default(),    // TODO: Parse logging
+            })
+        } else {
+            Ok(DeploymentConfig::default_enabled())
+        }
+    }
+
+    /// Parse testing from front-matter
+    fn parse_testing(fm: &FrontMatterRaw) -> LoaderResult<TestConfiguration> {
+        if let Some(test_section) = &fm.testing {
+            let mut testing = TestConfiguration::empty();
+
+            if let Some(prompts) = &test_section.sample_prompts {
+                for prompt_raw in prompts {
+                    testing = testing.with_prompt(SamplePrompt {
+                        prompt: prompt_raw.prompt.clone(),
+                        expected_behavior: prompt_raw.expected_behavior.clone(),
+                        validates_dimension: prompt_raw.validates_dimension.clone(),
+                    });
+                }
+            }
+
+            Ok(testing)
+        } else {
+            Ok(TestConfiguration::empty())
+        }
+    }
+
+    /// Parse documentation from front-matter
+    fn parse_documentation(fm: &FrontMatterRaw) -> LoaderResult<AgentDocumentation> {
+        let mut documentation = AgentDocumentation::empty();
+
+        if let Some(doc_section) = &fm.documentation {
+            if let Some(refs) = &doc_section.references {
+                for ref_raw in refs {
+                    documentation = documentation.with_reference(DocumentationReference {
+                        title: ref_raw.title.clone(),
+                        url: ref_raw.url.clone(),
+                    });
+                }
+            }
+
+            if let Some(limitations) = &doc_section.limitations {
+                for limitation in limitations {
+                    documentation = documentation.with_limitation(limitation.clone());
+                }
+            }
+
+            if let Some(roadmap) = &doc_section.roadmap {
+                for item in roadmap {
+                    documentation = documentation.with_roadmap(item.clone());
+                }
+            }
+        }
+
+        Ok(documentation)
+    }
+}
+
+// ============================================================================
+// Raw YAML Structures (for deserialization)
+// ============================================================================
+
+#[derive(Debug, Deserialize)]
+struct FrontMatterRaw {
+    id: Option<String>,
+    name: Option<String>,
+    display_name: Option<String>,
+    version: Option<String>,
+    model: Option<ModelSectionRaw>,
+    conceptual_space: Option<ConceptualSpaceSectionRaw>,
+    description: Option<String>,
+    capabilities: Option<Vec<String>>,
+    use_cases: Option<Vec<String>>,
+    tags: Option<Vec<String>>,
+    created: Option<String>,
+    updated: Option<String>,
+    author: Option<String>,
+    dependencies: Option<DependenciesSectionRaw>,
+    routing: Option<RoutingSectionRaw>,
+    deployment: Option<DeploymentSectionRaw>,
+    testing: Option<TestingSectionRaw>,
+    documentation: Option<DocumentationSectionRaw>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ModelSectionRaw {
+    configuration_id: Option<String>,
+    provider: Option<String>,
+    model_name: Option<String>,
+    temperature: Option<f32>,
+    top_p: Option<f32>,
+    max_tokens: Option<u32>,
+    frequency_penalty: Option<f32>,
+    presence_penalty: Option<f32>,
+    rationale: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ConceptualSpaceSectionRaw {
+    boundary: ConceptualBoundary,
+    quality_dimensions: Option<Vec<QualityDimensionRaw>>,
+    topology: Option<TopologyRaw>,
+}
+
+#[derive(Debug, Deserialize)]
+struct QualityDimensionRaw {
+    dimension: String,
+    weight: f32,
+    description: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct TopologyRaw {
+    centrality: f32,
+    connectivity: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct DependenciesSectionRaw {
+    required: Option<Vec<DependencyRaw>>,
+    optional: Option<Vec<DependencyRaw>>,
+}
+
+#[derive(Debug, Deserialize)]
+struct DependencyRaw {
+    agent: String,
+    relationship: RelationshipType,
+    reason: String,
+    boundary_adjacency: Option<String>,
+    enhances_dimension: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct RoutingSectionRaw {
+    request: String,
+    events: String,
+    commands: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct DeploymentSectionRaw {
+    enabled: bool,
+    priority: u8,
+    auto_activate: bool,
+    target_node: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TestingSectionRaw {
+    sample_prompts: Option<Vec<SamplePromptRaw>>,
+}
+
+#[derive(Debug, Deserialize)]
+struct SamplePromptRaw {
+    prompt: String,
+    expected_behavior: String,
+    validates_dimension: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct DocumentationSectionRaw {
+    references: Option<Vec<DocumentationReferenceRaw>>,
+    limitations: Option<Vec<String>>,
+    roadmap: Option<Vec<String>>,
+}
+
+#[derive(Debug, Deserialize)]
+struct DocumentationReferenceRaw {
+    title: String,
+    url: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const SAMPLE_AGENT_MD: &str = r#"---
+id: "01933f3e-7b4a-7890-a1b2-c3d4e5f6a7b8"
+name: "test-expert"
+display_name: "Test Expert"
+version: "0.1.0"
+
+model:
+  provider: "ollama"
+  model_name: "mistral:7b-instruct"
+  temperature: 0.7
+  max_tokens: 4096
+
+conceptual_space:
+  boundary: domain
+  quality_dimensions:
+    - dimension: "salience"
+      weight: 0.9
+      description: "Test dimension"
+
+description: "A test agent"
+capabilities:
+  - "Test capability"
+tags: ["test"]
+created: "2025-01-20T00:00:00Z"
+updated: "2025-01-22T00:00:00Z"
+author: "Test Author"
+
+deployment:
+  enabled: true
+  priority: 5
+  auto_activate: true
+
+---
+
+# Test Agent System Prompt
+
+You are {Agent Display Name}, a test agent.
+"#;
+
+    #[test]
+    fn test_extract_front_matter() {
+        let result = AgentDefinitionLoader::extract_front_matter(SAMPLE_AGENT_MD);
+        assert!(result.is_ok());
+
+        let (yaml, body) = result.unwrap();
+        assert!(yaml.contains("test-expert"));
+        assert!(body.contains("Test Agent System Prompt"));
+    }
+
+    #[test]
+    fn test_load_from_string() {
+        let result = AgentDefinitionLoader::load_from_string(SAMPLE_AGENT_MD, None);
+        assert!(result.is_ok());
+
+        let def = result.unwrap();
+        assert_eq!(def.agent_name(), "test-expert");
+        assert_eq!(def.display_name(), "Test Expert");
+        assert!(def.system_prompt().contains("Test Agent"));
+    }
+
+    #[test]
+    fn test_interpolated_system_prompt() {
+        let def = AgentDefinitionLoader::load_from_string(SAMPLE_AGENT_MD, None).unwrap();
+        let prompt = def.interpolated_system_prompt();
+        assert!(prompt.contains("Test Expert"));
+        assert!(!prompt.contains("{Agent Display Name}"));
+    }
+
+    #[test]
+    fn test_missing_front_matter() {
+        let bad_content = "# No front-matter here\nJust some content.";
+        let result = AgentDefinitionLoader::load_from_string(bad_content, None);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_empty_system_prompt() {
+        let bad_content = r#"---
+name: "test"
+display_name: "Test"
+version: "0.1.0"
+model:
+  provider: "ollama"
+  model_name: "test"
+conceptual_space:
+  boundary: domain
+---
+
+"#;
+        let result = AgentDefinitionLoader::load_from_string(bad_content, None);
+        assert!(result.is_err());
+    }
+}
