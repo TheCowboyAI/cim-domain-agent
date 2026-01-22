@@ -179,45 +179,60 @@ impl AgentSubjectFactory {
     // ========================================================================
     // Agent-Specific Subjects (for conversation and direct addressing)
     // ========================================================================
+    //
+    // INBOX PATTERN: Messages TO agents use `agent.to.{recipient}.>` pattern
+    // This ensures agents only receive messages intended for them, not their own outgoing messages.
 
-    /// All subjects for a specific agent by name: `{domain}.{agent_name}.>`
+    /// Inbox pattern for a specific agent: `{domain}.to.{agent_name}.>`
+    ///
+    /// Agents subscribe to this pattern to receive all messages addressed TO them.
+    /// This prevents agents from receiving their own outgoing messages.
     pub fn agent_pattern(&self, agent_name: &str) -> SubjectFactoryResult<SubjectPattern> {
-        let pattern_str = format!("{}.{}.>", self.domain, agent_name);
+        let pattern_str = format!("{}.to.{}.>", self.domain, agent_name);
         SubjectPattern::parse(&pattern_str).map_err(Into::into)
     }
 
-    /// Chat subject for agent: `{domain}.{agent_name}.chat.{topic}`
+    /// Chat subject for agent: `{domain}.to.{agent_name}.chat.{topic}`
+    ///
+    /// Direct chat messages to a specific agent on a topic.
     pub fn agent_chat(
         &self,
         agent_name: &str,
         topic: &str,
     ) -> SubjectFactoryResult<Subject> {
+        let to_keyword = SubjectSegment::new("to")?;
         let name_segment = SubjectSegment::new(agent_name)?;
         let chat_segment = SubjectSegment::new("chat")?;
         let topic_segment = SubjectSegment::new(topic)?;
         Ok(self
             .domain
+            .append(to_keyword)
             .append(name_segment)
             .append(chat_segment)
             .append(topic_segment))
     }
 
-    /// Agent-to-agent conversation: `{domain}.{from}.to.{to}.{message_type}`
+    /// Agent-to-agent conversation: `{domain}.to.{to}.from.{from}.{message_type}`
+    ///
+    /// Structured conversation where the recipient is first (for inbox routing).
+    /// The `from` agent is included for context.
     pub fn agent_to_agent(
         &self,
         from_agent: &str,
         to_agent: &str,
         message_type: &str,
     ) -> SubjectFactoryResult<Subject> {
-        let from_seg = SubjectSegment::new(from_agent)?;
         let to_keyword = SubjectSegment::new("to")?;
         let to_seg = SubjectSegment::new(to_agent)?;
+        let from_keyword = SubjectSegment::new("from")?;
+        let from_seg = SubjectSegment::new(from_agent)?;
         let msg_seg = SubjectSegment::new(message_type)?;
         Ok(self
             .domain
-            .append(from_seg)
             .append(to_keyword)
             .append(to_seg)
+            .append(from_keyword)
+            .append(from_seg)
             .append(msg_seg))
     }
 
@@ -566,24 +581,24 @@ mod tests {
     fn test_agent_specific_subjects() {
         let factory = AgentSubjectFactory::default();
 
-        // Agent pattern
+        // Agent inbox pattern (agents subscribe to this to receive messages)
         let pattern = factory.agent_pattern("sage").unwrap();
-        assert_eq!(pattern.to_string(), "agent.sage.>");
+        assert_eq!(pattern.to_string(), "agent.to.sage.>");
 
         let pattern = factory.agent_pattern("ddd-expert").unwrap();
-        assert_eq!(pattern.to_string(), "agent.ddd-expert.>");
+        assert_eq!(pattern.to_string(), "agent.to.ddd-expert.>");
 
-        // Chat subject
+        // Chat subject (messages TO an agent)
         let subject = factory.agent_chat("sage", "hello").unwrap();
-        assert_eq!(subject.to_string(), "agent.sage.chat.hello");
+        assert_eq!(subject.to_string(), "agent.to.sage.chat.hello");
 
-        // Agent-to-agent
+        // Agent-to-agent (recipient first for inbox routing)
         let subject = factory
             .agent_to_agent("ddd-expert", "sage", "question")
             .unwrap();
-        assert_eq!(subject.to_string(), "agent.ddd-expert.to.sage.question");
+        assert_eq!(subject.to_string(), "agent.to.sage.from.ddd-expert.question");
 
-        // Broadcast
+        // Broadcast (all agents receive)
         let pattern = factory.broadcast_pattern().unwrap();
         assert_eq!(pattern.to_string(), "agent.broadcast.>");
     }
