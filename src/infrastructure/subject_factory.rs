@@ -177,6 +177,57 @@ impl AgentSubjectFactory {
     }
 
     // ========================================================================
+    // Agent-Specific Subjects (for conversation and direct addressing)
+    // ========================================================================
+
+    /// All subjects for a specific agent by name: `{domain}.{agent_name}.>`
+    pub fn agent_pattern(&self, agent_name: &str) -> SubjectFactoryResult<SubjectPattern> {
+        let pattern_str = format!("{}.{}.>", self.domain, agent_name);
+        SubjectPattern::parse(&pattern_str).map_err(Into::into)
+    }
+
+    /// Chat subject for agent: `{domain}.{agent_name}.chat.{topic}`
+    pub fn agent_chat(
+        &self,
+        agent_name: &str,
+        topic: &str,
+    ) -> SubjectFactoryResult<Subject> {
+        let name_segment = SubjectSegment::new(agent_name)?;
+        let chat_segment = SubjectSegment::new("chat")?;
+        let topic_segment = SubjectSegment::new(topic)?;
+        Ok(self
+            .domain
+            .append(name_segment)
+            .append(chat_segment)
+            .append(topic_segment))
+    }
+
+    /// Agent-to-agent conversation: `{domain}.{from}.to.{to}.{message_type}`
+    pub fn agent_to_agent(
+        &self,
+        from_agent: &str,
+        to_agent: &str,
+        message_type: &str,
+    ) -> SubjectFactoryResult<Subject> {
+        let from_seg = SubjectSegment::new(from_agent)?;
+        let to_keyword = SubjectSegment::new("to")?;
+        let to_seg = SubjectSegment::new(to_agent)?;
+        let msg_seg = SubjectSegment::new(message_type)?;
+        Ok(self
+            .domain
+            .append(from_seg)
+            .append(to_keyword)
+            .append(to_seg)
+            .append(msg_seg))
+    }
+
+    /// Broadcast pattern (all agents listen): `{domain}.broadcast.>`
+    pub fn broadcast_pattern(&self) -> SubjectFactoryResult<SubjectPattern> {
+        let pattern_str = format!("{}.broadcast.>", self.domain);
+        SubjectPattern::parse(&pattern_str).map_err(Into::into)
+    }
+
+    // ========================================================================
     // Command Subjects
     // ========================================================================
 
@@ -509,5 +560,31 @@ mod tests {
     fn test_default_factory() {
         let factory = AgentSubjectFactory::default();
         assert_eq!(factory.domain().to_string(), "agent");
+    }
+
+    #[test]
+    fn test_agent_specific_subjects() {
+        let factory = AgentSubjectFactory::default();
+
+        // Agent pattern
+        let pattern = factory.agent_pattern("sage").unwrap();
+        assert_eq!(pattern.to_string(), "agent.sage.>");
+
+        let pattern = factory.agent_pattern("ddd-expert").unwrap();
+        assert_eq!(pattern.to_string(), "agent.ddd-expert.>");
+
+        // Chat subject
+        let subject = factory.agent_chat("sage", "hello").unwrap();
+        assert_eq!(subject.to_string(), "agent.sage.chat.hello");
+
+        // Agent-to-agent
+        let subject = factory
+            .agent_to_agent("ddd-expert", "sage", "question")
+            .unwrap();
+        assert_eq!(subject.to_string(), "agent.ddd-expert.to.sage.question");
+
+        // Broadcast
+        let pattern = factory.broadcast_pattern().unwrap();
+        assert_eq!(pattern.to_string(), "agent.broadcast.>");
     }
 }

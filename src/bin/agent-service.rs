@@ -107,21 +107,32 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let message_service = Arc::new(AgentMessageService::new(capability_router));
     info!("Message service initialized with {} provider(s)", 1);
 
+    // Load agent name from environment (REQUIRED for conversation)
+    let agent_name = std::env::var("AGENT_NAME")
+        .expect("AGENT_NAME environment variable must be set for agent conversations");
+
+    info!("Starting agent runtime for: {}", agent_name);
+
     // Create subject factory for type-safe NATS subjects (v0.9.2)
     let subject_factory = AgentSubjectFactory::default();
 
-    // Subscribe to commands using Subject algebra
-    info!("Subscribing to agent commands...");
-    let command_pattern = subject_factory.all_commands_pattern()?;
-    let mut command_subscriber = client.subscribe(command_pattern.to_string()).await?;
-    info!("Subscribed to: {}", command_pattern);
+    // Subscribe to agent-specific subjects (for conversations)
+    info!("Subscribing to agent-specific subjects...");
+    let agent_pattern = subject_factory.agent_pattern(&agent_name)?;
+    let mut command_subscriber = client.subscribe(agent_pattern.to_string()).await?;
+    info!("Subscribed to: {} (agent-specific conversation)", agent_pattern);
 
-    info!("Agent service v0.9.2 is ready and listening for commands");
+    // Also subscribe to broadcast messages (all agents receive)
+    let broadcast_pattern = subject_factory.broadcast_pattern()?;
+    let mut broadcast_subscriber = client.subscribe(broadcast_pattern.to_string()).await?;
+    info!("Also listening on: {} (broadcast)", broadcast_pattern);
+
+    info!("Agent '{}' v0.9.2 is ready for conversations", agent_name);
 
     // Handle commands in a loop
     loop {
         tokio::select! {
-            // Handle incoming commands
+            // Handle incoming agent-specific messages
             Some(message) = command_subscriber.next() => {
                 let repository = repository.clone();
                 let event_publisher = event_publisher.clone();
@@ -131,6 +142,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 tokio::spawn(async move {
                     if let Err(e) = handle_command(message, repository, event_publisher, message_service, client_clone).await {
                         error!("Error handling command: {}", e);
+                    }
+                });
+            }
+
+            // Handle incoming broadcast messages
+            Some(message) = broadcast_subscriber.next() => {
+                let repository = repository.clone();
+                let event_publisher = event_publisher.clone();
+                let message_service = message_service.clone();
+                let client_clone = client.clone();
+
+                tokio::spawn(async move {
+                    info!("Received broadcast message on: {}", message.subject);
+                    if let Err(e) = handle_command(message, repository, event_publisher, message_service, client_clone).await {
+                        error!("Error handling broadcast: {}", e);
                     }
                 });
             }
