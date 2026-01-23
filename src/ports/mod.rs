@@ -61,8 +61,9 @@ pub use router::ProviderRouter;
 #[cfg(feature = "ai-providers")]
 pub use adapters::OllamaChatAdapter;
 
-#[cfg(feature = "adapter-openai")]
-pub use adapters::OpenAIChatAdapter;
+// OpenAI and Anthropic adapters removed - use GenaiAdapter instead
+// #[cfg(feature = "adapter-openai")]
+// pub use adapters::OpenAIChatAdapter;
 
-#[cfg(feature = "adapter-anthropic")]
-pub use adapters::AnthropicChatAdapter;
+// #[cfg(feature = "adapter-anthropic")]
+// pub use adapters::AnthropicChatAdapter;

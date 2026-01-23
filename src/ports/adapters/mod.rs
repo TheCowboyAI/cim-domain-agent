@@ -14,12 +14,13 @@ mod ollama;
 #[cfg(feature = "ai-providers")]
 pub use ollama::OllamaChatAdapter;
 
-#[cfg(feature = "adapter-openai")]
-mod openai;
-#[cfg(feature = "adapter-openai")]
-pub use openai::OpenAIChatAdapter;
+// OpenAI and Anthropic adapters removed - use GenaiAdapter instead
+// #[cfg(feature = "adapter-openai")]
+// mod openai;
+// #[cfg(feature = "adapter-openai")]
+// pub use openai::OpenAIChatAdapter;
 
-#[cfg(feature = "adapter-anthropic")]
-mod anthropic;
-#[cfg(feature = "adapter-anthropic")]
-pub use anthropic::AnthropicChatAdapter;
+// #[cfg(feature = "adapter-anthropic")]
+// mod anthropic;
+// #[cfg(feature = "adapter-anthropic")]
+// pub use anthropic::AnthropicChatAdapter;

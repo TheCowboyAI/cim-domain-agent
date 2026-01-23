@@ -16,6 +16,10 @@
 //! - `STREAM_NAME` - JetStream stream name (default: AGENT_EVENTS)
 //! - `LOG_LEVEL` - Logging level (default: info)
 //! - `SNAPSHOT_FREQUENCY` - How often to create snapshots (default: 100)
+//! - `AGENT_NAME` - Agent name (REQUIRED for conversations)
+//! - `AGENT_ID` - Agent UUID (REQUIRED for unified architecture)
+//! - `CAPABILITY_CLUSTER` - Agent capability cluster (REQUIRED for unified architecture)
+//! - `ENABLE_UNIFIED_SUBJECTS` - Enable dual publishing (default: false, for migration)
 //!
 //! # Example
 //!
@@ -107,11 +111,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let message_service = Arc::new(AgentMessageService::new(capability_router));
     info!("Message service initialized with {} provider(s)", 1);
 
-    // Load agent name from environment (REQUIRED for conversation)
+    // Load agent configuration from environment (REQUIRED for conversations)
     let agent_name = std::env::var("AGENT_NAME")
         .expect("AGENT_NAME environment variable must be set for agent conversations");
 
-    info!("Starting agent runtime for: {}", agent_name);
+    // Load agent ID and capability cluster (for unified architecture v1.0.0)
+    let agent_id_str = std::env::var("AGENT_ID")
+        .expect("AGENT_ID environment variable must be set for agent identification");
+    let agent_id = cim_domain_agent::value_objects::AgentId::from_uuid(
+        uuid::Uuid::parse_str(&agent_id_str)
+            .expect("AGENT_ID must be a valid UUID")
+    );
+
+    let capability_cluster_str = std::env::var("CAPABILITY_CLUSTER")
+        .expect("CAPABILITY_CLUSTER environment variable must be set for agent classification");
+    let capability_cluster = cim_domain_agent::value_objects::CapabilityCluster::from_str(&capability_cluster_str)
+        .expect("CAPABILITY_CLUSTER must be a valid capability cluster name");
+
+    // Create AgentReference for unified subject architecture
+    let agent_ref = cim_domain_agent::value_objects::AgentReference::new(
+        capability_cluster,
+        agent_name.clone(),
+        agent_id,
+    );
+
+    info!("Starting agent runtime for: {} ({})", agent_ref, agent_ref.capability());
+
+    // Feature flag for unified subject architecture (dual publishing during migration)
+    let enable_unified_subjects = std::env::var("ENABLE_UNIFIED_SUBJECTS")
+        .map(|v| v.to_lowercase() == "true" || v == "1")
+        .unwrap_or(false);
+
+    if enable_unified_subjects {
+        info!("Unified subject architecture ENABLED - dual publishing to old and new patterns");
+    } else {
+        info!("Unified subject architecture DISABLED - using legacy inbox pattern only");
+    }
 
     // Create subject factory for type-safe NATS subjects (v0.9.2)
     let subject_factory = AgentSubjectFactory::default();
