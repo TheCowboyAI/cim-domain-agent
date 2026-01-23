@@ -48,9 +48,10 @@ use cim_domain_agent::{
 };
 use futures::StreamExt;
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use tokio::signal;
 use std::time::Instant;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -155,20 +156,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     info!("Subscribing to agent-specific subjects...");
     let agent_pattern = subject_factory.agent_pattern(&agent_name)?;
     let mut command_subscriber = client.subscribe(agent_pattern.to_string()).await?;
-    info!("Subscribed to: {} (agent-specific conversation)", agent_pattern);
+    info!("Subscribed to: {} (agent-specific inbox)", agent_pattern);
 
     // Also subscribe to broadcast messages (all agents receive)
     let broadcast_pattern = subject_factory.broadcast_pattern()?;
     let mut broadcast_subscriber = client.subscribe(broadcast_pattern.to_string()).await?;
-    info!("Also listening on: {} (broadcast)", broadcast_pattern);
+    info!("Subscribed to: {} (broadcast)", broadcast_pattern);
+
+    // Subscribe to agent-ref subjects (unified architecture v1.0.0)
+    // This allows commands to be sent via capability.name.id pattern
+    let agent_ref_commands = subject_factory.agent_commands_by_id_pattern(agent_id)?;
+    let mut agent_ref_subscriber = client.subscribe(agent_ref_commands.to_string()).await?;
+    info!("Subscribed to: {} (agent-ref commands)", agent_ref_commands);
 
     info!("Agent '{}' v0.9.2 is ready for conversations", agent_name);
+
+    // Metrics tracking for dual publishing analysis
+    let metrics_inbox_count = Arc::new(AtomicU64::new(0));
+    let metrics_broadcast_count = Arc::new(AtomicU64::new(0));
+    let metrics_agent_ref_count = Arc::new(AtomicU64::new(0));
+
+    // Log metrics every 100 messages
+    let log_interval = 100u64;
 
     // Handle commands in a loop
     loop {
         tokio::select! {
-            // Handle incoming agent-specific messages
+            // Handle incoming agent-specific messages (legacy inbox pattern)
             Some(message) = command_subscriber.next() => {
+                let count = metrics_inbox_count.fetch_add(1, Ordering::Relaxed) + 1;
+                if count % log_interval == 0 {
+                    info!("Metrics: inbox={}, broadcast={}, agent-ref={}",
+                        count,
+                        metrics_broadcast_count.load(Ordering::Relaxed),
+                        metrics_agent_ref_count.load(Ordering::Relaxed));
+                }
+
                 let repository = repository.clone();
                 let event_publisher = event_publisher.clone();
                 let message_service = message_service.clone();
@@ -176,13 +199,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
                 tokio::spawn(async move {
                     if let Err(e) = handle_command(message, repository, event_publisher, message_service, client_clone).await {
-                        error!("Error handling command: {}", e);
+                        error!("Error handling inbox command: {}", e);
                     }
                 });
             }
 
             // Handle incoming broadcast messages
             Some(message) = broadcast_subscriber.next() => {
+                let _count = metrics_broadcast_count.fetch_add(1, Ordering::Relaxed) + 1;
+
                 let repository = repository.clone();
                 let event_publisher = event_publisher.clone();
                 let message_service = message_service.clone();
@@ -196,6 +221,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 });
             }
 
+            // Handle incoming agent-ref commands (unified architecture)
+            Some(message) = agent_ref_subscriber.next() => {
+                let _count = metrics_agent_ref_count.fetch_add(1, Ordering::Relaxed) + 1;
+
+                let repository = repository.clone();
+                let event_publisher = event_publisher.clone();
+                let message_service = message_service.clone();
+                let client_clone = client.clone();
+
+                tokio::spawn(async move {
+                    info!("Received agent-ref command on: {}", message.subject);
+                    if let Err(e) = handle_command(message, repository, event_publisher, message_service, client_clone).await {
+                        error!("Error handling agent-ref command: {}", e);
+                    }
+                });
+            }
+
             // Handle shutdown signal
             _ = signal::ctrl_c() => {
                 info!("Received shutdown signal, gracefully shutting down...");
@@ -203,6 +245,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
             }
         }
     }
+
+    // Final metrics report
+    info!("Final metrics - inbox: {}, broadcast: {}, agent-ref: {}",
+        metrics_inbox_count.load(Ordering::Relaxed),
+        metrics_broadcast_count.load(Ordering::Relaxed),
+        metrics_agent_ref_count.load(Ordering::Relaxed));
 
     info!("Agent service stopped");
     Ok(())

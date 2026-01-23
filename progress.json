@@ -1,10 +1,10 @@
 {
   "project": "unified-subject-architecture",
   "current_sprint": 3,
-  "current_step": "3.1",
-  "status": "in_progress",
+  "current_step": "3.5",
+  "status": "completed",
   "last_updated": "2026-01-22",
-  "version": "0.10.0-alpha.1",
+  "version": "0.10.0-alpha.2",
   "target_version": "1.0.0",
   "sprints": {
     "sprint_0": {
@@ -91,27 +91,27 @@
     },
     "sprint_3": {
       "name": "Phase 3 - Dual Publishing (Part 1)",
-      "status": "in_progress",
+      "status": "completed",
       "steps": {
         "3.1": {
           "description": "Add ENABLE_UNIFIED_SUBJECTS feature flag and AgentReference configuration",
           "status": "completed"
         },
         "3.2": {
-          "description": "Update agent-service.rs for dual publishing",
-          "status": "in_progress"
+          "description": "Update agent-service.rs for dual subscription",
+          "status": "completed"
         },
         "3.3": {
           "description": "Add logging/metrics for pattern usage",
-          "status": "pending"
+          "status": "completed"
         },
         "3.4": {
           "description": "Prepare deployment configuration for DGX",
-          "status": "pending"
+          "status": "completed"
         },
         "3.5": {
           "description": "Documentation for gradual rollout strategy",
-          "status": "pending"
+          "status": "completed"
         }
       }
     },
@@ -131,20 +131,23 @@
       "steps": {}
     }
   },
-  "completed": ["0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "2.5", "3.1"],
+  "completed": ["0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "2.5", "3.1", "3.2", "3.3", "3.4", "3.5"],
   "blockers": [],
   "metrics": {
     "total_sprints": 7,
-    "completed_sprints": 3,
+    "completed_sprints": 4,
     "total_agents": 31,
     "migrated_agents": 0,
     "tests_passing": true,
     "test_count": 301,
-    "deployment_status": "v0.9.3_inbox_pattern"
+    "deployment_status": "v0.10.0-alpha.2_dual_subscription_ready"
   },
   "risk_status": {
     "production_risk": "low",
     "technical_risk": "low",
     "schedule_risk": "low"
+  },
+  "notes": {
+    "sprint_3": "Implemented dual subscription and metrics tracking. Agent service now subscribes to legacy inbox, broadcast, and new agent-ref patterns. Ready for DGX deployment."
   }
 }
