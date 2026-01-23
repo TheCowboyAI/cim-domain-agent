@@ -20,6 +20,7 @@ mod agent_id;
 mod person_id;
 mod message_id;
 mod model_configuration_id;
+mod conversation_id;
 mod agent_status;
 mod configuration_status;
 mod model_config;
@@ -36,6 +37,7 @@ pub use agent_id::AgentId;
 pub use person_id::PersonId;
 pub use message_id::MessageId;
 pub use model_configuration_id::ModelConfigurationId;
+pub use conversation_id::ConversationId;
 
 // Agent state
 pub use agent_status::AgentStatus;
