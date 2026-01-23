@@ -1,6 +1,6 @@
 [package]
 name = "cim-domain-agent"
-version = "0.9.2"
+version = "0.10.0-alpha.1"
 edition = "2021"
 description = "Agent domain for CIM - Person's automaton for AI model interaction via NATS with MealyStateMachine lifecycle"
 license = "MIT"
