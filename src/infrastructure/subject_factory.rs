@@ -24,7 +24,7 @@
 //! - `{domain}.events.agent.{agent_id}.{event_type}`
 //! - `{domain}.events.agent.{agent_id}.message.{message_id}.{event_type}`
 
-use crate::value_objects::{AgentId, ConversationId, MessageId};
+use crate::value_objects::{AgentId, AgentReference, CapabilityCluster, ConversationId, MessageId};
 use cim_domain::{Subject, SubjectError, SubjectPattern, SubjectSegment};
 use once_cell::sync::Lazy;
 use std::fmt;
@@ -389,10 +389,159 @@ impl AgentSubjectFactory {
     }
 
     // ========================================================================
-    // Command Subjects
+    // Agent Reference Subjects (Unified Architecture v1.0.0)
     // ========================================================================
+    //
+    // Agent references using capability clusters (Searle's cluster theory)
+    // Pattern: agent.{capability}.{name}.{id}.{operation}.{detail}
+    //
+    // Benefits:
+    // - Complete agent provenance (Frege: sense + reference)
+    // - Stable across renames (Evans: causal provenance via ID)
+    // - Semantic clustering (Searle: capability clusters as conceptual spaces)
+    // - Efficient routing (subscribe by ID, name, or cluster)
+
+    /// Agent command using full reference: `{domain}.{capability}.{name}.{id}.command.{type}`
+    ///
+    /// This is the preferred method for agent commands in the unified architecture.
+    /// It provides complete agent provenance and enables efficient hierarchical routing.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let agent_ref = AgentReference {
+    ///     capability: CapabilityCluster::Orchestration,
+    ///     name: "sage".to_string(),
+    ///     id: sage_id,
+    /// };
+    /// let subject = factory.agent_command_ref(&agent_ref, "deploy")?;
+    /// // → "agent.orchestration.sage.01936f11-4ea2-7f3e-9f3a-e6c8c6d8a5f1.command.deploy"
+    /// ```
+    pub fn agent_command_ref(
+        &self,
+        agent_ref: &AgentReference,
+        command_type: &str,
+    ) -> SubjectFactoryResult<Subject> {
+        let capability = SubjectSegment::new(agent_ref.capability.as_str())?;
+        let name = SubjectSegment::new(&agent_ref.name)?;
+        let id = SubjectSegment::new(agent_ref.id.to_string())?;
+        let command = SubjectSegment::new("command")?;
+        let cmd_type = SubjectSegment::new(command_type)?;
+
+        Ok(self
+            .domain
+            .append(capability)
+            .append(name)
+            .append(id)
+            .append(command)
+            .append(cmd_type))
+    }
+
+    /// Agent event using full reference: `{domain}.{capability}.{name}.{id}.event.{type}`
+    ///
+    /// This is the preferred method for agent events in the unified architecture.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let subject = factory.agent_event_ref(&agent_ref, "deployed")?;
+    /// // → "agent.orchestration.sage.01936f11-4ea2-7f3e-9f3a-e6c8c6d8a5f1.event.deployed"
+    /// ```
+    pub fn agent_event_ref(
+        &self,
+        agent_ref: &AgentReference,
+        event_type: &str,
+    ) -> SubjectFactoryResult<Subject> {
+        let capability = SubjectSegment::new(agent_ref.capability.as_str())?;
+        let name = SubjectSegment::new(&agent_ref.name)?;
+        let id = SubjectSegment::new(agent_ref.id.to_string())?;
+        let event = SubjectSegment::new("event")?;
+        let evt_type = SubjectSegment::new(event_type)?;
+
+        Ok(self
+            .domain
+            .append(capability)
+            .append(name)
+            .append(id)
+            .append(event)
+            .append(evt_type))
+    }
+
+    /// Agent command pattern by ID: `{domain}.*.*.{id}.command.>`
+    ///
+    /// Subscribe to all commands for a specific agent by ID (stable across renames).
+    ///
+    /// # Example
+    /// ```ignore
+    /// let pattern = factory.agent_commands_by_id_pattern(agent_id)?;
+    /// // → "agent.*.*.01936f11-4ea2-7f3e-9f3a-e6c8c6d8a5f1.command.>"
+    /// ```
+    pub fn agent_commands_by_id_pattern(
+        &self,
+        agent_id: AgentId,
+    ) -> SubjectFactoryResult<SubjectPattern> {
+        let pattern_str = format!("{}.*.*.{}.command.>", self.domain, agent_id);
+        SubjectPattern::parse(&pattern_str).map_err(Into::into)
+    }
+
+    /// Agent event pattern by ID: `{domain}.*.*.{id}.event.>`
+    ///
+    /// Subscribe to all events from a specific agent by ID.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let pattern = factory.agent_events_by_id_pattern(agent_id)?;
+    /// // → "agent.*.*.01936f11-4ea2-7f3e-9f3a-e6c8c6d8a5f1.event.>"
+    /// ```
+    pub fn agent_events_by_id_pattern(
+        &self,
+        agent_id: AgentId,
+    ) -> SubjectFactoryResult<SubjectPattern> {
+        let pattern_str = format!("{}.*.*.{}.event.>", self.domain, agent_id);
+        SubjectPattern::parse(&pattern_str).map_err(Into::into)
+    }
+
+    /// Cluster command pattern: `{domain}.{capability}.*.*.command.>`
+    ///
+    /// Subscribe to all commands for agents in a capability cluster (broadcast).
+    ///
+    /// # Example
+    /// ```ignore
+    /// let pattern = factory.cluster_commands_pattern(CapabilityCluster::Orchestration)?;
+    /// // → "agent.orchestration.*.*.command.>"
+    /// ```
+    pub fn cluster_commands_pattern(
+        &self,
+        capability: &CapabilityCluster,
+    ) -> SubjectFactoryResult<SubjectPattern> {
+        let pattern_str = format!("{}.{}.*.*.command.>", self.domain, capability.as_str());
+        SubjectPattern::parse(&pattern_str).map_err(Into::into)
+    }
+
+    /// Cluster event pattern: `{domain}.{capability}.*.*.event.>`
+    ///
+    /// Subscribe to all events from agents in a capability cluster.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let pattern = factory.cluster_events_pattern(CapabilityCluster::DomainModeling)?;
+    /// // → "agent.domain-modeling.*.*.event.>"
+    /// ```
+    pub fn cluster_events_pattern(
+        &self,
+        capability: &CapabilityCluster,
+    ) -> SubjectFactoryResult<SubjectPattern> {
+        let pattern_str = format!("{}.{}.*.*.event.>", self.domain, capability.as_str());
+        SubjectPattern::parse(&pattern_str).map_err(Into::into)
+    }
+
+    // ========================================================================
+    // Legacy Command Subjects (Backward Compatibility)
+    // ========================================================================
+    //
+    // These methods use the old pattern: agent.commands.agent.{id}.{type}
+    // Marked as deprecated - use agent_command_ref() instead.
 
     /// All command subjects pattern: `{domain}.commands.agent.>`
+    #[deprecated(note = "Use agent_commands_by_id_pattern() or cluster_commands_pattern() instead")]
     pub fn all_commands_pattern(&self) -> SubjectFactoryResult<SubjectPattern> {
         let pattern_str = format!("{}.commands.agent.>", self.domain);
         SubjectPattern::parse(&pattern_str).map_err(Into::into)
@@ -842,6 +991,157 @@ mod tests {
         assert!(response.to_string().starts_with(&pattern_str.trim_end_matches(".>")));
         assert!(error.to_string().starts_with(&pattern_str.trim_end_matches(".>")));
         assert!(status.to_string().starts_with(&pattern_str.trim_end_matches(".>")));
+    }
+
+    #[test]
+    fn test_agent_command_ref() {
+        let factory = AgentSubjectFactory::default();
+        let agent_ref = AgentReference {
+            capability: CapabilityCluster::Orchestration,
+            name: "sage".to_string(),
+            id: AgentId::new(),
+        };
+
+        let subject = factory.agent_command_ref(&agent_ref, "deploy").unwrap();
+        let subject_str = subject.to_string();
+
+        // Should follow pattern: agent.{capability}.{name}.{id}.command.{type}
+        assert!(subject_str.starts_with("agent.orchestration.sage."));
+        assert!(subject_str.contains(".command.deploy"));
+
+        // Capability cluster should be in subject
+        assert!(subject_str.contains("orchestration"));
+    }
+
+    #[test]
+    fn test_agent_event_ref() {
+        let factory = AgentSubjectFactory::default();
+        let agent_ref = AgentReference {
+            capability: CapabilityCluster::DomainModeling,
+            name: "ddd-expert".to_string(),
+            id: AgentId::new(),
+        };
+
+        let subject = factory.agent_event_ref(&agent_ref, "activated").unwrap();
+        let subject_str = subject.to_string();
+
+        // Should follow pattern: agent.{capability}.{name}.{id}.event.{type}
+        assert!(subject_str.starts_with("agent.domain-modeling.ddd-expert."));
+        assert!(subject_str.contains(".event.activated"));
+    }
+
+    #[test]
+    fn test_agent_patterns_by_id() {
+        let factory = AgentSubjectFactory::default();
+        let agent_id = AgentId::new();
+
+        // Commands by ID (stable across renames)
+        let pattern = factory.agent_commands_by_id_pattern(agent_id).unwrap();
+        let pattern_str = pattern.to_string();
+        assert!(pattern_str.starts_with("agent.*.*."));
+        assert!(pattern_str.contains(".command.>"));
+
+        // Events by ID
+        let pattern = factory.agent_events_by_id_pattern(agent_id).unwrap();
+        let pattern_str = pattern.to_string();
+        assert!(pattern_str.starts_with("agent.*.*."));
+        assert!(pattern_str.contains(".event.>"));
+    }
+
+    #[test]
+    fn test_cluster_patterns() {
+        let factory = AgentSubjectFactory::default();
+
+        // Orchestration cluster commands
+        let pattern = factory
+            .cluster_commands_pattern(&CapabilityCluster::Orchestration)
+            .unwrap();
+        assert_eq!(pattern.to_string(), "agent.orchestration.*.*.command.>");
+
+        // Domain modeling cluster events
+        let pattern = factory
+            .cluster_events_pattern(&CapabilityCluster::DomainModeling)
+            .unwrap();
+        assert_eq!(pattern.to_string(), "agent.domain-modeling.*.*.event.>");
+
+        // Infrastructure cluster commands
+        let pattern = factory
+            .cluster_commands_pattern(&CapabilityCluster::Infrastructure)
+            .unwrap();
+        assert_eq!(pattern.to_string(), "agent.infrastructure.*.*.command.>");
+    }
+
+    #[test]
+    fn test_agent_reference_stability_across_renames() {
+        let factory = AgentSubjectFactory::default();
+        let agent_id = AgentId::new();
+
+        // Create agent with original name
+        let agent_v1 = AgentReference {
+            capability: CapabilityCluster::Orchestration,
+            name: "master-coordinator".to_string(),
+            id: agent_id,
+        };
+
+        // Create agent with renamed identity (same ID)
+        let agent_v2 = AgentReference {
+            capability: CapabilityCluster::Orchestration,
+            name: "sage".to_string(),
+            id: agent_id,
+        };
+
+        // ID-based subscription pattern is STABLE across rename
+        let _pattern = factory.agent_commands_by_id_pattern(agent_id).unwrap();
+
+        // Both name-based subjects are DIFFERENT
+        let subject_v1 = factory.agent_command_ref(&agent_v1, "deploy").unwrap();
+        let subject_v2 = factory.agent_command_ref(&agent_v2, "deploy").unwrap();
+        assert_ne!(subject_v1.to_string(), subject_v2.to_string());
+
+        // But both match the ID-based pattern (stable)
+        assert!(subject_v1.to_string().contains(&agent_id.to_string()));
+        assert!(subject_v2.to_string().contains(&agent_id.to_string()));
+    }
+
+    #[test]
+    fn test_unified_architecture_integration() {
+        let factory = AgentSubjectFactory::default();
+
+        // Create a conversation
+        let conv_id = ConversationId::new();
+
+        // Create agent references for participants
+        let sage = AgentReference {
+            capability: CapabilityCluster::Orchestration,
+            name: "sage".to_string(),
+            id: AgentId::new(),
+        };
+
+        let ddd_expert = AgentReference {
+            capability: CapabilityCluster::DomainModeling,
+            name: "ddd-expert".to_string(),
+            id: AgentId::new(),
+        };
+
+        // Conversation subjects (semantic namespace)
+        let conv_request = factory.conversation_request(conv_id).unwrap();
+        let conv_response = factory.conversation_response(conv_id).unwrap();
+
+        // Agent command subjects (complete provenance)
+        let sage_cmd = factory.agent_command_ref(&sage, "analyze").unwrap();
+        let ddd_cmd = factory.agent_command_ref(&ddd_expert, "design").unwrap();
+
+        // Verify all subjects are valid
+        assert!(conv_request.to_string().contains("conversations"));
+        assert!(conv_response.to_string().contains("conversations"));
+        assert!(sage_cmd.to_string().contains("orchestration"));
+        assert!(ddd_cmd.to_string().contains("domain-modeling"));
+
+        // Verify separation of concerns
+        // Conversations: pure semantic namespace
+        assert!(!conv_request.to_string().contains("orchestration"));
+        // Agent refs: complete provenance
+        assert!(sage_cmd.to_string().contains(".command."));
     }
 }
 
