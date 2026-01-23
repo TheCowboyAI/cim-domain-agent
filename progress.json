@@ -1,8 +1,8 @@
 {
   "project": "unified-subject-architecture",
-  "current_sprint": 3,
-  "current_step": "3.5",
-  "status": "completed",
+  "current_sprint": 4,
+  "current_step": "4.5",
+  "status": "ready_for_dgx_deployment",
   "last_updated": "2026-01-22",
   "version": "0.10.0-alpha.2",
   "target_version": "1.0.0",
@@ -117,8 +117,34 @@
     },
     "sprint_4": {
       "name": "Phase 3 - Dual Publishing (Part 2 - DGX Testing)",
-      "status": "pending",
-      "steps": {}
+      "status": "ready_for_deployment",
+      "steps": {
+        "4.1": {
+          "description": "Build and test on DGX (aarch64 ARM64 architecture)",
+          "status": "ready",
+          "notes": "Binary builds successfully on x86_64. Must be built natively on DGX."
+        },
+        "4.2": {
+          "description": "Update configuration files for all 31 agents",
+          "status": "completed",
+          "notes": "All 31 agent configurations documented in DGX_AGENT_CONFIGURATIONS.md"
+        },
+        "4.3": {
+          "description": "Rolling deployment strategy (one cluster at a time)",
+          "status": "ready",
+          "notes": "Deployment script created: scripts/deploy-dgx.sh"
+        },
+        "4.4": {
+          "description": "Monitoring and verification (24-48 hours)",
+          "status": "ready",
+          "notes": "Monitoring procedures documented in DGX_DEPLOYMENT_REPORT.md"
+        },
+        "4.5": {
+          "description": "Document deployment results and metrics",
+          "status": "ready",
+          "notes": "Template created in DGX_DEPLOYMENT_REPORT.md for results documentation"
+        }
+      }
     },
     "sprint_5": {
       "name": "Phase 4 - Primary Cutover",
@@ -131,7 +157,7 @@
       "steps": {}
     }
   },
-  "completed": ["0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "2.5", "3.1", "3.2", "3.3", "3.4", "3.5"],
+  "completed": ["0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4", "2.5", "3.1", "3.2", "3.3", "3.4", "3.5", "4.2"],
   "blockers": [],
   "metrics": {
     "total_sprints": 7,
@@ -140,7 +166,7 @@
     "migrated_agents": 0,
     "tests_passing": true,
     "test_count": 301,
-    "deployment_status": "v0.10.0-alpha.2_dual_subscription_ready"
+    "deployment_status": "v0.10.0-alpha.2_ready_for_dgx"
   },
   "risk_status": {
     "production_risk": "low",
@@ -148,6 +174,13 @@
     "schedule_risk": "low"
   },
   "notes": {
-    "sprint_3": "Implemented dual subscription and metrics tracking. Agent service now subscribes to legacy inbox, broadcast, and new agent-ref patterns. Ready for DGX deployment."
+    "sprint_3": "Implemented dual subscription and metrics tracking. Agent service now subscribes to legacy inbox, broadcast, and new agent-ref patterns. Ready for DGX deployment.",
+    "sprint_4": "Created comprehensive deployment documentation and automation. All 31 agent configurations defined with UUIDs and capability clusters. Deployment script ready. Awaiting native build and deployment on DGX hardware."
+  },
+  "deployment_artifacts": {
+    "configurations": "doc/deployment/DGX_AGENT_CONFIGURATIONS.md",
+    "deployment_guide": "doc/deployment/DGX_DEPLOYMENT_REPORT.md",
+    "deployment_script": "scripts/deploy-dgx.sh",
+    "rollout_strategy": "doc/deployment/UNIFIED_SUBJECT_ROLLOUT.md"
   }
 }
