@@ -24,7 +24,7 @@
 //! - `{domain}.events.agent.{agent_id}.{event_type}`
 //! - `{domain}.events.agent.{agent_id}.message.{message_id}.{event_type}`
 
-use crate::value_objects::{AgentId, MessageId};
+use crate::value_objects::{AgentId, ConversationId, MessageId};
 use cim_domain::{Subject, SubjectError, SubjectPattern, SubjectSegment};
 use once_cell::sync::Lazy;
 use std::fmt;
@@ -48,6 +48,22 @@ mod segments {
 
     pub static CHUNK: Lazy<SubjectSegment> =
         Lazy::new(|| SubjectSegment::new("chunk").expect("valid segment"));
+
+    // Conversation segments (unified architecture v1.0.0)
+    pub static CONVERSATIONS: Lazy<SubjectSegment> =
+        Lazy::new(|| SubjectSegment::new("conversations").expect("valid segment"));
+
+    pub static REQUEST: Lazy<SubjectSegment> =
+        Lazy::new(|| SubjectSegment::new("request").expect("valid segment"));
+
+    pub static RESPONSE: Lazy<SubjectSegment> =
+        Lazy::new(|| SubjectSegment::new("response").expect("valid segment"));
+
+    pub static ERROR: Lazy<SubjectSegment> =
+        Lazy::new(|| SubjectSegment::new("error").expect("valid segment"));
+
+    pub static STATUS: Lazy<SubjectSegment> =
+        Lazy::new(|| SubjectSegment::new("status").expect("valid segment"));
 
     // Command types
     pub static DEPLOY: Lazy<SubjectSegment> =
@@ -239,6 +255,136 @@ impl AgentSubjectFactory {
     /// Broadcast pattern (all agents listen): `{domain}.broadcast.>`
     pub fn broadcast_pattern(&self) -> SubjectFactoryResult<SubjectPattern> {
         let pattern_str = format!("{}.broadcast.>", self.domain);
+        SubjectPattern::parse(&pattern_str).map_err(Into::into)
+    }
+
+    // ========================================================================
+    // Conversation Subjects (Unified Architecture v1.0.0)
+    // ========================================================================
+    //
+    // Conversations as first-class semantic namespaces. All participants
+    // subscribe to agent.conversations.{conv_id}.> and routing metadata
+    // (sender, recipient) goes in NATS headers.
+    //
+    // This maintains pure subject algebra (free monoid) while providing
+    // complete agent provenance via headers.
+
+    /// Conversation request subject: `{domain}.conversations.{conv_id}.request`
+    ///
+    /// Used when initiating a request in a conversation or asking a question.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let conv_id = ConversationId::new();
+    /// let subject = factory.conversation_request(conv_id)?;
+    /// // → "agent.conversations.01936f24-3c89-7f3e-8a5b-d4c8e6f2a9b1.request"
+    /// ```
+    pub fn conversation_request(
+        &self,
+        conv_id: ConversationId,
+    ) -> SubjectFactoryResult<Subject> {
+        let conv_segment = SubjectSegment::new(conv_id.to_string())?;
+        Ok(self
+            .domain
+            .append(segments::CONVERSATIONS.clone())
+            .append(conv_segment)
+            .append(segments::REQUEST.clone()))
+    }
+
+    /// Conversation response subject: `{domain}.conversations.{conv_id}.response`
+    ///
+    /// Used when responding to a request or providing an answer.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let subject = factory.conversation_response(conv_id)?;
+    /// // → "agent.conversations.01936f24-3c89-7f3e-8a5b-d4c8e6f2a9b1.response"
+    /// ```
+    pub fn conversation_response(
+        &self,
+        conv_id: ConversationId,
+    ) -> SubjectFactoryResult<Subject> {
+        let conv_segment = SubjectSegment::new(conv_id.to_string())?;
+        Ok(self
+            .domain
+            .append(segments::CONVERSATIONS.clone())
+            .append(conv_segment)
+            .append(segments::RESPONSE.clone()))
+    }
+
+    /// Conversation error subject: `{domain}.conversations.{conv_id}.error`
+    ///
+    /// Used when an error occurs during conversation processing.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let subject = factory.conversation_error(conv_id)?;
+    /// // → "agent.conversations.01936f24-3c89-7f3e-8a5b-d4c8e6f2a9b1.error"
+    /// ```
+    pub fn conversation_error(
+        &self,
+        conv_id: ConversationId,
+    ) -> SubjectFactoryResult<Subject> {
+        let conv_segment = SubjectSegment::new(conv_id.to_string())?;
+        Ok(self
+            .domain
+            .append(segments::CONVERSATIONS.clone())
+            .append(conv_segment)
+            .append(segments::ERROR.clone()))
+    }
+
+    /// Conversation status subject: `{domain}.conversations.{conv_id}.status`
+    ///
+    /// Used for progress updates or status notifications within a conversation.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let subject = factory.conversation_status(conv_id)?;
+    /// // → "agent.conversations.01936f24-3c89-7f3e-8a5b-d4c8e6f2a9b1.status"
+    /// ```
+    pub fn conversation_status(
+        &self,
+        conv_id: ConversationId,
+    ) -> SubjectFactoryResult<Subject> {
+        let conv_segment = SubjectSegment::new(conv_id.to_string())?;
+        Ok(self
+            .domain
+            .append(segments::CONVERSATIONS.clone())
+            .append(conv_segment)
+            .append(segments::STATUS.clone()))
+    }
+
+    /// Conversation pattern: `{domain}.conversations.{conv_id}.>`
+    ///
+    /// Subscribe to all messages in a conversation. All participants subscribe
+    /// to this pattern to receive all conversation messages.
+    ///
+    /// # Example
+    /// ```ignore
+    /// let pattern = factory.conversation_pattern(conv_id)?;
+    /// client.subscribe(pattern.to_string()).await?;
+    /// // Receives all: request, response, error, status for this conversation
+    /// ```
+    pub fn conversation_pattern(
+        &self,
+        conv_id: ConversationId,
+    ) -> SubjectFactoryResult<SubjectPattern> {
+        let pattern_str = format!("{}.conversations.{}.>", self.domain, conv_id);
+        SubjectPattern::parse(&pattern_str).map_err(Into::into)
+    }
+
+    /// All conversations pattern: `{domain}.conversations.>`
+    ///
+    /// Subscribe to ALL conversations (admin/monitoring use case).
+    ///
+    /// # Example
+    /// ```ignore
+    /// let pattern = factory.all_conversations_pattern()?;
+    /// client.subscribe(pattern.to_string()).await?;
+    /// // Receives all messages from all conversations
+    /// ```
+    pub fn all_conversations_pattern(&self) -> SubjectFactoryResult<SubjectPattern> {
+        let pattern_str = format!("{}.conversations.>", self.domain);
         SubjectPattern::parse(&pattern_str).map_err(Into::into)
     }
 
@@ -602,4 +748,100 @@ mod tests {
         let pattern = factory.broadcast_pattern().unwrap();
         assert_eq!(pattern.to_string(), "agent.broadcast.>");
     }
+
+    #[test]
+    fn test_conversation_subjects() {
+        let factory = AgentSubjectFactory::default();
+        let conv_id = ConversationId::new();
+
+        // Conversation request
+        let subject = factory.conversation_request(conv_id).unwrap();
+        let subject_str = subject.to_string();
+        assert!(subject_str.starts_with("agent.conversations."));
+        assert!(subject_str.ends_with(".request"));
+
+        // Conversation response
+        let subject = factory.conversation_response(conv_id).unwrap();
+        let subject_str = subject.to_string();
+        assert!(subject_str.starts_with("agent.conversations."));
+        assert!(subject_str.ends_with(".response"));
+
+        // Conversation error
+        let subject = factory.conversation_error(conv_id).unwrap();
+        let subject_str = subject.to_string();
+        assert!(subject_str.starts_with("agent.conversations."));
+        assert!(subject_str.ends_with(".error"));
+
+        // Conversation status
+        let subject = factory.conversation_status(conv_id).unwrap();
+        let subject_str = subject.to_string();
+        assert!(subject_str.starts_with("agent.conversations."));
+        assert!(subject_str.ends_with(".status"));
+    }
+
+    #[test]
+    fn test_conversation_patterns() {
+        let factory = AgentSubjectFactory::default();
+        let conv_id = ConversationId::new();
+
+        // Specific conversation pattern
+        let pattern = factory.conversation_pattern(conv_id).unwrap();
+        let pattern_str = pattern.to_string();
+        assert!(pattern_str.starts_with("agent.conversations."));
+        assert!(pattern_str.ends_with(".>"));
+
+        // All conversations pattern
+        let pattern = factory.all_conversations_pattern().unwrap();
+        assert_eq!(pattern.to_string(), "agent.conversations.>");
+    }
+
+    #[test]
+    fn test_conversation_free_monoid_properties() {
+        use cim_domain::Subject;
+
+        let factory = AgentSubjectFactory::default();
+        let conv_id = ConversationId::new();
+
+        // Test associativity: (a.b).c = a.(b.c)
+        let domain = Subject::parse("agent").unwrap();
+        let conversations = Subject::parse("conversations").unwrap();
+        let conv_id_subj = Subject::parse(&conv_id.to_string()).unwrap();
+        let request = Subject::parse("request").unwrap();
+
+        let left = domain
+            .concat(&conversations)
+            .concat(&conv_id_subj)
+            .concat(&request);
+        let right = domain.concat(&conversations.concat(&conv_id_subj).concat(&request));
+
+        assert_eq!(left.to_string(), right.to_string());
+
+        // Test identity: root.concat(s) = s
+        let root = Subject::root();
+        let subject = factory.conversation_request(conv_id).unwrap();
+        assert_eq!(root.concat(&subject).to_string(), subject.to_string());
+        assert_eq!(subject.concat(&root).to_string(), subject.to_string());
+    }
+
+    #[test]
+    fn test_conversation_pattern_matching() {
+        let factory = AgentSubjectFactory::default();
+        let conv_id = ConversationId::new();
+
+        // All subjects in a conversation match the conversation pattern
+        let request = factory.conversation_request(conv_id).unwrap();
+        let response = factory.conversation_response(conv_id).unwrap();
+        let error = factory.conversation_error(conv_id).unwrap();
+        let status = factory.conversation_status(conv_id).unwrap();
+
+        let pattern = factory.conversation_pattern(conv_id).unwrap();
+        let pattern_str = pattern.to_string();
+
+        // Pattern should match all message types in the conversation
+        assert!(request.to_string().starts_with(&pattern_str.trim_end_matches(".>")));
+        assert!(response.to_string().starts_with(&pattern_str.trim_end_matches(".>")));
+        assert!(error.to_string().starts_with(&pattern_str.trim_end_matches(".>")));
+        assert!(status.to_string().starts_with(&pattern_str.trim_end_matches(".>")));
+    }
 }
+
