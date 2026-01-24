@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-01-23T15:54:24-07:00",
+  "collection_version": "1.0.0",
+  "systems": {
+    "dgx01": {
+      "collection_time": "2026-01-23T15:54:24-07:00",
+      "agents": {
+        "error": "No agents found or SSH connection failed"
+      },
+      "system_metrics": {
+        "load_average": "unknown",
+        "memory_available_mb": 0,
+        "disk_available_gb": 0
+      }
+    }
+,
+    "dgx02": {
+      "collection_time": "2026-01-23T15:54:26-07:00",
+      "agents": {
+        "error": "No agents found or SSH connection failed"
+      },
+      "system_metrics": {
+        "load_average": "unknown",
+        "memory_available_mb": 0,
+        "disk_available_gb": 0
+      }
+    }
+,
+    "dgx03": {
+      "collection_time": "2026-01-23T15:54:26-07:00",
+      "agents": {
+        "error": "No agents found or SSH connection failed"
+      },
+      "system_metrics": {
+        "load_average": "unknown",
+        "memory_available_mb": 0,
+        "disk_available_gb": 0
+      }
+    }
+  }
+}

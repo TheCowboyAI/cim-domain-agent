@@ -1,0 +1,764 @@
+================================================================
+Sprint 5.2 Wave 1 - Checkpoint t1h
+================================================================
+Collection Time: 2026-01-23 17:07:52 MST
+Deployment Time: 2026-01-23 16:13:00 MST
+Agent: nats-expert
+Systems: DGX-1 (10.0.20.1), DGX-2 (10.0.20.2), DGX-3 (10.0.20.3)
+================================================================
+
+Collecting: Agent Status
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+● agent-runtime@nats-expert.service - CIM Agent Runtime (nats-expert)
+     Loaded: loaded (/etc/systemd/system/agent-runtime@.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-01-23 16:11:08 MST; 56min ago
+       Docs: https://github.com/thecowboyai/cim-dgx
+   Main PID: 3340550 (agent-runtime)
+      Tasks: 21 (limit: 153561)
+     Memory: 1.6M (max: 8.0G available: 7.9G peak: 3.3M)
+        CPU: 27ms
+     CGroup: /system.slice/system-agent\x2druntime.slice/agent-runtime@nats-expert.service
+             └─3340550 /opt/cim-dgx/bin/agent-runtime
+
+Jan 23 16:58:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:58:10.953679Z DEBUG async_nats: received PONG
+Jan 23 16:59:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:59:10.957419Z DEBUG async_nats: received PONG
+Jan 23 17:00:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:00:10.959573Z DEBUG async_nats: received PONG
+Jan 23 17:01:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:01:10.963079Z DEBUG async_nats: received PONG
+Jan 23 17:02:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:02:10.963871Z DEBUG async_nats: received PONG
+Jan 23 17:03:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:03:10.966092Z DEBUG async_nats: received PONG
+Jan 23 17:04:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:04:10.967394Z DEBUG async_nats: received PONG
+Jan 23 17:05:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:05:10.969279Z DEBUG async_nats: received PONG
+Jan 23 17:06:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:06:10.971522Z DEBUG async_nats: received PONG
+Jan 23 17:07:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:07:10.976231Z DEBUG async_nats: received PONG
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+● agent-runtime@nats-expert.service - CIM Agent Runtime (nats-expert)
+     Loaded: loaded (/etc/systemd/system/agent-runtime@.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2026-01-23 16:11:41 MST; 56min ago
+       Docs: https://github.com/thecowboyai/cim-dgx
+   Main PID: 1658053 (agent-runtime)
+      Tasks: 21 (limit: 153561)
+     Memory: 1.6M (max: 8.0G available: 7.9G peak: 3.4M)
+        CPU: 32ms
+     CGroup: /system.slice/system-agent\x2druntime.slice/agent-runtime@nats-expert.service
+             └─1658053 /opt/cim-dgx/bin/agent-runtime
+
+Jan 23 16:58:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:58:44.353596Z DEBUG async_nats: received PONG
+Jan 23 16:59:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:59:44.356279Z DEBUG async_nats: received PONG
+Jan 23 17:00:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:00:44.359034Z DEBUG async_nats: received PONG
+Jan 23 17:01:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:01:44.361393Z DEBUG async_nats: received PONG
+Jan 23 17:02:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:02:44.364396Z DEBUG async_nats: received PONG
+Jan 23 17:03:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:03:44.367710Z DEBUG async_nats: received PONG
+Jan 23 17:04:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:04:44.370700Z DEBUG async_nats: received PONG
+Jan 23 17:05:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:05:44.376263Z DEBUG async_nats: received PONG
+Jan 23 17:06:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:06:44.378773Z DEBUG async_nats: received PONG
+Jan 23 17:07:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:07:44.381275Z DEBUG async_nats: received PONG
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+● agent-runtime@nats-expert.service - CIM Agent Runtime (nats-expert)
+     Loaded: loaded (/etc/systemd/system/agent-runtime@.service; disabled; preset: enabled)
+     Active: active (running) since Fri 2026-01-23 16:12:10 MST; 55min ago
+       Docs: https://github.com/thecowboyai/cim-dgx
+   Main PID: 1674895 (agent-runtime)
+      Tasks: 21 (limit: 153561)
+     Memory: 1.7M (max: 8.0G available: 7.9G peak: 3.8M)
+        CPU: 23ms
+     CGroup: /system.slice/system-agent\x2druntime.slice/agent-runtime@nats-expert.service
+             └─1674895 /opt/cim-dgx/bin/agent-runtime
+
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.069682Z  INFO async_nats: event: connected
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071314Z  INFO agent_service: JetStream stream ready
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071320Z  INFO agent_service: Message service initialized with 1 provider(s)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071323Z  INFO agent_service: Starting agent runtime for: infrastructure.nats-expert.01936f66-b087-7000-8000-000000000006 (infrastructure)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071326Z  INFO agent_service: Unified subject architecture ENABLED - dual publishing to old and new patterns
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071327Z  INFO agent_service: Subscribing to agent-specific subjects...
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071333Z  INFO agent_service: Subscribed to: agent.to.nats-expert.> (agent-specific inbox)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071336Z  INFO agent_service: Subscribed to: agent.broadcast.> (broadcast)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071339Z  INFO agent_service: Subscribed to: agent.*.*.01936f66-b087-7000-8000-000000000006.command.> (agent-ref commands)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071340Z  INFO agent_service: Agent 'nats-expert' v0.9.2 is ready for conversations
+
+
+Collecting: Agent Uptime
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+Fri 2026-01-23 16:11:08 MST
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+Fri 2026-01-23 16:11:41 MST
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+Fri 2026-01-23 16:12:10 MST
+
+
+Collecting: Error Count (Last Hour)
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+1
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+1
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+1
+
+
+Collecting: Warning Count (Last Hour)
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+1
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+1
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+1
+
+
+Collecting: Recent Logs (Last 30 lines)
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+Jan 23 16:38:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:38:10.912253Z DEBUG async_nats: received PONG
+Jan 23 16:39:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:39:10.913528Z DEBUG async_nats: received PONG
+Jan 23 16:40:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:40:10.916038Z DEBUG async_nats: received PONG
+Jan 23 16:41:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:41:10.917986Z DEBUG async_nats: received PONG
+Jan 23 16:42:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:42:10.921122Z DEBUG async_nats: received PONG
+Jan 23 16:43:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:43:10.922078Z DEBUG async_nats: received PONG
+Jan 23 16:44:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:44:10.923872Z DEBUG async_nats: received PONG
+Jan 23 16:45:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:45:10.925988Z DEBUG async_nats: received PONG
+Jan 23 16:46:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:46:10.927882Z DEBUG async_nats: received PONG
+Jan 23 16:47:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:47:10.931008Z DEBUG async_nats: received PONG
+Jan 23 16:48:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:48:10.933846Z DEBUG async_nats: received PONG
+Jan 23 16:49:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:49:10.936440Z DEBUG async_nats: received PONG
+Jan 23 16:50:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:50:10.937617Z DEBUG async_nats: received PONG
+Jan 23 16:51:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:51:10.939111Z DEBUG async_nats: received PONG
+Jan 23 16:52:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:52:10.940985Z DEBUG async_nats: received PONG
+Jan 23 16:53:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:53:10.942826Z DEBUG async_nats: received PONG
+Jan 23 16:54:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:54:10.944267Z DEBUG async_nats: received PONG
+Jan 23 16:55:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:55:10.946962Z DEBUG async_nats: received PONG
+Jan 23 16:56:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:56:10.949523Z DEBUG async_nats: received PONG
+Jan 23 16:57:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:57:10.951949Z DEBUG async_nats: received PONG
+Jan 23 16:58:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:58:10.953679Z DEBUG async_nats: received PONG
+Jan 23 16:59:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-23T23:59:10.957419Z DEBUG async_nats: received PONG
+Jan 23 17:00:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:00:10.959573Z DEBUG async_nats: received PONG
+Jan 23 17:01:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:01:10.963079Z DEBUG async_nats: received PONG
+Jan 23 17:02:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:02:10.963871Z DEBUG async_nats: received PONG
+Jan 23 17:03:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:03:10.966092Z DEBUG async_nats: received PONG
+Jan 23 17:04:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:04:10.967394Z DEBUG async_nats: received PONG
+Jan 23 17:05:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:05:10.969279Z DEBUG async_nats: received PONG
+Jan 23 17:06:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:06:10.971522Z DEBUG async_nats: received PONG
+Jan 23 17:07:10 spark-d4e3 agent-runtime-nats-expert[3340550]: 2026-01-24T00:07:10.976231Z DEBUG async_nats: received PONG
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+Jan 23 16:38:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:38:44.303773Z DEBUG async_nats: received PONG
+Jan 23 16:39:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:39:44.306080Z DEBUG async_nats: received PONG
+Jan 23 16:40:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:40:44.307799Z DEBUG async_nats: received PONG
+Jan 23 16:41:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:41:44.309429Z DEBUG async_nats: received PONG
+Jan 23 16:42:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:42:44.312241Z DEBUG async_nats: received PONG
+Jan 23 16:43:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:43:44.313789Z DEBUG async_nats: received PONG
+Jan 23 16:44:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:44:44.316546Z DEBUG async_nats: received PONG
+Jan 23 16:45:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:45:44.319359Z DEBUG async_nats: received PONG
+Jan 23 16:46:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:46:44.321783Z DEBUG async_nats: received PONG
+Jan 23 16:47:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:47:44.323850Z DEBUG async_nats: received PONG
+Jan 23 16:48:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:48:44.325936Z DEBUG async_nats: received PONG
+Jan 23 16:49:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:49:44.327821Z DEBUG async_nats: received PONG
+Jan 23 16:50:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:50:44.330375Z DEBUG async_nats: received PONG
+Jan 23 16:51:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:51:44.333721Z DEBUG async_nats: received PONG
+Jan 23 16:52:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:52:44.336467Z DEBUG async_nats: received PONG
+Jan 23 16:53:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:53:44.339927Z DEBUG async_nats: received PONG
+Jan 23 16:54:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:54:44.343510Z DEBUG async_nats: received PONG
+Jan 23 16:55:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:55:44.346254Z DEBUG async_nats: received PONG
+Jan 23 16:56:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:56:44.348595Z DEBUG async_nats: received PONG
+Jan 23 16:57:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:57:44.350444Z DEBUG async_nats: received PONG
+Jan 23 16:58:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:58:44.353596Z DEBUG async_nats: received PONG
+Jan 23 16:59:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-23T23:59:44.356279Z DEBUG async_nats: received PONG
+Jan 23 17:00:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:00:44.359034Z DEBUG async_nats: received PONG
+Jan 23 17:01:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:01:44.361393Z DEBUG async_nats: received PONG
+Jan 23 17:02:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:02:44.364396Z DEBUG async_nats: received PONG
+Jan 23 17:03:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:03:44.367710Z DEBUG async_nats: received PONG
+Jan 23 17:04:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:04:44.370700Z DEBUG async_nats: received PONG
+Jan 23 17:05:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:05:44.376263Z DEBUG async_nats: received PONG
+Jan 23 17:06:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:06:44.378773Z DEBUG async_nats: received PONG
+Jan 23 17:07:44 spark-602d agent-runtime-nats-expert[1658053]: 2026-01-24T00:07:44.381275Z DEBUG async_nats: received PONG
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.526850Z  INFO agent_service: Ensuring JetStream stream: AGENT_MESSAGES
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.526867Z  INFO async_nats: event: connected
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529530Z  INFO agent_service: JetStream stream ready
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529537Z  INFO agent_service: Message service initialized with 1 provider(s)
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529539Z  INFO agent_service: Starting agent runtime for: infrastructure.nats-expert.01936f66-b087-7000-8000-000000000006 (infrastructure)
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529542Z  INFO agent_service: Unified subject architecture DISABLED - using legacy inbox pattern only
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529544Z  INFO agent_service: Subscribing to agent-specific subjects...
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529552Z  INFO agent_service: Subscribed to: agent.to.nats-expert.> (agent-specific inbox)
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529555Z  INFO agent_service: Subscribed to: agent.broadcast.> (broadcast)
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529559Z  INFO agent_service: Subscribed to: agent.*.*.01936f66-b087-7000-8000-000000000006.command.> (agent-ref commands)
+Jan 23 10:53:21 spark-666b agent-runtime-nats-expert[1602551]: 2026-01-23T17:53:21.529560Z  INFO agent_service: Agent 'nats-expert' v0.9.2 is ready for conversations
+Jan 23 16:12:10 spark-666b systemd[1]: Stopping agent-runtime@nats-expert.service - CIM Agent Runtime (nats-expert)...
+Jan 23 16:12:10 spark-666b systemd[1]: agent-runtime@nats-expert.service: Deactivated successfully.
+Jan 23 16:12:10 spark-666b systemd[1]: Stopped agent-runtime@nats-expert.service - CIM Agent Runtime (nats-expert).
+Jan 23 16:12:10 spark-666b systemd[1]: Started agent-runtime@nats-expert.service - CIM Agent Runtime (nats-expert).
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.067668Z  INFO agent_service: Starting agent service v0.9.2...
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.067683Z  INFO agent_service: Connecting to NATS at nats://10.0.20.1:4222
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.069656Z  INFO async_nats::connector: connected successfully server=4222 max_payload=1048576
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.069674Z  INFO agent_service: Connected to NATS
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.069678Z  INFO agent_service: Ensuring JetStream stream: AGENT_MESSAGES
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.069682Z  INFO async_nats: event: connected
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071314Z  INFO agent_service: JetStream stream ready
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071320Z  INFO agent_service: Message service initialized with 1 provider(s)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071323Z  INFO agent_service: Starting agent runtime for: infrastructure.nats-expert.01936f66-b087-7000-8000-000000000006 (infrastructure)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071326Z  INFO agent_service: Unified subject architecture ENABLED - dual publishing to old and new patterns
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071327Z  INFO agent_service: Subscribing to agent-specific subjects...
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071333Z  INFO agent_service: Subscribed to: agent.to.nats-expert.> (agent-specific inbox)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071336Z  INFO agent_service: Subscribed to: agent.broadcast.> (broadcast)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071339Z  INFO agent_service: Subscribed to: agent.*.*.01936f66-b087-7000-8000-000000000006.command.> (agent-ref commands)
+Jan 23 16:12:10 spark-666b agent-runtime-nats-expert[1674895]: 2026-01-23T23:12:10.071340Z  INFO agent_service: Agent 'nats-expert' v0.9.2 is ready for conversations
+
+
+Collecting: Dual Publishing Count (Last Hour)
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+0
+0
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+0
+0
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+0
+0
+
+
+Collecting: NATS Connection (Last 10 min)
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+
+
+Collecting: Memory Usage
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+1.7M
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+1.7M
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+1.8M
+
+
+Collecting: System Load Average
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+0.06 0.08 0.08 1/2432 3447090
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+0.11 0.07 0.05 1/1724 1674337
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+0.01 0.06 0.07 1/1748 1688927
+
+
+Collecting: System Memory
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+               total        used        free      shared  buff/cache   available
+Mem:           119Gi        18Gi        28Gi       113Mi        74Gi       101Gi
+Swap:           15Gi       544Mi        15Gi
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+               total        used        free      shared  buff/cache   available
+Mem:           119Gi       5.4Gi        60Gi        37Mi        55Gi       114Gi
+Swap:           15Gi          0B        15Gi
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+               total        used        free      shared  buff/cache   available
+Mem:           119Gi       5.6Gi        62Gi        37Mi        53Gi       114Gi
+Swap:           15Gi       760Ki        15Gi
+
+
+Collecting: Disk Space (/var/lib/cim-agents)
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+/dev/nvme0n1p2  3.7T  733G  2.8T  21% /
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+/dev/nvme0n1p2  3.7T  326G  3.2T  10% /
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+/dev/nvme0n1p2  3.7T  286G  3.3T   8% /
+
+
+Collecting: Configuration (ENABLE_UNIFIED_SUBJECTS)
+
+=== DGX 10.0.20.1 ===
+Host key fingerprint is: SHA256:0keMXSyti8O1Pqj2xJcEZlykdMRLhunXOPu4CAj01TM
++--[ED25519 256]--+
+|        .*=o.    |
+|       +oB=.o    |
+|  .   ..Eo+*     |
+| . . . +.=B .    |
+|  . . ..S+o=     |
+|   . . o+o+.     |
+|    . . o+oo     |
+|      .o.o+ .    |
+|     ..oo .o     |
++----[SHA256]-----+
+ENABLE_UNIFIED_SUBJECTS=true
+
+=== DGX 10.0.20.2 ===
+Host key fingerprint is: SHA256:fJvxcbANyehrZXf4AUAh0YVOA7tFbrMl/ub6hdc3b/g
++--[ED25519 256]--+
+|         +==+.   |
+|          =B..   |
+|         .+**o   |
+|       . .=.==.. |
+|        S.+o= =..|
+|         . O.+.oo|
+|          = .+ =+|
+|         .  o + =|
+|           .oo oE|
++----[SHA256]-----+
+ENABLE_UNIFIED_SUBJECTS=true
+
+=== DGX 10.0.20.3 ===
+Host key fingerprint is: SHA256:NWp/MkfZNYQ8npR7Z9Cd19CGNOkvVNGnjwopCEn4ZX4
++--[ED25519 256]--+
+|   .        ..*O*|
+|  . . o      *=o@|
+|   o =    o o.+*+|
+|    + . Eo . *+o+|
+|     . oS  .o.o=.|
+|      ....o.  o o|
+|         .+.o. . |
+|           =.    |
+|                 |
++----[SHA256]-----+
+ENABLE_UNIFIED_SUBJECTS=true
+
+
+
+=================================================================
+Checkpoint Summary
+=================================================================
+
+DGX 10.0.20.1: ✅ ACTIVE
+DGX 10.0.20.2: ✅ ACTIVE
+DGX 10.0.20.3: ✅ ACTIVE
+
+Agents Active: 3/3
+Total Errors (Last Hour): 3
+
+=================================================================
+Success Criteria Assessment
+=================================================================
+
+✅ Agent Uptime: 100% (target: > 99.9%)
+❌ Error Rate: 3 errors (target: < 0.1%)
+✅ Configuration: ENABLE_UNIFIED_SUBJECTS=true on all systems
+
+=================================================================
+❌ CHECKPOINT FAILED - Review issues above
+=================================================================
+
+Full checkpoint data saved to: /git/thecowboyai/cim-domain-agent/monitoring/checkpoints/wave1/t1h-20260123-170752.log
+

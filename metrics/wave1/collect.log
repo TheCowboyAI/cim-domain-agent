@@ -1,0 +1,23 @@
+Collecting metrics from systems: dgx01,dgx02,dgx03
+Output file: ./metrics/wave1/metrics-20260123-155424.json
+Timestamp: 2026-01-23T15:54:24-07:00
+
+Collecting from dgx01...
+ssh: Could not resolve hostname dgx01: Name or service not known
+Collecting from dgx02...
+ssh: Could not resolve hostname dgx02: Name or service not known
+Collecting from dgx03...
+ssh: Could not resolve hostname dgx03: Name or service not known
+
+Metrics collected successfully: ./metrics/wave1/metrics-20260123-155424.json
+
+Summary:
+dgx01: 1 agents, unknown load
+dgx02: 1 agents, unknown load
+dgx03: 1 agents, unknown load
+
+Total errors in last hour:
+0
+
+Agents with dual publishing active:
+0

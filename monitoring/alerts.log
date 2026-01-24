@@ -1,0 +1,3 @@
+# Alert Log - Unified Subject Architecture Test
+# Started: 2026-01-23T15:54:24-07:00
+# Thresholds: Error=1%, Delivery=95%, Latency=1000ms
