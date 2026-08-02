@@ -189,8 +189,8 @@ let
       ip = "10.100.0.3";
     };
 
-    sage = {
-      agentFile = "${cim-domain-agent}/agents/sage.md";
+    sdlc-expert = {
+      agentFile = "${cim-domain-agent}/agents/sdlc-expert.md";
       memoryMax = "16G";
       cpuQuota = "400%";
       ip = "10.100.0.10";

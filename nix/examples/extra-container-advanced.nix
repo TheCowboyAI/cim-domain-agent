@@ -66,8 +66,8 @@ let
       cpuQuota = "300%";
     };
 
-    domain-expert = {
-      agentFile = "${cim-domain-agent}/agents/domain-expert.md";
+    org-expert = {
+      agentFile = "${cim-domain-agent}/agents/org-expert.md";
       priority = "high";
       memoryMax = "8G";
       cpuQuota = "300%";
@@ -107,8 +107,8 @@ let
 
   # Orchestrator on all hosts
   orchestratorAgents = {
-    sage = {
-      agentFile = "${cim-domain-agent}/agents/sage.md";
+    sdlc-expert = {
+      agentFile = "${cim-domain-agent}/agents/sdlc-expert.md";
       priority = "critical";
       memoryMax = "16G";
       cpuQuota = "400%";
@@ -237,13 +237,13 @@ in
 
     # Static IP assignments for agents
     cim.agentIps = {
-      sage = "10.100.${toString config.cim.nodeId}.10";
+      sdlc-expert = "10.100.${toString config.cim.nodeId}.10";
       nats-expert = "10.100.1.20";
       nix-expert = "10.100.1.21";
       network-expert = "10.100.1.22";
       cim-expert = "10.100.2.20";
       ddd-expert = "10.100.2.21";
-      domain-expert = "10.100.2.22";
+      org-expert = "10.100.2.22";
       event-storming-expert = "10.100.2.23";
       tdd-expert = "10.100.3.20";
       bdd-expert = "10.100.3.21";
