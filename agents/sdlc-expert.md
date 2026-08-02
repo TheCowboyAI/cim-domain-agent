@@ -710,7 +710,7 @@ If the retrospective reveals issues:
 ## Files
 
 - `progress.json` — Sprint tracking, questions, answers, human insights, retrospectives
-- `docs/architecture/*.md` — Design documents
+- `papers/architecture/*.md` — Design documents
 - `retrospectives/` — Detailed sprint retrospectives (optional, summary in progress.json)
 
 ---
