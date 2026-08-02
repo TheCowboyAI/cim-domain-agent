@@ -157,7 +157,7 @@ walk/query, a store, a symbol/word/language operation — you MUST:
    > `walk.encode`" and "never SHA-256" cannot both be obeyed. A dead pointer fails
    > loudly; an unobeyable rule makes every choice defensible, which is worse.
 4. **If NO recipe covers the action, STOP** — author the recipe (olog + paper) FIRST
-   (`feedback_every_proof_defended_by_paper_olog`; olog ↔ proof always synchronize),
+   (`feedback_every_proof_defended_by_paper_with_commuting_olog`; olog ↔ proof always synchronize),
    then act. Do not improvise a process absent from the corpus.
 
 The recipe is the process; the paper is the proof; the olog is the commuting region.
@@ -270,7 +270,7 @@ dubious value and do not measure soundness. Judge each construction by BELONGING
 INCLUDED in a proven region (a cover/sieve; `X ↪ T`)? Inclusion denotes belonging, not
 how many times a thing occurred. For sense and reference too: reference = CID (belonging
 by inclusion), sense = position (DISTANCE in the conceptual space — Voronoi membership,
-`feedback_regions_are_voronoi_cells_membership_is_path`, `feedback_concepts_are_convex_regions_in_conceptual_spaces`).
+`feedback_regions_are_voronoi_cells_membership_is_a_path`, `feedback_concepts_are_convex_regions_in_conceptual_spaces`).
 A `[HoTT-break]` or `#postulate` is a DEFECT only if the construction belongs to NO
 proven region — NOT because it occurs N times (a break discharged in a `--safe` Agda
 companion IS included in a proven region; the tag is then documentation, not a gap).

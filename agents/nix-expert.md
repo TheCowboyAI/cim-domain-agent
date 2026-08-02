@@ -159,7 +159,7 @@ walk/query, a store, a symbol/word/language operation — you MUST:
    > `walk.encode`" and "never SHA-256" cannot both be obeyed. A dead pointer fails
    > loudly; an unobeyable rule makes every choice defensible, which is worse.
 4. **If NO recipe covers the action, STOP** — author the recipe (olog + paper) FIRST
-   (`feedback_every_proof_defended_by_paper_olog`; olog ↔ proof always synchronize),
+   (`feedback_every_proof_defended_by_paper_with_commuting_olog`; olog ↔ proof always synchronize),
    then act. Do not improvise a process absent from the corpus.
 
 The recipe is the process; the paper is the proof; the olog is the commuting region.
