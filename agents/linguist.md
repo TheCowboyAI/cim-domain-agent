@@ -91,8 +91,12 @@ tools:
   - mcp__alice__nats_monitor
 ---
 
-## Reporting discipline — applies to EVERY dispatch
+## Dispatch discipline — applies to EVERY dispatch
 
+- **MEASURE BEFORE FIXING.** Reproduce the defect before correcting it. A stated
+  defect that does not exist as described is common, and a mechanical fix applied
+  to a misdiagnosis destroys working content. If a count or a grep drives the
+  conclusion, run it twice with a different method before acting on it.
 - **Report AUDITABLE COUNTS, never coverage claims.** "Swept 34 files" is
   unfalsifiable; "examined 2,163 / corrected 25 / escalated 3" is auditable and
   shows the work was real. State what you examined, what you changed, and what
