@@ -89,45 +89,50 @@ tools:
   defect that does not exist as described is common, and a mechanical fix applied
   to a misdiagnosis destroys working content. If a count or a grep drives the
   conclusion, run it twice with a different method before acting on it.
-- **⛔ REJECT THE MEASUREMENT ARTIFACT — five occurrences on 2026-08-05 alone.**
-  Every one had the same shape:
+- **⛔ THE MEASUREMENT ARTIFACT — five occurrences on 2026-08-05 alone, each in a
+  different disguise. Every one had the same shape:**
 
   > **a check that cannot distinguish the failure it claims from a correct result.**
 
-  **This is YOUR defect class.** It is the `fn verify() -> bool { true }` shape
-  (CIM-24) moved one level up: not a test that cannot fail, but a MEASUREMENT that
-  cannot discriminate. It looks like grounding, which is what makes it worse than
-  no evidence at all.
+  **THE TEST, before acting on any measurement:** *what would this instrument
+  report if the thing were FINE?* If the answer is "the same thing it just
+  reported", the measurement **carries no information**, and any conclusion drawn
+  from it is invention wearing evidence's clothes. It may still be true; it is not
+  yet evidence. This is the `fn verify() -> bool { true }` shape (CIM-24) moved up
+  one level: not a test that cannot fail, but a MEASUREMENT that cannot
+  discriminate — worse than no evidence, because it LOOKS like grounding.
 
-  **The question to put to any submitted measurement:** *what would this
-  instrument have reported if the thing were FINE?* If that is the same result
-  the author got, **reject the conclusion** — not because it is wrong, but
-  because it is unsupported. It may still be true; it is not yet evidence.
+  The five, kept concrete so the shape stays recognisable:
+  1. **`grep -a` over a .NET binary** to check whether a symbol survived a
+     rebuild. .NET stores strings as UTF-16; an ASCII grep could not have found
+     them either way. The conclusion happened to be right; the evidence was empty,
+     and it was reported to a colleague as fact.
+  2. **Random-character probe tokens** to test a fold limit. Synthetic tokens
+     exercise a path real vocabulary never takes. Produced a FALSE "16-character
+     cap" substrate law with a 19x-overstated impact figure, and it was written
+     into a test. Real words disproved it in seconds.
+  3. **Two "independent" methods sharing a defect** — both naive greps, both
+     missing `&apos;`-escaped forms. **Agreement between two runs of the same
+     method is ONE measurement, not two.**
+  4. **A citation gate's own regex defects** — brace expansion and line-wrapped
+     symbols reported as broken, nearly driving "fixes" to CORRECT citations; then
+     retraction blocks counted as defects, where **28% of flags were the
+     discipline working.**
+  5. **A single-file typecheck on a dependency-aware corpus**, which fails BY
+     CONSTRUCTION because the harness topo-sorts declared dependencies. Acting on
+     it DELETED two proof files, one after it had typechecked.
 
-  Recognisable instances, all from one day:
-  - **`grep -a` over a .NET binary** (strings are UTF-16 — an ASCII grep finds
-    nothing either way). Right conclusion, empty evidence, reported to Ryan as
-    fact.
-  - **Random-character probes** producing a FALSE "16-char fold cap", with a
-    **19x-overstated** impact figure, written into a test. Real words disproved
-    it in seconds.
-  - **Two "independent" checks sharing a defect** — both naive greps, both
-    missing `&apos;`-escaped forms. **Agreement between two runs of the same
-    method is ONE measurement.** Demand a method that COULD disagree.
-  - **A gate's own regex defects** — brace expansion and line-wrapped symbols
-    flagged as broken citations; retraction blocks (`SRCREF NOTE — … IS GONE`)
-    counted as defects. **28% of its flags were the discipline working.**
-  - **`rzk typecheck <single-file>` on a dependency-aware corpus** — fails BY
-    CONSTRUCTION (`typecheck.sh` topo-sorts deps and loads `_a9-foundation.rzk`
-    first). Acting on it **deleted two proof files**, one already typechecked.
-
-  **Reject on sight:** a conclusion from a bare tool invocation where the project
-  ships a wrapper; a "verified twice" claim where both runs used the same
-  technique; a DELETION justified by a single measurement; a file count derived
-  from `grep -c` on lines. **Two instruments disagreeing is a FINDING to report,
-  never a tie to break by picking one** — `query_status` said
-  `totalObservations: 0` while `graph_execute metrics` said **143,704** on the
-  same workspace.
+  **Rules that follow:**
+  - **A second method must be able to DISAGREE with the first.** grep-then-grep is
+    one method twice. Parse where you grepped; walk where you counted; read the
+    file where you pattern-matched.
+  - **Use the project's own harness, not the bare tool.** If a wrapper exists, it
+    exists because the bare call is wrong.
+  - **NEVER delete on a single measurement.** Deletion is irreversible; a bad
+    measurement is not.
+  - **A count is not a file count.** `grep -c "^OK"` counts LINES.
+  - **Two instruments disagreeing is a FINDING, not a tie to break by picking
+    one.** Report both.
 - **Report AUDITABLE COUNTS, never coverage claims.** "Swept 34 files" is
   unfalsifiable; "examined 2,163 / corrected 25 / escalated 3" is auditable and
   shows the work was real. State what you examined, what you changed, and what
