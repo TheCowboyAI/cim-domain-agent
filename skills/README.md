@@ -40,3 +40,21 @@ cp -r /git/thecowboyai/hatter/.claude/skills/<name> /git/thecowboyai/cim-domain-
 `~/.claude/skills/cim-substrate/` (user scope, loads in every project) is **not
 mirrored here** and is untracked everywhere. It is referenced by the shared agent
 doctrine as the substrate-mechanism lookup, so losing it would be expensive.
+
+## What else from `~/.claude` is mirrored here
+
+Per steele 2026-08-07 — *"all the things you see in .claude get replicated to
+../cim-domain-agents for persistence"* — this repo is the durable form of the
+user-scope Claude configuration, none of which lives in a repo of its own
+(`~/.claude` is not a git repository).
+
+| Mirror here | Source | Notes |
+|---|---|---|
+| `agents/` | `~/.claude/agents/` | pre-existing; already drifted (act-expert differs at line 94) |
+| `skills/` | `~/.claude/skills/` + project `.claude/skills/` | this directory |
+| `shared/cim-agent-doctrine.md` | `~/.claude/shared/` | `@`-imported by the global CLAUDE.md; loads in every session |
+| `commands/` | `~/.claude/commands/` | 19 slash commands |
+| `CLAUDE.global.md` | `~/.claude/CLAUDE.md` | **deliberately NOT named `CLAUDE.md`** — that filename auto-loads as a memory file when working in this repo, which would duplicate the global that is already loaded. `.global` keeps it inert here while still being the backup. |
+
+Same copy-based contract throughout: no symlinks, no sync step, so any of
+these can drift from its source. Re-copy in whichever direction you edited.
