@@ -98,12 +98,43 @@ accepting any code, name which one it rests on.
   or a tier is ALWAYS ours to prove. "Everyone knows hashing works" does not
   discharge "this CID is a homomorphism over content".
 
-- **ALL OUR CODE IS CT/FP. WHEN THAT BREAKS, SAY SO AND REDIRECT.** OOP creep is
-  a finding, not a style note: `Manager`/`Service`/`Controller`/`Factory`/
-  `Builder` naming, `&mut self`, `unwrap()`/`expect()`/`panic!()` on production
-  paths, CRUD, aggregates, event handlers, sagas, and `fn verify() -> bool
+- **THE OOP THAT MATTERS IS ENCAPSULATION AND IN-PLACE MUTATION — NOT NAMING.**
+  steele 2026-08-07: *"the oop we are concerned with is encapsulation, there are
+  places where mutation is happening and absolutely should NOT in a distributed
+  composable system."*
+
+  A `Factory` in a name is cosmetic. **Hidden mutable state is architectural**,
+  and in a DISTRIBUTED COMPOSABLE system it breaks three things at once:
+    - **It cannot be WALKED.** State behind an object boundary is not addressable
+      and not reachable from a seed. If you cannot walk to it, it does not exist
+      to any other node.
+    - **It cannot CONVERGE.** The fold is additive and monotonic (CIM-1);
+      observations accumulate and never mutate. In-place mutation has no join —
+      two peers that both mutated cannot be reconciled, because there is no
+      operation that composes their results.
+    - **It cannot COMPOSE.** Composability is the whole premise. A value that
+      mutates under you is not a component; it is a dependency on timing.
+
+  **THE LIVE CASE (2026-08-06/07, and it cost a day):** an ephemeral RAM store
+  was added inside the substrate and most traffic wound up routed through it
+  instead of the ContentStream. Everything then behaved consistently and wrongly
+  — `var.set`/`var.get` round-tripped byte-exact (both ends inside the hidden
+  store), the register stayed empty through millions of markers, cartridge heads
+  and vars evaporated on restart, and `walk.encode`/`walk.bytes` disagreed
+  because they sat on OPPOSITE SIDES of the split. Encapsulated mutable state
+  produced a system that passed every local test and replicated nothing.
+
+  Detect and count: `&mut self`, interior mutability across an API boundary,
+  in-place updates to anything a peer could also hold, singletons/caches/side
+  stores that shadow the substrate, and any state that is written but not
+  foldable. Also the classic markers — CRUD, aggregates, event handlers, sagas,
+  `unwrap()`/`expect()`/`panic!()` on production paths, and `fn verify() -> bool
   { true }` (a verifier that cannot fail is fraud, CIM-24). `BREAKING FP` is
   sanctioned ONLY at an I/O adapter boundary and ONLY with a stated reason.
+
+  **THE TEST, at any site holding state:** *if a second node held this too, what
+  operation reconciles them?* If the answer is "none" or "last write wins", the
+  state is encapsulated mutation and must become a fold.
 
   **Naming the creep is half the job. The redirect is the other half:** say WHICH
   HoTT law or proof the site belongs under. "This is OOP" is not actionable;
