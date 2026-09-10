@@ -50,8 +50,31 @@ let _ = entity.lift();
 # Stub verifications
 grep -rn "-> bool.*{.*true.*}" src/ --include="*.rs"
 
-# Empty tests
-grep -rn "#\[test\]" src/ --include="*.rs" -A 3 | grep -E "assert!\(true\)|^\s*\}$"
+# Empty tests — a test whose body asserts NOTHING.
+#
+# ⛔ Do NOT use `grep -A3 '#[test]' | grep -E 'assert!\(true\)|^\s*\}$'`.
+# That was here and it is a MEASUREMENT ARTIFACT: `^\s*\}$` matches the closing
+# brace of every correct test too, so it reports the same thing whether the code
+# is fine or fraudulent — it carries no information. Verified: it returns a hit
+# on a three-line test containing a real assert_eq!.
+#
+# Parse the body instead of pattern-matching near it:
+python3 - <<'EOF'
+import re, pathlib
+pat = re.compile(r'#\[(?:tokio::)?test\][^\n]*\n\s*(?:async\s+)?fn\s+(\w+)\s*\([^)]*\)[^{]*\{', re.M)
+for f in pathlib.Path('src').rglob('*.rs'):
+    src = f.read_text(encoding='utf-8', errors='ignore')
+    for m in pat.finditer(src):
+        i, depth = m.end(), 1
+        while i < len(src) and depth:
+            depth += (src[i] == '{') - (src[i] == '}')
+            i += 1
+        body = src[m.end():i-1]
+        if not re.search(r'\bassert\w*!|\bexpect\(|\bpanic!|\?;|\bmatches!', body):
+            print(f'{f}:{src[:m.start()].count(chr(10))+1} — {m.group(1)}() asserts nothing')
+        elif re.search(r'\bassert!\(\s*true\s*\)', body):
+            print(f'{f}:{src[:m.start()].count(chr(10))+1} — {m.group(1)}() asserts assert!(true)')
+EOF
 
 # Ignored results in tests
 grep -rn "let _ =" tests/ src/ --include="*.rs" | grep -v "// OK"
@@ -74,7 +97,7 @@ VIOLATIONS:
   tests/integration.rs:88 — result ignored with let _ =
 
 Each violation is a breach of:
-  CT-5 (Kan extension) / CT-2 (Functor) / CIM-8 (Stubs are fraud)
+  CT-5 (Kan extension) / CT-2 (Functor) / CIM-24 (a verifier that cannot fail is fraud)
 ```
 
 ## Instructions

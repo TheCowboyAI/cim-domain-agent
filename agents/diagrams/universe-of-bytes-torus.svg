@@ -1,0 +1,689 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2025-2026 - Cowboy AI, Inc. -->
+<!--
+  SUBJECT: THE UNIVERSE OF BYTES AS A TORUS.  In the Universe of Bytes.
+
+  CALCULUS: the PRIMARY FIGURE is TOPOLOGICAL, not one of the three calculi — a
+  torus drawn twice: once in perspective, once as the FUNDAMENTAL SQUARE (the
+  standard presentation of S1 x S1 as a rectangle with both pairs of opposite
+  edges identified). Saying so rather than mislabelling it: an olog, a string
+  diagram and a decorated cospan are the three calculi Stencil renders, and a
+  SPACE is none of them.
+  The two lower regions ARE ologs, and they are what carries the checkable
+  claims: a LAYOUT (finite limit / product — Spivak & Kent arXiv:1102.1889 §4,
+  "finite limits (layouts)") and a FACT (a commuting square, §3).
+
+  PRIMARY for the geometry: proofs/cat-byte.rzk — "C = Z/N : a ring buffer
+  (positions, cyclic succ)" is the BASE, and "objects = byte values {0..255}"
+  with "adjacency (the byte-pair edges)" is the FIBER. The total space is
+  "the integral of A over C=Z/N with fiber A_Byte: objects (position, byte)".
+  THE TORUS CLAIM IS: that total space is the PRODUCT OF TWO CIRCLES, with the
+  FREQUENCY circle = Z/N (position in the walk) and the AMPLITUDE circle = Z/256
+  (the byte, which wraps 255 -> 0). It is DECLARED, not assumed — see the
+  <metadata> block and the CLAIMS panel.
+
+  RULED FACTS DRAWN, steele 2026-08-24:
+    "If Bytes are {}, we are in the DONUT HOLE."
+    "If Byte(0) to Byte(255), we are in the TORUS at that byte position."
+    "PREVIOUS goes to the previous byte in the walk, NEXT goes to the next."
+    "Amplitude is a measurement from 0-255. Frequency is the SEQUENCE of bytes."
+    "The SIZE of the wave is 2,616 bytes."
+    "...we move from 63 to 61 - we DON'T go look up 61, we simply GO THERE."
+
+  THEME: agents/diagrams/THEME.md §5 (dark). This repo renders dark.
+  DEPARTURES FROM THEME, declared because §4/2 requires it:
+    1. The theme has NO token for "an axis of a space" — it is a calculus
+       palette, and this figure is a space. Rather than invent colour I reuse
+       two existing dark tokens by meaning: the FREQUENCY circle takes the
+       WIRE token #5fc9f0 (it is the walk), and the AMPLITUDE circle takes the
+       BEND token #c79bf0 (BEND is "a wire that BENDS"; a cyclic value axis is
+       the closest existing meaning, and 255->0 IS the bend). The walk itself
+       takes the APEX token #4fd99b so it is distinct from both circles.
+    2. The torus body uses #1a1f2b fill / #3a4152 stroke — the PANEL and
+       PANEL-EDGE values, because the tube is context for the two circles,
+       not content, and panels never glow.
+  ARROWHEADS: present on every arrow here and that is DELIBERATE. These are olog
+  ASPECTS and Cat(byte) MORPHISMS (adjacency, PREVIOUS/NEXT), both of which have
+  a domain and a codomain. There is no string-diagram wire in this file, so the
+  never-arrowhead-on-a-wire rule is not in play.
+  GLOW: soft on boxes and regions, medium on the two circles and the walk.
+  No text carries a filter. Every <line> that glows uses glow-med-line
+  (userSpaceOnUse) — a percentage filter region erases a zero-bbox line.
+  ANIMATION: one supplementary dot travelling the walk, SMIL, driven by the
+  viewer's clock (antenna tier). It carries NO content the static figure lacks
+  and is hidden under prefers-reduced-motion.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 2560" width="1560" height="2560"
+     font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>The Universe of Bytes as a torus — the frequency circle, the amplitude circle, and the donut hole</title>
+  <desc>A topological figure, dark theme. On the left, a torus drawn in perspective. Its hole
+is empty and carries the empty-set symbol: when the byte sequence is the empty set we are in
+the donut hole, which is the zero point, genesis, and is NOT a point of the torus surface —
+the hole is where the axis of revolution passes. Two small boxes above the torus declare the
+type "an empty byte sequence" and the type "a zero-number test", joined by the aspect "is
+detected by". Around the top of the tube a dashed cyan circle is marked THE FREQUENCY CIRCLE:
+position in the walk, the ring buffer Z/N, along which PREVIOUS and NEXT move. Standing across
+the tube on the right a purple circle is marked THE AMPLITUDE CIRCLE: the byte value, Z/256,
+which wraps so that NEXT at 255 is 0. A short purple arrow on that circle is labelled delta,
+the displacement.
+On the right, the same torus is drawn unrolled as the FUNDAMENTAL SQUARE — a rectangle whose
+top and bottom edges are identified, marked with matching single purple arrowheads, and whose
+left and right edges are identified, marked with matching double cyan arrowheads. The
+horizontal axis is FREQUENCY, the sequence of bytes being walked; the vertical axis is
+AMPLITUDE, the byte at that position, from 0 at the bottom to 255 at the top. Three green dots
+plot the word cat as the bytes 0x63, 0x61, 0x74, that is 99, 97 and 116. A solid green arrow
+from the first dot to the second is labelled delta equals minus 2. A second green arrow to the
+third dot is labelled delta equals plus 19. A dashed purple route leaves the first dot going
+up, exits through the top edge at 255, re-enters through the bottom edge at 0, and arrives at
+the same second dot: it is labelled plus 254, showing that minus 2 and plus 254 are the same
+move on a circle.
+Below, two olog regions. The left region is a LAYOUT, a finite limit: the type "a point of the
+universe of bytes" reaches "a position on the frequency circle" and "a byte value" both
+directly and through "a pair of a position and a byte value"; the two triangles commute, and
+that commuting is what the word product means. The right region is a FACT, a commuting square:
+"an ordered byte pair" reaches "a byte value" either directly, by its second component, or by
+demodulating to "a byte value with a displacement" and modulating back. That square is the
+statement that you GO THERE by displacement rather than looking a value up.
+At the foot, three panels state the law, the exact status of every claim asserted versus
+merely illustrated, and what the diagram cannot show.</desc>
+
+  <!-- THE DECLARED GRAPH — machine-readable, so the claims can be CHECKED rather
+       than merely typed. Emitted by Stencil; RULED ON BY COMPASS via
+       scripts/check-diagram-commutation.py. Stencil does not decide whether any
+       of this commutes.
+       IDS ARE NAMESPACED n-/a-/c- so they cannot collide with a <defs> id —
+       measured 2026-08-22, an <arrow id="dec"> shadowed a <marker id="dec"> and
+       an arrowhead silently vanished while the gate stayed green. -->
+  <metadata>
+    <diagram xmlns="https://cowboy.ai/diagram/v1" calculus="olog">
+      <node id="n-point"     label="a point of the universe of bytes"/>
+      <node id="n-pair"      label="a pair of a position and a byte value"/>
+      <node id="n-position"  label="a position on the frequency circle"/>
+      <node id="n-amplitude" label="a byte value"/>
+      <node id="n-bytepair"  label="an ordered byte pair"/>
+      <node id="n-based"     label="a byte value with a displacement"/>
+      <node id="n-hole"      label="an absent byte"/>
+
+      <arrow id="a-pr" src="n-point"    tgt="n-pair"      label="is the pair"/>
+      <arrow id="a-p1" src="n-point"    tgt="n-position"  label="has position (frequency)"/>
+      <arrow id="a-p2" src="n-point"    tgt="n-amplitude" label="has byte value (amplitude)"/>
+      <arrow id="a-q1" src="n-pair"     tgt="n-position"  label="is first"/>
+      <arrow id="a-q2" src="n-pair"     tgt="n-amplitude" label="is second"/>
+      <arrow id="a-e1" src="n-bytepair" tgt="n-amplitude" label="its second is"/>
+      <arrow id="a-e2" src="n-bytepair" tgt="n-based"     label="demodulates to"/>
+      <arrow id="a-e3" src="n-based"    tgt="n-amplitude" label="modulates to"/>
+      <arrow id="a-short"   src="n-point" tgt="n-point" label="steps by the displacement -2"/>
+      <arrow id="a-long"    src="n-point" tgt="n-point" label="steps by the displacement +254"/>
+      <arrow id="a-genesis" src="n-hole"  tgt="n-point" label="is left by one genesis fold"/>
+
+      <commutes id="c-torus-pi1" from="n-point" to="n-position"
+                pathA="a-p1" pathB="a-pr;a-q1"
+                status="UNPROVEN"
+                reason="THE TORUS CLAIM, first projection. Asserts that a point of the universe of bytes IS the pair (position, byte) — i.e. that the total space of cat-byte.rzk (fiber = byte values 0..255 over base C = Z/N, the ring buffer) is the PRODUCT of the frequency circle and the amplitude circle, so that reading the position directly equals taking the pair and keeping the first. HELD 2026-08-24: this is READING A of foundation.md Q1, which is OPEN — Foundation says a ruling is owed BEFORE anything is drawn on it. AND the two obligations this reason used to name are ALREADY DISCHARGED in the corpus, so it was also under-claiming: Z/256 cyclic is FORCED (foundation.md 4.2), and the bundle is TRIVIAL because A-fiber is CONSTANT, position-independent (cat-bytes.md 3d). CITED, not redrawn."/>
+      <commutes id="c-torus-pi2" from="n-point" to="n-amplitude"
+                pathA="a-p2" pathB="a-pr;a-q2"
+                status="UNPROVEN"
+                reason="THE TORUS CLAIM, second projection. Same status as c-torus-pi1: the VALUE factor Z/256 is FORCED (foundation.md 4.2) and cited, but naming the OTHER factor the ring buffer is READING A of the open Q1. Together the two projections are the T2 statement, which foundation.md 4.1 already asserts and says MUST NOT BE REDRAWN."/>
+      <commutes id="c-go-there" from="n-bytepair" to="n-amplitude"
+                pathA="a-e1" pathB="a-e2;a-e3"
+                status="UNPROVEN"
+                reason="CITED, NOT NEW — cat-bytes.md 0.1 already asserts this in its own words (Frame-walk, not lookup; a lookup table has no from genealogy and no walk). GO THERE, DO NOT LOOK UP. For an ordered byte pair (a,b): reading b directly equals demodulating to the displacement d = b - a and modulating back, a + d = b. This is CarrierKernel's Modulate/Demodulate at the byte tier, and it is what makes steele's 'we simply GO THERE' a MOVE rather than a lookup. It reduces to group arithmetic in Z/256, but no #def is cited, so the obligation is left OPEN. THIS ONE IS GENUINELY NEW: neither cat-bytes.md nor foundation.md draws the fundamental square or this convergence, and it rides only on the VALUE circle, which is FORCED on either reading of Q1."/>
+      <commutes id="c-wrap" from="n-point" to="n-point"
+                pathA="a-short" pathB="a-long"
+                status="UNPROVEN"
+                reason="THE WRAP. Stepping by -2 and stepping by +254 are the SAME MOVE, because -2 = 254 in Z/256. Drawn statically as two routes leaving the o point (0x6f) and arriving at the m point (0x6d), one direct and one through the seam; the ANIMATION sends a head down each and they arrive TOGETHER, which is what makes this an assertion rather than a caption. It reduces to arithmetic in Z/256, but no #def is cited, so the obligation is left OPEN rather than claimed PROVEN off a peer-accepted appeal. NOTE the modelling decision: both routes also advance ONE position on the frequency circle, so these are arrows on a POINT of the universe, not on the byte factor alone; that position step is Q1-dependent while the displacement is not."/>
+
+      <!-- WHAT THE MOTION DOES AND DOES NOT CLAIM. Ignored by the commutation gate
+           (it reads only node/arrow/commutes) and recorded here because motion can
+           smuggle in an assertion that no static element ever made. -->
+      <animation id="an-walk" tier="antenna" period="14s" mechanism="SMIL, the viewer's clock">
+        <asserts ref="c-wrap" how="two heads leave the c point together, one by -2 and one by +254 through the amplitude seam, and ARRIVE TOGETHER at the a point. The convergence IS the claim."/>
+        <asserts ref="a-genesis" how="the head leaves the hole and lands on the surface. The ARROW is asserted; see below for what the drawn trajectory is not."/>
+        <illustrates what="the swept CURVE of the genesis glide" why="the genesis fold is ONE step. The path the head sweeps from the hole to the surface is not a morphism and its intermediate points are not states."/>
+        <illustrates what="the GLIDE between marked positions" why="the frequency circle is Z/N and DISCRETE. Continuous motion between position 0 and position 1 does NOT assert that anything lies between them; it is the eye being carried, not a path being claimed."/>
+        <illustrates what="one full turn back to position 0" why="illustrates the cyclic successor of the base. N is NOT ruled by this diagram, so the number of positions in the turn is a drawing choice."/>
+        <illustrates what="where each byte sits on the tube" why="the meridian origin is the same DRAWING CONVENTION the caveat panel already declares. Nothing fixes it."/>
+        <illustrates what="the two word-boundary DIPS" why="CHART-DEPENDENT, and I ran the control rather than assert it. What SURVIVES a chart change: the space is the MINIMUM byte in both ascii (0x20) and cp037 (0x40), so the dips are real under both. What FAILS: the two DEEPEST STEPS are the word boundaries in ascii (-69, -78) but NOT in cp037, where M-to-a (-83), inside a word, beats e-to-space (-69). So the dips are drawn and the deepest-step reading is NOT claimed."/>
+        <illustrates what="the three amplitude BANDS (space / upper / lower)" why="a fact about the ascii chart, not about walks. Measured: ascii puts lower ABOVE upper (97-116 vs 67-77); cp037 INVERTS it (129-163 vs 195-212). Same word, same walk, different geometry — which is foundation.md 4b.2's iota-versus-tau leg distinction showing up as visible shape."/>
+        <illustrates what="drawing only the first WORD on the perspective torus" why="not an editorial cut but a measured limit of the PROJECTION: at 38 degrees the band visible at EVERY longitude is psi 54..126, i.e. 72 of 360 degrees = 51 byte values = 20 percent of the amplitude circle. Composable spans 48 and fits with zero occlusion; the full string spans 84 and does not. Nothing was rescaled to force it."/>
+        <degrades to="the static trajectory, the three markers, both routes and every arrow" note="honours prefers-reduced-motion; with motion off no claim is lost."/>
+      </animation>
+    </diagram>
+  </metadata>
+
+  <defs>
+    <style>
+      @media (prefers-reduced-motion: reduce) { .anim { display: none; } }
+    </style>
+
+    <filter id="glow-soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-med" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-med-line" filterUnits="userSpaceOnUse" x="-2000" y="-2000"
+            width="6000" height="6000">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <clipPath id="clip-fund"><rect x="60" y="890" width="1440" height="480"/></clipPath>
+
+    <linearGradient id="tube" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#28303f"/>
+      <stop offset="0.55" stop-color="#1e2532"/>
+      <stop offset="1" stop-color="#161b24"/>
+    </linearGradient>
+
+    <marker id="mk-ah" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b9c6da"/>
+    </marker>
+    <marker id="mk-ah-walk" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4fd99b"/>
+    </marker>
+    <marker id="mk-ah-amp" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c79bf0"/>
+    </marker>
+    <marker id="mk-ah-freq" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5fc9f0"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1560" height="2560" fill="#151820"/>
+
+  <text x="48" y="34" font-size="15" font-weight="bold" fill="#cdd6e4">THE UNIVERSE OF BYTES AS A TORUS — S¹ × S¹</text>
+  <text x="48" y="56" font-size="11.5" fill="#8b95a7">the FREQUENCY circle (position in the walk, ℤ/N — the ring buffer) × the AMPLITUDE circle (the byte, ℤ/256 — and it WRAPS) · the HOLE is ∅ and is not on the surface</text>
+  <text x="48" y="76" font-size="11.5" fill="#8b95a7">In the Universe of Bytes.</text>
+  <text x="48" y="100" font-size="11.5" font-weight="bold" fill="#c79bf0">⛔ HELD — checked against hatter FOUNDATION @ 1d9ea2cc on 2026-08-24. This figure DREW ON AN OPEN QUESTION (Q1) and REDREW CITED FACTORS. See FOUNDATION CHECK, foot of page.</text>
+  <text x="48" y="118" font-size="10.5" font-style="italic" fill="#7c8598">Nothing is withdrawn. The claims are RE-STATUSED, the second circle is marked READING A rather than settled, and one pinned defect has been removed from the drawing.</text>
+
+  <!-- ==================================================================== -->
+  <!-- ===================== PANEL 1 — THE TORUS ========================== -->
+  <!-- ==================================================================== -->
+
+  <text x="48" y="152" font-size="12" font-weight="bold" fill="#cdd6e4">THE TORUS — a perspective sketch. It NAMES the two circles; it does not measure them.</text>
+  <text x="48" y="172" font-size="10.5" fill="#7c8598">cat-byte.rzk: “C = ℤ/N : a ring buffer (positions, cyclic succ)” is the base · “objects = byte values {0..255}” is the fiber</text>
+
+  <!-- ========== the hole, declared as types ========== -->
+  <rect x="225" y="186" width="390" height="66" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="420" y="208" font-size="12.5" fill="#cdd6e4" text-anchor="middle">an absent byte</text>
+  <text x="420" y="227" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">Byte({ }) — the IDENTITY OBJECT, the monoidal unit I</text>
+  <text x="420" y="244" font-size="9.5" font-style="italic" fill="#7c8598" text-anchor="middle">unit law Byte({ }) ⊗ Byte(0) = Byte(0) — CITED, not redrawn: cat-byte.rzk §1.6 · FOUR-CATS.md §2</text>
+
+  <text x="420" y="268" font-size="10" font-style="italic" fill="#c79bf0" text-anchor="middle">⛔ IsZeroNumber is NOT this test, and was drawn here until 2026-08-24. It cannot tell ABSENT from PRESENT-AND-ZERO. PINNED DEFECT — removed.</text>
+  <text x="420" y="288" font-size="11.5" fill="#cdd6e4" text-anchor="middle">∅ — GENESIS, the 0 point. NOT a point of the surface: a HOLE HAS NO COORDINATES.</text>
+
+  <!-- leader from the empty-sequence type down into the hole -->
+  <path d="M 232 250 L 372 466" fill="none" stroke="#7c8598" stroke-width="1.2"
+        stroke-dasharray="2 5" opacity="0.8"/>
+
+  <!-- ========== the torus body ==========
+       GEOMETRY IS COMPUTED, NOT EYEBALLED. Ring radius R=200, tube radius r=72,
+       viewed from an elevation of 38 degrees (cx=420, cy=500).
+       WHY 38 AND NOT SHALLOWER: measured 2026-08-24 by rendering. At a 14-degree
+       elevation a torus with these proportions COVERS ITS OWN HOLE — rasterizing
+       the projection found no uncovered region at all, and the first render read
+       as a flat blob rather than a donut. The hole is visible only when
+       tan(elevation) > r/(R-r). Steeper flattens the meridians, so 38 degrees is
+       the measured compromise: hole 252 x 102 px, meridian aspect 0.79.
+       The outer outline is the exact silhouette curve (outward normal
+       perpendicular to the viewer), NOT a fitted ellipse. Every rib and ring is
+       clipped to its VISIBLE portion. -->
+    <path d="M 692.0 500.0 L 690.5 520.9 L 686.2 541.2 L 679.2 560.6 L 669.9 578.8 L 658.7 595.5 L 645.7 610.8 L 631.4 624.7 L 615.8 637.2 L 599.2 648.4 L 581.6 658.3 L 563.2 667.0 L 544.1 674.5 L 524.4 680.8 L 504.1 686.0 L 483.5 690.0 L 462.5 692.8 L 441.3 694.6 L 420.0 695.1 L 398.7 694.6 L 377.5 692.8 L 356.5 690.0 L 335.9 686.0 L 315.6 680.8 L 295.9 674.5 L 276.8 667.0 L 258.4 658.3 L 240.8 648.4 L 224.2 637.2 L 208.6 624.7 L 194.3 610.8 L 181.3 595.5 L 170.1 578.8 L 160.8 560.6 L 153.8 541.2 L 149.5 520.9 L 148.0 500.0 L 149.5 479.1 L 153.8 458.8 L 160.8 439.4 L 170.1 421.2 L 181.3 404.5 L 194.3 389.2 L 208.6 375.3 L 224.2 362.8 L 240.8 351.6 L 258.4 341.7 L 276.8 333.0 L 295.9 325.5 L 315.6 319.2 L 335.9 314.0 L 356.5 310.0 L 377.5 307.2 L 398.7 305.4 L 420.0 304.9 L 441.3 305.4 L 462.5 307.2 L 483.5 310.0 L 504.1 314.0 L 524.4 319.2 L 544.1 325.5 L 563.2 333.0 L 581.6 341.7 L 599.2 351.6 L 615.8 362.8 L 631.4 375.3 L 645.7 389.2 L 658.7 404.5 L 669.9 421.2 L 679.2 439.4 L 686.2 458.8 L 690.5 479.1 L 692.0 500.0 Z" fill="url(#tube)" stroke="#4a5468" stroke-width="1.5"/>
+    <!-- the HOLE, computed as the region of the projection the surface does NOT cover.
+         Punched to the background, because it is NOTHING. -->
+    <path d="M 294.0 495.0 L 298.0 490.0 L 302.0 485.0 L 306.0 482.0 L 310.0 479.0 L 314.0 476.0 L 318.0 473.0 L 322.0 471.0 L 326.0 469.0 L 330.0 467.0 L 334.0 465.0 L 338.0 464.0 L 342.0 462.0 L 346.0 461.0 L 350.0 459.0 L 354.0 458.0 L 358.0 457.0 L 362.0 456.0 L 366.0 455.0 L 370.0 454.0 L 374.0 453.0 L 378.0 453.0 L 382.0 452.0 L 386.0 451.0 L 390.0 451.0 L 394.0 450.0 L 398.0 450.0 L 402.0 450.0 L 406.0 449.0 L 410.0 449.0 L 414.0 449.0 L 418.0 449.0 L 422.0 449.0 L 426.0 449.0 L 430.0 449.0 L 434.0 449.0 L 438.0 450.0 L 442.0 450.0 L 446.0 450.0 L 450.0 451.0 L 454.0 451.0 L 458.0 452.0 L 462.0 453.0 L 466.0 453.0 L 470.0 454.0 L 474.0 455.0 L 478.0 456.0 L 482.0 457.0 L 486.0 458.0 L 490.0 459.0 L 494.0 461.0 L 498.0 462.0 L 502.0 464.0 L 506.0 465.0 L 510.0 467.0 L 514.0 469.0 L 518.0 471.0 L 522.0 473.0 L 526.0 476.0 L 530.0 479.0 L 534.0 482.0 L 538.0 485.0 L 542.0 490.0 L 546.0 495.0 L 546.0 505.0 L 542.0 510.0 L 538.0 515.0 L 534.0 518.0 L 530.0 521.0 L 526.0 524.0 L 522.0 527.0 L 518.0 529.0 L 514.0 531.0 L 510.0 533.0 L 506.0 535.0 L 502.0 536.0 L 498.0 538.0 L 494.0 539.0 L 490.0 541.0 L 486.0 542.0 L 482.0 543.0 L 478.0 544.0 L 474.0 545.0 L 470.0 546.0 L 466.0 547.0 L 462.0 547.0 L 458.0 548.0 L 454.0 549.0 L 450.0 549.0 L 446.0 550.0 L 442.0 550.0 L 438.0 550.0 L 434.0 551.0 L 430.0 551.0 L 426.0 551.0 L 422.0 551.0 L 418.0 551.0 L 414.0 551.0 L 410.0 551.0 L 406.0 551.0 L 402.0 550.0 L 398.0 550.0 L 394.0 550.0 L 390.0 549.0 L 386.0 549.0 L 382.0 548.0 L 378.0 547.0 L 374.0 547.0 L 370.0 546.0 L 366.0 545.0 L 362.0 544.0 L 358.0 543.0 L 354.0 542.0 L 350.0 541.0 L 346.0 539.0 L 342.0 538.0 L 338.0 536.0 L 334.0 535.0 L 330.0 533.0 L 326.0 531.0 L 322.0 529.0 L 318.0 527.0 L 314.0 524.0 L 310.0 521.0 L 306.0 518.0 L 302.0 515.0 L 298.0 510.0 L 294.0 505.0 Z" fill="#151820"/>
+    <!-- meridian ribs + latitude rings, VISIBLE portions only (outward normal . viewer &gt; 0) -->
+    <path d="M 672.3 574.1 L 674.1 568.7 L 675.2 563.1 L 675.6 557.3 L 675.2 551.3 L 674.1 545.1 L 672.3 539.0 L 669.7 532.9 L 666.5 526.9 L 662.7 521.0 L 658.2 515.4 L 653.2 510.1 L 647.7 505.1 L 641.8 500.6 L 635.5 496.4 L 628.8 492.8 L 622.0 489.8 L 615.0 487.3 L 607.9 485.4 L 600.9 484.1 L 593.9 483.5 L 587.0 483.5 L 580.4 484.1 L 574.1 485.4 L 568.2 487.3 L 562.7 489.8 L 557.7 492.9 L 553.2 496.5 L 549.3 500.6" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 583.0 657.5 L 586.0 655.1 L 588.6 652.1 L 590.8 648.4 L 592.6 644.2 L 593.8 639.3 L 594.6 634.0 L 594.8 628.3 L 594.6 622.2 L 593.8 615.7 L 592.6 609.1 L 590.8 602.3 L 588.6 595.4 L 586.0 588.4 L 583.0 581.6 L 579.5 574.9 L 575.8 568.4 L 571.7 562.2 L 567.4 556.3 L 562.9 550.9 L 558.2 545.9 L 553.4 541.4 L 548.6 537.6 L 543.7 534.3 L 538.9 531.8 L 534.3 529.9 L 529.7 528.7 L 525.4 528.2 L 521.4 528.5 L 517.6 529.4" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 463.1 692.6 L 464.0 691.7 L 464.8 689.9 L 465.6 687.4 L 466.2 684.2 L 466.6 680.3 L 467.0 675.8 L 467.2 670.6 L 467.2 664.9 L 467.2 658.7 L 467.0 652.2 L 466.6 645.2 L 466.2 638.1 L 465.6 630.7 L 464.8 623.2 L 464.0 615.7 L 463.1 608.3 L 462.1 601.0 L 461.0 594.0 L 459.8 587.2 L 458.6 580.8 L 457.3 574.8 L 456.0 569.4 L 454.7 564.5 L 453.4 560.3 L 452.1 556.7 L 450.9 553.8 L 449.6 551.7 L 448.5 550.3 L 447.4 549.7" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 335.1 685.7 L 333.3 684.6 L 331.7 682.8 L 330.3 680.1 L 329.1 676.8 L 328.2 672.9 L 327.5 668.2 L 327.1 663.1 L 327.0 657.4 L 327.1 651.2 L 327.5 644.7 L 328.2 637.8 L 329.1 630.7 L 330.3 623.4 L 331.7 616.1 L 333.3 608.7 L 335.1 601.4 L 337.1 594.3 L 339.3 587.4 L 341.6 580.8 L 344.0 574.6 L 346.5 568.9 L 349.0 563.6 L 351.6 559.0 L 354.2 554.9 L 356.7 551.5 L 359.2 548.9 L 361.6 546.9 L 363.9 545.7 L 366.1 545.3" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 222.2 635.5 L 219.0 632.2 L 216.4 628.3 L 214.3 623.8 L 212.8 618.8 L 211.9 613.4 L 211.6 607.6 L 211.9 601.6 L 212.8 595.2 L 214.3 588.7 L 216.4 582.1 L 219.0 575.5 L 222.2 568.9 L 225.8 562.4 L 229.9 556.0 L 234.4 550.0 L 239.2 544.3 L 244.4 538.9 L 249.7 534.0 L 255.3 529.6 L 261.0 525.7 L 266.8 522.4 L 272.6 519.7 L 278.3 517.7 L 283.8 516.4 L 289.2 515.7 L 294.4 515.8 L 299.2 516.5 L 303.7 517.9 L 307.8 520.0" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 152.5 535.0 L 152.1 529.1 L 152.5 523.1 L 153.7 517.1 L 155.6 511.2 L 158.3 505.3 L 161.6 499.7 L 165.7 494.3 L 170.3 489.1 L 175.6 484.4 L 181.4 480.0 L 187.6 476.1 L 194.2 472.7 L 201.1 469.8 L 208.3 467.5 L 215.6 465.8 L 223.0 464.6 L 230.5 464.2 L 237.8 464.3 L 244.9 465.0 L 251.9 466.4 L 258.5 468.4 L 264.7 471.0 L 270.5 474.1 L 275.7 477.7 L 280.4 481.8 L 284.4 486.3 L 287.8 491.3 L 290.5 496.5" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 299.7 473.0 L 299.3 478.9 L 298.2 484.5 L 296.4 489.8" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 173.5 416.4 L 177.3 412.3 L 181.8 408.7 L 186.8 405.6 L 192.3 403.1 L 198.2 401.2 L 204.5 399.9 L 211.2 399.2 L 218.0 399.2 L 225.0 399.9 L 232.1 401.1 L 239.1 403.0 L 246.1 405.5 L 253.0 408.6 L 259.6 412.2 L 265.9 416.3 L 271.8 420.9 L 277.3 425.9 L 282.3 431.2 L 286.8 436.8 L 290.7 442.6 L 293.9 448.7 L 296.4 454.8 L 298.2 460.9 L 299.3 467.0 L 299.7 473.0" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 337.7 439.6 L 337.5 445.4 L 336.7 450.7 L 335.5 455.5 L 333.7 459.8 L 331.5 463.5 L 328.9 466.5 L 325.8 468.9" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 260.5 340.8 L 264.2 339.8 L 268.3 339.6 L 272.6 340.0 L 277.1 341.2 L 281.8 343.1 L 286.6 345.7 L 291.4 348.9 L 296.3 352.8 L 301.1 357.2 L 305.7 362.2 L 310.3 367.7 L 314.6 373.5 L 318.6 379.7 L 322.4 386.2 L 325.8 392.9 L 328.9 399.8 L 331.5 406.7 L 333.7 413.6 L 335.5 420.4 L 336.7 427.1 L 337.5 433.5 L 337.7 439.6" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 397.8 422.4 L 397.7 428.1 L 397.5 433.2 L 397.2 437.8 L 396.7 441.7 L 396.1 444.9 L 395.4 447.4 L 394.6 449.1 L 393.6 450.1" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 377.9 307.2 L 379.0 307.8 L 380.2 309.2 L 381.4 311.3 L 382.7 314.2 L 384.0 317.7 L 385.3 322.0 L 386.6 326.9 L 387.9 332.3 L 389.1 338.3 L 390.4 344.7 L 391.5 351.4 L 392.6 358.5 L 393.6 365.8 L 394.6 373.2 L 395.4 380.7 L 396.1 388.2 L 396.7 395.5 L 397.2 402.7 L 397.5 409.6 L 397.7 416.2 L 397.8 422.4" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 463.8 425.9 L 463.9 431.7 L 464.3 436.8 L 465.0 441.4 L 465.9 445.4 L 467.1 448.7 L 468.5 451.3 L 470.1 453.2 L 471.9 454.3" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 502.9 313.9 L 500.7 314.3 L 498.4 315.5 L 496.0 317.5 L 493.5 320.1 L 491.0 323.5 L 488.4 327.6 L 485.8 332.2 L 483.3 337.5 L 480.8 343.2 L 478.4 349.4 L 476.1 356.0 L 473.9 362.9 L 471.9 370.0 L 470.1 377.3 L 468.5 384.6 L 467.1 392.0 L 465.9 399.3 L 465.0 406.4 L 464.3 413.2 L 463.9 419.8 L 463.8 425.9" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 518.1 449.3 L 518.4 455.1 L 519.3 460.5 L 520.8 465.5 L 522.8 470.0 L 525.4 473.9 L 528.6 477.3" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 614.2 361.7 L 610.1 359.6 L 605.6 358.2 L 600.8 357.5 L 595.6 357.4 L 590.3 358.1 L 584.7 359.4 L 579.0 361.4 L 573.2 364.1 L 567.4 367.4 L 561.7 371.3 L 556.2 375.7 L 550.8 380.6 L 545.6 386.0 L 540.8 391.7 L 536.3 397.8 L 532.2 404.1 L 528.6 410.6 L 525.4 417.2 L 522.8 423.8 L 520.8 430.4 L 519.3 436.9 L 518.4 443.3 L 518.1 449.3" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 684.4 453.8 L 681.7 448.5 L 678.4 443.6 L 674.3 439.0 L 669.7 434.9 L 664.4 431.3 L 658.6 428.2 L 652.4 425.6 L 645.8 423.7 L 638.9 422.3 L 631.7 421.5 L 624.4 421.4 L 617.0 421.9 L 609.5 423.0 L 602.2 424.7 L 595.1 427.0 L 588.1 429.9 L 581.5 433.3 L 575.3 437.2 L 569.5 441.6 L 564.3 446.4 L 559.6 451.5 L 555.6 456.9 L 552.2 462.6 L 549.5 468.4 L 547.6 474.4 L 546.4 480.3 L 546.1 486.3" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.85"/>
+    <path d="M 691.0 514.6 L 687.9 529.1 L 682.7 543.3 L 675.6 557.3 L 666.5 570.8 L 655.6 583.7 L 642.8 596.1 L 628.4 607.6 L 612.3 618.4 L 594.8 628.3 L 576.0 637.2 L 556.0 645.0 L 535.0 651.8 L 513.0 657.4 L 490.4 661.8 L 467.2 664.9 L 443.7 666.8 L 420.0 667.5 L 396.3 666.8 L 372.8 664.9 L 349.6 661.8 L 327.0 657.4 L 305.0 651.8 L 284.0 645.0 L 264.0 637.2 L 245.2 628.3 L 227.7 618.4 L 211.6 607.6 L 197.2 596.1 L 184.4 583.7 L 173.5 570.8 L 164.4 557.3 L 157.3 543.3 L 152.1 529.1 L 149.0 514.6" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.65"/>
+    <path d="M 670.9 459.9 L 670.0 473.3 L 667.1 486.7 L 662.4 499.9 L 655.8 512.7 L 647.4 525.2 L 637.3 537.1 L 625.5 548.5 L 612.2 559.2 L 597.4 569.1 L 581.3 578.2 L 563.9 586.4 L 545.5 593.7 L 526.0 599.9 L 505.8 605.0 L 484.9 609.1 L 463.6 612.0 L 441.9 613.8 L 420.0 614.4 L 398.1 613.8 L 376.4 612.0 L 355.1 609.1 L 334.2 605.0 L 314.0 599.9 L 294.5 593.7 L 276.1 586.4 L 258.7 578.2 L 242.6 569.1 L 227.8 559.2 L 214.5 548.5 L 202.7 537.1 L 192.6 525.2 L 184.2 512.7 L 177.6 499.9 L 172.9 486.7 L 170.0 473.3 L 169.1 459.9 L 170.0 446.4 L 172.9 433.1 L 177.6 419.9 L 184.2 407.0 L 192.6 394.6 L 202.7 382.6 L 214.5 371.3 L 227.8 360.6 L 242.6 350.6" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.65"/>
+    <path d="M 597.4 350.6 L 612.2 360.6 L 625.5 371.3 L 637.3 382.6 L 647.4 394.6 L 655.8 407.0 L 662.4 419.9 L 667.1 433.1 L 670.0 446.4 L 670.9 459.9" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.65"/>
+    <path d="M 569.1 459.9 L 568.5 467.9 L 566.8 475.8 L 564.0 483.6 L 560.1 491.3 L 555.1 498.7 L 549.1 505.8 L 542.1 512.5 L 534.2 518.9 L 525.4 524.8" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.65"/>
+    <path d="M 314.6 524.8 L 305.8 518.9 L 297.9 512.5 L 290.9 505.8 L 284.9 498.7 L 279.9 491.3 L 276.0 483.6 L 273.2 475.8 L 271.5 467.9 L 270.9 459.9 L 271.5 451.9 L 273.2 443.9 L 276.0 436.1 L 279.9 428.5 L 284.9 421.1 L 290.9 414.0 L 297.9 407.2 L 305.8 400.9 L 314.6 395.0 L 324.2 389.6 L 334.5 384.7 L 345.5 380.4 L 357.0 376.7 L 369.0 373.6 L 381.4 371.2 L 394.1 369.5 L 407.0 368.4 L 420.0 368.1 L 433.0 368.4 L 445.9 369.5 L 458.6 371.2 L 471.0 373.6 L 483.0 376.7 L 494.5 380.4 L 505.5 384.7 L 515.8 389.6 L 525.4 395.0 L 534.2 400.9 L 542.1 407.2 L 549.1 414.0 L 555.1 421.1 L 560.1 428.5 L 564.0 436.1 L 566.8 443.9 L 568.5 451.9 L 569.1 459.9" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.65"/>
+    <path d="M 292.5 493.1 L 293.9 486.3 L 296.4 479.6 L 299.7 473.0 L 304.0 466.7 L 309.1 460.6 L 315.1 454.8 L 321.9 449.3 L 329.5 444.3 L 337.7 439.6 L 346.6 435.4 L 356.0 431.8 L 365.9 428.6 L 376.2 425.9 L 386.9 423.9 L 397.8 422.4 L 408.8 421.5 L 420.0 421.2 L 431.2 421.5 L 442.2 422.4 L 453.1 423.9 L 463.8 425.9 L 474.1 428.6 L 484.0 431.8 L 493.4 435.4 L 502.3 439.6 L 510.5 444.3 L 518.1 449.3 L 524.9 454.8 L 530.9 460.6 L 536.0 466.7 L 540.3 473.0 L 543.6 479.6 L 546.1 486.3 L 547.5 493.1" fill="none" stroke="#495267" stroke-width="1.1" opacity="0.65"/>
+    <path d="M 294.0 495.0 L 298.0 490.0 L 302.0 485.0 L 306.0 482.0 L 310.0 479.0 L 314.0 476.0 L 318.0 473.0 L 322.0 471.0 L 326.0 469.0 L 330.0 467.0 L 334.0 465.0 L 338.0 464.0 L 342.0 462.0 L 346.0 461.0 L 350.0 459.0 L 354.0 458.0 L 358.0 457.0 L 362.0 456.0 L 366.0 455.0 L 370.0 454.0 L 374.0 453.0 L 378.0 453.0 L 382.0 452.0 L 386.0 451.0 L 390.0 451.0 L 394.0 450.0 L 398.0 450.0 L 402.0 450.0 L 406.0 449.0 L 410.0 449.0 L 414.0 449.0 L 418.0 449.0 L 422.0 449.0 L 426.0 449.0 L 430.0 449.0 L 434.0 449.0 L 438.0 450.0 L 442.0 450.0 L 446.0 450.0 L 450.0 451.0 L 454.0 451.0 L 458.0 452.0 L 462.0 453.0 L 466.0 453.0 L 470.0 454.0 L 474.0 455.0 L 478.0 456.0 L 482.0 457.0 L 486.0 458.0 L 490.0 459.0 L 494.0 461.0 L 498.0 462.0 L 502.0 464.0 L 506.0 465.0 L 510.0 467.0 L 514.0 469.0 L 518.0 471.0 L 522.0 473.0 L 526.0 476.0 L 530.0 479.0 L 534.0 482.0 L 538.0 485.0 L 542.0 490.0 L 546.0 495.0 L 546.0 505.0 L 542.0 510.0 L 538.0 515.0 L 534.0 518.0 L 530.0 521.0 L 526.0 524.0 L 522.0 527.0 L 518.0 529.0 L 514.0 531.0 L 510.0 533.0 L 506.0 535.0 L 502.0 536.0 L 498.0 538.0 L 494.0 539.0 L 490.0 541.0 L 486.0 542.0 L 482.0 543.0 L 478.0 544.0 L 474.0 545.0 L 470.0 546.0 L 466.0 547.0 L 462.0 547.0 L 458.0 548.0 L 454.0 549.0 L 450.0 549.0 L 446.0 550.0 L 442.0 550.0 L 438.0 550.0 L 434.0 551.0 L 430.0 551.0 L 426.0 551.0 L 422.0 551.0 L 418.0 551.0 L 414.0 551.0 L 410.0 551.0 L 406.0 551.0 L 402.0 550.0 L 398.0 550.0 L 394.0 550.0 L 390.0 549.0 L 386.0 549.0 L 382.0 548.0 L 378.0 547.0 L 374.0 547.0 L 370.0 546.0 L 366.0 545.0 L 362.0 544.0 L 358.0 543.0 L 354.0 542.0 L 350.0 541.0 L 346.0 539.0 L 342.0 538.0 L 338.0 536.0 L 334.0 535.0 L 330.0 533.0 L 326.0 531.0 L 322.0 529.0 L 318.0 527.0 L 314.0 524.0 L 310.0 521.0 L 306.0 518.0 L 302.0 515.0 L 298.0 510.0 L 294.0 505.0 Z" fill="none" stroke="#7c8598" stroke-width="1.3" stroke-dasharray="3 4"/>
+
+    <!-- THE FREQUENCY CIRCLE = the latitude at the top of the tube. Fully visible. -->
+    <ellipse cx="420" cy="443.3" rx="200" ry="123.1" fill="none" stroke="#5fc9f0"
+             stroke-width="2.6" stroke-dasharray="12 8" filter="url(#glow-med)"/>
+
+    <!-- THE AMPLITUDE CIRCLE = the meridian at longitude 0. Its FAR half is hidden by
+         the tube, so that half is faint-dashed. Both halves are ONE circle. -->
+    <path d="M 548.0 500.0 L 548.4 505.9 L 549.6 511.8 L 551.5 517.5 L 554.2 523.1 L 557.6 528.4 L 561.8 533.3 L 566.5 538.0 L 571.8 542.2 L 577.7 545.9 L 584.0 549.1 L 590.7 551.8 L 597.8 554.0 L 605.0 555.5 L 612.5 556.4 L 620.0 556.7 L 627.5 556.4 L 635.0 555.5 L 642.2 554.0 L 649.3 551.8 L 656.0 549.1 L 662.3 545.9 L 668.2 542.2 L 673.5 538.0 L 678.2 533.3 L 682.4 528.4 L 685.8 523.1 L 688.5 517.5 L 690.4 511.8 L 691.6 505.9 L 692.0 500.0" fill="none" stroke="#c79bf0" stroke-width="1.8" stroke-dasharray="5 6" opacity="0.5"/>
+    <path d="M 692.0 500.0 L 691.6 494.1 L 690.4 488.2 L 688.5 482.5 L 685.8 476.9 L 682.4 471.6 L 678.2 466.7 L 673.5 462.0 L 668.2 457.8 L 662.3 454.1 L 656.0 450.9 L 649.3 448.2 L 642.2 446.0 L 635.0 444.5 L 627.5 443.6 L 620.0 443.3 L 612.5 443.6 L 605.0 444.5 L 597.8 446.0 L 590.7 448.2 L 584.0 450.9 L 577.7 454.1 L 571.8 457.8 L 566.5 462.0 L 561.8 466.7 L 557.6 471.6 L 554.2 476.9 L 551.5 482.5 L 549.6 488.2 L 548.4 494.1 L 548.0 500.0" fill="none" stroke="#c79bf0" stroke-width="2.8" filter="url(#glow-med)"/>
+    <path d="M 691.7 495.1 L 690.9 490.1 L 689.5 485.3 L 687.7 480.6 L 685.3 476.0 L 682.4 471.6 L 679.0 467.5 L 675.2 463.5 L 670.9 459.9 L 666.3 456.5" fill="none" stroke="#c79bf0" stroke-width="3.2" marker-end="url(#mk-ah-amp)"/>
+
+  <text x="420" y="510" font-size="30" fill="#cdd6e4" text-anchor="middle">∅</text>
+  <text x="420" y="534" font-size="9.5" fill="#7c8598" text-anchor="middle">THE DONUT HOLE</text>
+
+  <!-- ========== THE WALK — the first word, "Composable" ==========
+       Only the first WORD is drawn here, and the reason is measured: the visible
+       band of a 38-degree perspective torus is psi 54..126 = 72 of 360 degrees =
+       51 byte values. "Composable" spans 48 and fits with ZERO occlusion (min
+       visibility +0.0837, checked); the full 30-byte string spans 84 and does not.
+       Nothing is rescaled to force it — the square carries all 30. -->
+  <path d="M 223.4 537.6 L 235.8 533.7 L 248.6 530.4 L 261.5 527.7 L 274.3 525.8 L 286.7 524.9 L 298.5 525.1 L 309.6 526.3 L 313.5 528.6 L 317.5 530.7 L 321.7 532.8 L 326.0 534.9 L 330.4 536.8 L 335.0 538.7 L 339.7 540.4 L 345.0 541.9 L 350.3 543.3 L 355.7 544.5 L 361.1 545.7 L 366.5 546.7 L 372.0 547.6 L 377.4 548.5 L 382.7 549.3 L 388.0 550.1 L 393.3 550.7 L 398.7 551.2 L 404.2 551.7 L 409.7 552.0 L 415.2 552.2 L 420.7 552.0 L 426.1 551.8 L 431.5 551.5 L 436.9 551.1 L 442.1 550.6 L 447.3 550.0 L 452.4 549.3 L 458.5 549.0 L 464.8 548.8 L 471.4 548.8 L 478.2 548.9 L 485.3 549.0 L 492.6 549.3 L 500.1 549.6 L 505.6 547.8 L 511.1 545.9 L 516.4 543.9 L 521.6 541.7 L 526.7 539.5 L 531.6 537.2 L 536.4 534.8 L 539.7 531.5 L 542.6 528.4 L 545.4 525.2 L 547.9 522.2 L 550.2 519.2 L 552.2 516.2 L 554.0 513.4 L 558.8 510.6 L 563.5 507.8 L 568.1 504.9 L 572.6 501.9 L 577.0 498.8 L 581.3 495.7 L 585.4 492.5 L 595.1 480.0 L 602.3 466.8 L 607.0 453.0 L 609.1 439.0 L 608.5 424.7 L 605.1 410.6 L 598.9 396.7 L 590.1 383.2 L 578.6 370.5 L 564.6 358.6 L 548.2 347.8 L 529.7 338.2 L 509.3 330.0 L 487.2 323.3 L 463.8 318.4 L 439.3 315.2 L 414.2 313.8 L 388.8 314.4 L 363.4 316.9 L 338.4 321.3 L 314.2 327.6 L 291.2 335.8 L 269.7 345.7 L 250.1 357.2 L 232.7 370.2 L 217.8 384.6 L 205.6 400.0 L 196.3 416.5 L 190.2 433.6 L 187.4 451.2 L 187.9 469.0 L 191.8 486.9 L 199.0 504.4 L 209.6 521.4 L 223.4 537.6" fill="none" stroke="#4fd99b" stroke-width="2" opacity="0.55"/>
+  <circle cx="223.4" cy="537.6" r="5" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="309.6" cy="526.3" r="5" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="339.7" cy="540.4" r="5" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="377.4" cy="548.5" r="3.4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="415.2" cy="552.2" r="3.4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="452.4" cy="549.3" r="3.4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="500.1" cy="549.6" r="3.4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="536.4" cy="534.8" r="3.4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="554.0" cy="513.4" r="3.4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="585.4" cy="492.5" r="5" fill="#4fd99b" filter="url(#glow-med)"/>
+  <text x="212" y="543" font-size="11" font-weight="bold" fill="#4fd99b" text-anchor="end">‘C’ 0x43</text>
+  <text x="300" y="508" font-size="10.5" font-weight="bold" fill="#4fd99b" text-anchor="middle">‘o’ 0x6f</text>
+  <path d="M 300 592 L 330 546" fill="none" stroke="#4fd99b" stroke-width="1.2" stroke-dasharray="2 4"/>
+  <text x="298" y="608" font-size="11" font-weight="bold" fill="#4fd99b" text-anchor="middle">‘m’ 0x6d — Δ = −2</text>
+  <text x="596" y="496" font-size="11" font-weight="bold" fill="#4fd99b" text-anchor="start">‘e’ 0x65</text>
+  <path d="M 452.4 549.3 L 500.1 549.6" fill="none" stroke="#4fd99b" stroke-width="3" marker-end="url(#mk-ah-walk)"/>
+  <path d="M 412 514 L 232.4 532.6" fill="none" stroke="#8fe8c0" stroke-width="2.3" stroke-dasharray="3 4" marker-end="url(#mk-ah-walk)"/>
+  <text x="262" y="474" font-size="9.5" font-style="italic" fill="#8fe8c0" text-anchor="middle">one genesis fold</text>
+  <circle class="anim" cx="0" cy="0" r="9" fill="none" stroke="#8fe8c0" stroke-width="2.6" filter="url(#glow-med)">
+    <animateMotion dur="20s" begin="1.8s" repeatCount="indefinite" calcMode="linear"
+                   keyTimes="0;0.04;0.70;1" keyPoints="0;0;0.35624;1" path="M 223.4 537.6 L 235.8 533.7 L 248.6 530.4 L 261.5 527.7 L 274.3 525.8 L 286.7 524.9 L 298.5 525.1 L 309.6 526.3 L 313.5 528.6 L 317.5 530.7 L 321.7 532.8 L 326.0 534.9 L 330.4 536.8 L 335.0 538.7 L 339.7 540.4 L 345.0 541.9 L 350.3 543.3 L 355.7 544.5 L 361.1 545.7 L 366.5 546.7 L 372.0 547.6 L 377.4 548.5 L 382.7 549.3 L 388.0 550.1 L 393.3 550.7 L 398.7 551.2 L 404.2 551.7 L 409.7 552.0 L 415.2 552.2 L 420.7 552.0 L 426.1 551.8 L 431.5 551.5 L 436.9 551.1 L 442.1 550.6 L 447.3 550.0 L 452.4 549.3 L 458.5 549.0 L 464.8 548.8 L 471.4 548.8 L 478.2 548.9 L 485.3 549.0 L 492.6 549.3 L 500.1 549.6 L 505.6 547.8 L 511.1 545.9 L 516.4 543.9 L 521.6 541.7 L 526.7 539.5 L 531.6 537.2 L 536.4 534.8 L 539.7 531.5 L 542.6 528.4 L 545.4 525.2 L 547.9 522.2 L 550.2 519.2 L 552.2 516.2 L 554.0 513.4 L 558.8 510.6 L 563.5 507.8 L 568.1 504.9 L 572.6 501.9 L 577.0 498.8 L 581.3 495.7 L 585.4 492.5 L 595.1 480.0 L 602.3 466.8 L 607.0 453.0 L 609.1 439.0 L 608.5 424.7 L 605.1 410.6 L 598.9 396.7 L 590.1 383.2 L 578.6 370.5 L 564.6 358.6 L 548.2 347.8 L 529.7 338.2 L 509.3 330.0 L 487.2 323.3 L 463.8 318.4 L 439.3 315.2 L 414.2 313.8 L 388.8 314.4 L 363.4 316.9 L 338.4 321.3 L 314.2 327.6 L 291.2 335.8 L 269.7 345.7 L 250.1 357.2 L 232.7 370.2 L 217.8 384.6 L 205.6 400.0 L 196.3 416.5 L 190.2 433.6 L 187.4 451.2 L 187.9 469.0 L 191.8 486.9 L 199.0 504.4 L 209.6 521.4 L 223.4 537.6"/>
+  </circle>
+  <circle class="anim" cx="420" cy="500" r="9" fill="none" stroke="#8fe8c0" stroke-width="2.6" opacity="0" filter="url(#glow-med)">
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.14;0.86;1" dur="1.8s" begin="0s" repeatCount="1" fill="remove"/>
+    <animateMotion dur="1.8s" begin="0s" repeatCount="1" fill="remove" path="M 0 0 L -196.6 37.6"/>
+  </circle>
+  <text x="486" y="596" font-size="12" font-weight="bold" fill="#4fd99b" text-anchor="start">NEXT →</text>
+  <text x="196" y="566" font-size="12" font-weight="bold" fill="#4fd99b" text-anchor="end">← PREVIOUS</text>
+
+  <text x="710" y="492" font-size="16" font-weight="bold" fill="#c79bf0">Δ</text>
+
+  <!-- circle labels -->
+  <text x="48" y="316" font-size="11.5" font-weight="bold" fill="#5fc9f0">the FREQUENCY circle</text>
+  <text x="48" y="332" font-size="10.5" fill="#8b95a7">ℤ/N — position in the walk</text>
+  <text x="48" y="348" font-size="10.5" fill="#8b95a7">the SEQUENCE of bytes we are walking</text>
+  <text x="48" y="366" font-size="10" font-weight="bold" fill="#c79bf0">⛔ READING A — foundation.md Q1 IS OPEN</text>
+  <path d="M 214 358 L 253 379" fill="none" stroke="#5fc9f0" stroke-width="1.2" stroke-dasharray="2 4"/>
+
+  <text x="782" y="330" font-size="11.5" font-weight="bold" fill="#c79bf0" text-anchor="end">the AMPLITUDE circle</text>
+  <text x="782" y="348" font-size="10.5" fill="#8b95a7" text-anchor="end">ℤ/256 — the byte at that position</text>
+  <text x="782" y="366" font-size="10.5" fill="#8b95a7" text-anchor="end">NEXT at 255 is 0 — it WRAPS</text>
+  <text x="782" y="384" font-size="10" font-style="italic" fill="#7c8598" text-anchor="end">far half = hidden by the tube</text>
+  <path d="M 712 392 L 674 452" fill="none" stroke="#c79bf0" stroke-width="1.2" stroke-dasharray="2 4"/>
+
+  <!-- the ruling, at the foot of the panel -->
+  <text x="420" y="732" font-size="12.5" font-weight="bold" fill="#4fd99b" text-anchor="middle">A STEP IS A MOVE, NEVER A LOOKUP.</text>
+  <text x="420" y="754" font-size="11" fill="#cdd6e4" text-anchor="middle">One step advances ±1 on the FREQUENCY circle and displaces by Δ on the AMPLITUDE circle.</text>
+  <text x="420" y="778" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="middle">“…we move from 63 to 61 — we DON’T go look up 61, we simply GO THERE.”</text>
+  <text x="420" y="796" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="middle">— steele 2026-08-24</text>
+
+  <!-- ==================================================================== -->
+  <!-- ================= PANEL 2 — THE SAMPLE ================= -->
+  <text x="838" y="152" font-size="12" font-weight="bold" fill="#cdd6e4">THE SAMPLE — “Composable Information Machine”</text>
+  <text x="838" y="172" font-size="10.5" fill="#7c8598">30 bytes · 19 distinct · range 0x20…0x74. Measured, not taken on report.</text>
+  <text x="838" y="200" font-size="11.5" fill="#8fe8c0">43 6f 6d 70 6f 73 61 62 6c 65 20 49 6e 66 6f 72 6d 61 74 69 6f 6e</text>
+  <text x="838" y="220" font-size="11.5" fill="#8fe8c0">20 4d 61 63 68 69 6e 65</text>
+
+  <text x="838" y="256" font-size="11.5" font-weight="bold" fill="#cdd6e4">THE MOVES WORTH SEEING — a walk is a DISPLACEMENT, not a scan</text>
+  <text x="838" y="280" font-size="11" fill="#cdd6e4">‘o’ 0x6f → ‘m’ 0x6d</text>
+  <text x="1120" y="280" font-size="11" font-weight="bold" fill="#c79bf0">Δ = −2  or  +254</text>
+  <text x="1260" y="280" font-size="10.5" fill="#7c8598">the wrap — the load-bearing step</text>
+  <text x="838" y="302" font-size="11" fill="#cdd6e4">‘e’ 0x65 → ‘␣’ 0x20</text>
+  <text x="1120" y="302" font-size="11" font-weight="bold" fill="#c79bf0">Δ = −69</text>
+  <text x="1260" y="302" font-size="10.5" fill="#7c8598">word boundary</text>
+  <text x="838" y="324" font-size="11" fill="#cdd6e4">‘n’ 0x6e → ‘␣’ 0x20</text>
+  <text x="1120" y="324" font-size="11" font-weight="bold" fill="#c79bf0">Δ = −78</text>
+  <text x="1260" y="324" font-size="10.5" fill="#7c8598">word boundary</text>
+  <text x="838" y="346" font-size="11" fill="#cdd6e4">‘C’→‘o’ +44 · ‘␣’→‘I’ +41 · ‘␣’→‘M’ +45</text>
+  <text x="1260" y="346" font-size="10.5" fill="#7c8598">long moves</text>
+  <text x="838" y="368" font-size="11" fill="#cdd6e4">19 distinct over 30 positions</text>
+  <text x="1260" y="368" font-size="10.5" fill="#7c8598">revisits — one amplitude, many positions</text>
+
+  <rect x="830" y="396" width="690" height="188" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="848" y="422" font-size="11.5" font-weight="bold" fill="#cdd6e4">⚠ THE WORD-BOUNDARY OBSERVATION IS CHART-DEPENDENT — so it is ILLUSTRATED, not asserted</text>
+  <text x="848" y="446" font-size="10.5" fill="#cdd6e4">Ran the control in cp037 (EBCDIC), the τ-leg map foundation.md §4b.2 keeps for exactly this:</text>
+  <text x="848" y="468" font-size="10.5" fill="#4fd99b">✔ SURVIVES — the space is the MINIMUM byte in BOTH charts (0x20 ascii · 0x40 cp037),</text>
+  <text x="848" y="484" font-size="10.5" fill="#4fd99b">   so the two DIPS are real under both. That is what the square draws.</text>
+  <text x="848" y="506" font-size="10.5" fill="#c79bf0">✘ FAILS — “the two deepest STEPS are the word boundaries” is TRUE in ascii (−69, −78)</text>
+  <text x="848" y="522" font-size="10.5" fill="#c79bf0">   and FALSE in cp037, where ‘M’→‘a’ (−83), which is INSIDE a word, beats ‘e’→‘␣’ (−69).</text>
+  <text x="848" y="544" font-size="10.5" fill="#cdd6e4">✘ And the BANDS INVERT: ascii puts lower ABOVE upper (97–116 vs 67–77); cp037 puts</text>
+  <text x="848" y="560" font-size="10.5" fill="#cdd6e4">   lower BELOW upper (129–163 vs 195–212). Same word, same walk, different geometry.</text>
+  <text x="848" y="578" font-size="10" font-style="italic" fill="#7c8598">⇒ These are facts about the CHART, never about walks. Declared under illustrates.</text>
+
+  <text x="838" y="614" font-size="11.5" font-weight="bold" fill="#c79bf0">⛔ AND THE FULL WALK WILL NOT FIT ON THE TORUS — measured, not eyeballed</text>
+  <text x="838" y="638" font-size="10.5" fill="#cdd6e4">A perspective torus at 38° shows only the band of the amplitude circle visible at EVERY</text>
+  <text x="838" y="654" font-size="10.5" fill="#cdd6e4">longitude: ψ ∈ 54°…126° — <tspan font-weight="bold">72° of 360°, i.e. 51 byte values, 20% of the circle.</tspan></text>
+  <text x="838" y="676" font-size="10.5" fill="#cdd6e4">This string spans 84 values (118°) and DOES NOT FIT; “Composable” spans 48 (68°) and does.</text>
+  <text x="838" y="698" font-size="10.5" font-weight="bold" fill="#4fd99b">⇒ So the torus carries the first WORD, and the square carries all 30. The square is not a</text>
+  <text x="838" y="714" font-size="10.5" font-weight="bold" fill="#4fd99b">   convenience — at this projection it is the only UNDISTORTED view of the walk.</text>
+  <text x="838" y="736" font-size="10" font-style="italic" fill="#7c8598">Nothing is compressed to make it fit. A rescaled amplitude axis would be a lie about ℤ/256.</text>
+
+  <!-- ============ THE FUNDAMENTAL SQUARE — all 30 positions ============
+       Full width, because 30 positions at the old 520px would put the walk at 17px
+       spacing and squeeze the -2/+254 demo into 17px of horizontal room. Legibility
+       beats compactness: a cramped square asserts nothing. -->
+  <text x="60" y="862" font-size="12" font-weight="bold" fill="#cdd6e4">THE FUNDAMENTAL SQUARE — the torus UNROLLED. All 30 positions. This is where the geometry is exact and nothing is hidden.</text>
+  <text x="60" y="880" font-size="10.5" fill="#7c8598">BOTH pairs of opposite edges identified · vertical seam 256 ≡ 0 is FORCED · horizontal seam is READING A of the OPEN Q1 · 0x6f + 254 = 0x16d ≡ 0x6d (mod 256)</text>
+  <rect x="60" y="890" width="1440" height="480" fill="#171b24" stroke="#3a4152" stroke-width="1.4"/>
+  <line x1="60" y1="1130.0" x2="1500" y2="1130.0" stroke="#3a4152" stroke-width="1" stroke-dasharray="3 6"/>
+  <line x1="60" y1="890" x2="1500" y2="890" stroke="#c79bf0" stroke-width="2.6" filter="url(#glow-med-line)"/>
+  <line x1="60" y1="1370" x2="1500" y2="1370" stroke="#c79bf0" stroke-width="2.6" filter="url(#glow-med-line)"/>
+  <path d="M 772 882 L 790 890 L 772 898 Z" fill="#c79bf0"/><path d="M 772 1362 L 790 1370 L 772 1378 Z" fill="#c79bf0"/>
+  <line x1="60" y1="890" x2="60" y2="1370" stroke="#5fc9f0" stroke-width="2.6" filter="url(#glow-med-line)"/>
+  <line x1="1500" y1="890" x2="1500" y2="1370" stroke="#5fc9f0" stroke-width="2.6" filter="url(#glow-med-line)"/>
+  <path d="M 52 1116 L 60 1098 L 68 1116 Z" fill="#5fc9f0"/>
+  <path d="M 52 1142 L 60 1124 L 68 1142 Z" fill="#5fc9f0"/>
+  <path d="M 1492 1116 L 1500 1098 L 1508 1116 Z" fill="#5fc9f0"/>
+  <path d="M 1492 1142 L 1500 1124 L 1508 1142 Z" fill="#5fc9f0"/>
+  <path d="M 132.0 1155.9 L 159.4 893" fill="none" stroke="#c79bf0" stroke-width="2.2" stroke-dasharray="9 6" marker-end="url(#mk-ah-amp)"/>
+  <path d="M 159.4 1367 L 177.0 1172.6" fill="none" stroke="#c79bf0" stroke-width="2.2" stroke-dasharray="9 6" marker-end="url(#mk-ah-amp)"/>
+  <path d="M 84.0 1244.4 L 132.0 1161.9 L 180.0 1165.6 L 228.0 1160.0 L 276.0 1161.9 L 324.0 1154.4 L 372.0 1188.1 L 420.0 1186.2 L 468.0 1167.5 L 516.0 1180.6 L 564.0 1310.0 L 612.0 1233.1 L 660.0 1163.8 L 708.0 1178.8 L 756.0 1161.9 L 804.0 1156.2 L 852.0 1165.6 L 900.0 1188.1 L 948.0 1152.5 L 996.0 1173.1 L 1044.0 1161.9 L 1092.0 1163.8 L 1140.0 1310.0 L 1188.0 1225.6 L 1236.0 1188.1 L 1284.0 1184.4 L 1332.0 1175.0 L 1380.0 1173.1 L 1428.0 1163.8 L 1476.0 1180.6" fill="none" stroke="#4fd99b" stroke-width="2.4" filter="url(#glow-med)"/>
+  <circle cx="84.0" cy="1244.4" r="6" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="132.0" cy="1161.9" r="6" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="180.0" cy="1165.6" r="6" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="228.0" cy="1160.0" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="276.0" cy="1161.9" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="324.0" cy="1154.4" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="372.0" cy="1188.1" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="420.0" cy="1186.2" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="468.0" cy="1167.5" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="516.0" cy="1180.6" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="564.0" cy="1310.0" r="6" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="612.0" cy="1233.1" r="6" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="660.0" cy="1163.8" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="708.0" cy="1178.8" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="756.0" cy="1161.9" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="804.0" cy="1156.2" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="852.0" cy="1165.6" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="900.0" cy="1188.1" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="948.0" cy="1152.5" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="996.0" cy="1173.1" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1044.0" cy="1161.9" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1092.0" cy="1163.8" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1140.0" cy="1310.0" r="6" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1188.0" cy="1225.6" r="6" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1236.0" cy="1188.1" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1284.0" cy="1184.4" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1332.0" cy="1175.0" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1380.0" cy="1173.1" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1428.0" cy="1163.8" r="4" fill="#4fd99b" filter="url(#glow-med)"/>
+  <circle cx="1476.0" cy="1180.6" r="6" fill="#4fd99b" filter="url(#glow-med)"/>
+  <text x="84.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">C</text>
+  <text x="84.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">43</text>
+  <text x="132.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">o</text>
+  <text x="132.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6f</text>
+  <text x="180.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">m</text>
+  <text x="180.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6d</text>
+  <text x="228.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">p</text>
+  <text x="228.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">70</text>
+  <text x="276.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">o</text>
+  <text x="276.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6f</text>
+  <text x="324.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">s</text>
+  <text x="324.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">73</text>
+  <text x="372.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">a</text>
+  <text x="372.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">61</text>
+  <text x="420.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">b</text>
+  <text x="420.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">62</text>
+  <text x="468.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">l</text>
+  <text x="468.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6c</text>
+  <text x="516.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">e</text>
+  <text x="516.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">65</text>
+  <text x="564.0" y="1394" font-size="13" fill="#c79bf0" text-anchor="middle">␣</text>
+  <text x="564.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">20</text>
+  <text x="612.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">I</text>
+  <text x="612.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">49</text>
+  <text x="660.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">n</text>
+  <text x="660.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6e</text>
+  <text x="708.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">f</text>
+  <text x="708.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">66</text>
+  <text x="756.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">o</text>
+  <text x="756.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6f</text>
+  <text x="804.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">r</text>
+  <text x="804.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">72</text>
+  <text x="852.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">m</text>
+  <text x="852.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6d</text>
+  <text x="900.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">a</text>
+  <text x="900.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">61</text>
+  <text x="948.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">t</text>
+  <text x="948.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">74</text>
+  <text x="996.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">i</text>
+  <text x="996.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">69</text>
+  <text x="1044.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">o</text>
+  <text x="1044.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6f</text>
+  <text x="1092.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">n</text>
+  <text x="1092.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6e</text>
+  <text x="1140.0" y="1394" font-size="13" fill="#c79bf0" text-anchor="middle">␣</text>
+  <text x="1140.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">20</text>
+  <text x="1188.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">M</text>
+  <text x="1188.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">4d</text>
+  <text x="1236.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">a</text>
+  <text x="1236.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">61</text>
+  <text x="1284.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">c</text>
+  <text x="1284.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">63</text>
+  <text x="1332.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">h</text>
+  <text x="1332.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">68</text>
+  <text x="1380.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">i</text>
+  <text x="1380.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">69</text>
+  <text x="1428.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">n</text>
+  <text x="1428.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">6e</text>
+  <text x="1476.0" y="1394" font-size="13" fill="#cdd6e4" text-anchor="middle">e</text>
+  <text x="1476.0" y="1410" font-size="8.5" fill="#7c8598" text-anchor="middle">65</text>
+
+  <!-- ========== THE WALK, AND THE WRAP — antenna tier, the viewer's clock ==========
+       The torus is the plane modulo a LATTICE, so the trajectory is drawn as its
+       lattice TRANSLATES, clipped to the fundamental domain. Offsets are EXACTLY the
+       square's own size: (0,+480) amplitude seam, (-1440,0) frequency seam. As one
+       copy leaves an edge the translate is already entering the opposite one, at the
+       same instant and the same coordinate — so no seam crossing is ever a cut. -->
+  <g clip-path="url(#clip-fund)">
+    <g><circle class="anim" cx="0" cy="0" r="9" fill="none" stroke="#8fe8c0" stroke-width="2.6" filter="url(#glow-med)"><animateMotion dur="20s" begin="1.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.03;0.07;0.13;0.26;0.32;0.80;1" keyPoints="0;0;0.05005;0.05005;0.07530;0.07530;0.95815;1" path="M 84.0 1244.4 L 132.0 1161.9 L 180.0 1165.6 L 228.0 1160.0 L 276.0 1161.9 L 324.0 1154.4 L 372.0 1188.1 L 420.0 1186.2 L 468.0 1167.5 L 516.0 1180.6 L 564.0 1310.0 L 612.0 1233.1 L 660.0 1163.8 L 708.0 1178.8 L 756.0 1161.9 L 804.0 1156.2 L 852.0 1165.6 L 900.0 1188.1 L 948.0 1152.5 L 996.0 1173.1 L 1044.0 1161.9 L 1092.0 1163.8 L 1140.0 1310.0 L 1188.0 1225.6 L 1236.0 1188.1 L 1284.0 1184.4 L 1332.0 1175.0 L 1380.0 1173.1 L 1428.0 1163.8 L 1476.0 1180.6 L 1524.0 1244.4"/></circle></g>
+    <g transform="translate(-1440,0)"><circle class="anim" cx="0" cy="0" r="9" fill="none" stroke="#8fe8c0" stroke-width="2.6" filter="url(#glow-med)"><animateMotion dur="20s" begin="1.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.03;0.07;0.13;0.26;0.32;0.80;1" keyPoints="0;0;0.05005;0.05005;0.07530;0.07530;0.95815;1" path="M 84.0 1244.4 L 132.0 1161.9 L 180.0 1165.6 L 228.0 1160.0 L 276.0 1161.9 L 324.0 1154.4 L 372.0 1188.1 L 420.0 1186.2 L 468.0 1167.5 L 516.0 1180.6 L 564.0 1310.0 L 612.0 1233.1 L 660.0 1163.8 L 708.0 1178.8 L 756.0 1161.9 L 804.0 1156.2 L 852.0 1165.6 L 900.0 1188.1 L 948.0 1152.5 L 996.0 1173.1 L 1044.0 1161.9 L 1092.0 1163.8 L 1140.0 1310.0 L 1188.0 1225.6 L 1236.0 1188.1 L 1284.0 1184.4 L 1332.0 1175.0 L 1380.0 1173.1 L 1428.0 1163.8 L 1476.0 1180.6 L 1524.0 1244.4"/></circle></g>
+    <g><circle class="anim" cx="0" cy="0" r="8" fill="none" stroke="#c79bf0" stroke-width="2.6" filter="url(#glow-med)"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.115;0.135;0.28;0.33;1" dur="20s" begin="1.8s" repeatCount="indefinite"/><animateMotion dur="20s" begin="1.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.13;0.26;1" keyPoints="0;0;1;1" path="M 132.0 1161.9 L 180.0 685.6"/></circle></g>
+    <g transform="translate(0,480)"><circle class="anim" cx="0" cy="0" r="8" fill="none" stroke="#c79bf0" stroke-width="2.6" filter="url(#glow-med)"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.115;0.135;0.28;0.33;1" dur="20s" begin="1.8s" repeatCount="indefinite"/><animateMotion dur="20s" begin="1.8s" repeatCount="indefinite" calcMode="linear" keyTimes="0;0.13;0.26;1" keyPoints="0;0;1;1" path="M 132.0 1161.9 L 180.0 685.6"/></circle></g>
+  </g>
+  <text x="1516" y="894" font-size="10.5" fill="#8b95a7" text-anchor="start">255</text>
+  <text x="1516" y="1134" font-size="10.5" fill="#8b95a7" text-anchor="start">128</text>
+  <text x="1516" y="1374" font-size="10.5" fill="#8b95a7" text-anchor="start">0</text>
+  <text x="1150" y="932" font-size="10.5" fill="#c79bf0" text-anchor="middle">top edge ≡ bottom edge — the SEAM is 256 ≡ 0 (FORCED on either reading of Q1)</text>
+  <text x="46" y="1129" font-size="10.5" fill="#5fc9f0" text-anchor="middle" transform="rotate(-90 46 1129)">left ≡ right — position N−1 NEXT-to 0 · READING A, Q1 OPEN</text>
+  <text x="205" y="1150" font-size="11" font-weight="bold" fill="#4fd99b">Δ = −2 — the short move</text>
+  <text x="176" y="1010" font-size="11" font-weight="bold" fill="#c79bf0">Δ = +254 — the SAME move, the long way round</text>
+  <text x="176" y="1030" font-size="10.5" fill="#c79bf0">it does not stop at 255; it wraps</text>
+  <text x="168" y="912" font-size="10.5" fill="#c79bf0">exits at the seam …</text>
+  <text x="168" y="1356" font-size="10.5" fill="#c79bf0">… re-enters at 0</text>
+  <text x="1180" y="1086" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="end">the two ␣ are the DEEPEST points — word boundaries, visible as displacement</text>
+  <text x="1180" y="1102" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="end">(true under ascii AND cp037; the deepest-STEP reading is not — see the panel above)</text>
+  <text x="780" y="1432" font-size="11" fill="#5fc9f0" text-anchor="middle">FREQUENCY — the SEQUENCE of bytes we are walking (position) · READING A of the OPEN Q1</text>
+  <text x="20" y="1129" font-size="11" fill="#c79bf0" text-anchor="middle" transform="rotate(-90 20 1129)">AMPLITUDE — the BYTE at that position (0…255) · ℤ/256, FORCED</text>
+
+  <g transform="translate(0,600)">
+  <!-- ============ PANEL 3 — THE LAYOUT (finite limit) =================== -->
+  <!-- ==================================================================== -->
+
+  <rect x="40" y="860" width="700" height="340" rx="6" fill="#241b1e" stroke="#d98d8d"
+        stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="58" y="886" font-size="12" font-weight="bold" fill="#d98d8d">a LAYOUT (finite limit) — the PRODUCT. This is what “it is a torus” MEANS.</text>
+  <text x="58" y="904" font-size="10.5" font-style="italic" fill="#7c8598">both triangles commute · Spivak–Kent arXiv:1102.1889 §4, “finite limits (layouts)”</text>
+
+  <rect x="240" y="920" width="300" height="62" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="2.4" filter="url(#glow-soft)"/>
+  <text x="390" y="946" font-size="12.5" fill="#cdd6e4" text-anchor="middle">a point of the universe of bytes</text>
+  <text x="390" y="966" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">“we are in the TORUS at that byte position”</text>
+
+  <rect x="255" y="1014" width="270" height="52" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="390" y="1036" font-size="11.5" fill="#cdd6e4" text-anchor="middle">a pair of a position and a byte value</text>
+  <text x="390" y="1054" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">(position, byte)</text>
+
+  <rect x="62" y="1104" width="260" height="62" rx="4" fill="#1c2029" stroke="#5f86b5" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="192" y="1130" font-size="11.5" fill="#cdd6e4" text-anchor="middle">a position on the frequency circle</text>
+  <text x="192" y="1150" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">ℤ/N</text>
+
+  <rect x="470" y="1104" width="230" height="62" rx="4" fill="#1c2029" stroke="#c79bf0" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="585" y="1130" font-size="12.5" fill="#cdd6e4" text-anchor="middle">a byte value</text>
+  <text x="585" y="1150" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">ℤ/256</text>
+
+  <line x1="390" y1="984" x2="390" y2="1010" stroke="#b9c6da" stroke-width="2.2" marker-end="url(#mk-ah)"/>
+  <text x="404" y="1002" font-size="10.5" fill="#cdd6e4">is the pair</text>
+
+  <line x1="300" y1="1068" x2="250" y2="1100" stroke="#b9c6da" stroke-width="2.2" marker-end="url(#mk-ah)"/>
+  <text x="332" y="1092" font-size="10.5" fill="#cdd6e4" text-anchor="start">is first</text>
+
+  <line x1="480" y1="1068" x2="530" y2="1100" stroke="#b9c6da" stroke-width="2.2" marker-end="url(#mk-ah)"/>
+  <text x="448" y="1092" font-size="10.5" fill="#cdd6e4" text-anchor="end">is second</text>
+
+  <line x1="248" y1="964" x2="150" y2="1100" stroke="#b9c6da" stroke-width="2.2" marker-end="url(#mk-ah)"/>
+  <text x="60" y="1010" font-size="10.5" fill="#cdd6e4">has position</text>
+  <text x="60" y="1026" font-size="10.5" fill="#cdd6e4">(frequency)</text>
+
+  <line x1="532" y1="964" x2="632" y2="1100" stroke="#b9c6da" stroke-width="2.2" marker-end="url(#mk-ah)"/>
+  <text x="612" y="1010" font-size="10.5" fill="#cdd6e4">has byte value</text>
+  <text x="612" y="1026" font-size="10.5" fill="#cdd6e4">(amplitude)</text>
+
+  <text x="390" y="1190" font-size="11" font-weight="bold" fill="#cdd6e4" text-anchor="middle">a point IS the pair — that is the product, and it is why this is S¹ × S¹ and not two circles side by side.</text>
+
+  <!-- ==================================================================== -->
+  <!-- ============= PANEL 4 — THE FACT (go there, do not look up) ======== -->
+  <!-- ==================================================================== -->
+
+  <rect x="780" y="860" width="740" height="340" rx="6" fill="#18212e" stroke="#5f86b5"
+        stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="798" y="886" font-size="12" font-weight="bold" fill="#7fa8d0">a FACT — two routes, one source, one target. Trace them.</text>
+  <text x="798" y="904" font-size="10.5" font-style="italic" fill="#7c8598">GO THERE, do not look up · CarrierKernel: Modulate(a,d) = a + d · Demodulate(b,a) = b − a</text>
+
+  <rect x="806" y="944" width="250" height="62" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="2.4" filter="url(#glow-soft)"/>
+  <text x="931" y="970" font-size="12.5" fill="#cdd6e4" text-anchor="middle">an ordered byte pair</text>
+  <text x="931" y="990" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">(a, b) — a byte-pair edge</text>
+
+  <rect x="1180" y="944" width="310" height="62" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="1335" y="970" font-size="12.5" fill="#cdd6e4" text-anchor="middle">a byte value with a displacement</text>
+  <text x="1335" y="990" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">(a, d) — where you are, and the MOVE</text>
+
+  <rect x="1010" y="1104" width="250" height="62" rx="4" fill="#1c2029" stroke="#c79bf0" stroke-width="2.4" filter="url(#glow-soft)"/>
+  <text x="1135" y="1130" font-size="12.5" fill="#cdd6e4" text-anchor="middle">a byte value</text>
+  <text x="1135" y="1150" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">b — both routes arrive HERE</text>
+
+  <line x1="1058" y1="975" x2="1176" y2="975" stroke="#b9c6da" stroke-width="2.2" marker-end="url(#mk-ah)"/>
+  <text x="1117" y="934" font-size="10.5" fill="#cdd6e4" text-anchor="middle">demodulates to   d = b − a</text>
+
+  <line x1="920" y1="1008" x2="1044" y2="1100" stroke="#b9c6da" stroke-width="2.6" marker-end="url(#mk-ah)"/>
+  <text x="900" y="1064" font-size="10.5" fill="#cdd6e4" text-anchor="end">its second is</text>
+
+  <line x1="1330" y1="1008" x2="1210" y2="1100" stroke="#b9c6da" stroke-width="2.6" marker-end="url(#mk-ah)"/>
+  <text x="1358" y="1064" font-size="10.5" fill="#cdd6e4" text-anchor="start">modulates to   a + d</text>
+
+  <text x="1132" y="1030" font-size="30" font-weight="bold" fill="#cdd6e4" text-anchor="middle">=</text>
+  <text x="1132" y="1062" font-size="11.5" font-weight="bold" fill="#cdd6e4" text-anchor="middle">PATH A  =  PATH B</text>
+
+  <text x="1150" y="1190" font-size="11" font-weight="bold" fill="#4fd99b" text-anchor="middle">The displacement is a faithful MOVE. Nothing is fetched, and nothing is looked up.</text>
+
+  <!-- ==================================================================== -->
+  <!-- ========================== PANELS ================================== -->
+  <!-- ==================================================================== -->
+
+  <!-- THE LAW -->
+  <rect x="40" y="1230" width="470" height="220" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="58" y="1256" font-size="12" font-weight="bold" fill="#cdd6e4">THE LAW — what must hold for this to be a torus</text>
+  <text x="58" y="1282" font-size="11" fill="#cdd6e4">The universe is the PRODUCT of two circles. The base is</text>
+  <text x="58" y="1300" font-size="11" fill="#cdd6e4">ℤ/N, a ring buffer with cyclic successor — the FREQUENCY</text>
+  <text x="58" y="1318" font-size="11" fill="#cdd6e4">circle. The fiber is the byte, 0…255, cyclic under NEXT —</text>
+  <text x="58" y="1336" font-size="11" fill="#cdd6e4">the AMPLITUDE circle. A point IS the pair.</text>
+  <text x="58" y="1362" font-size="11" fill="#cdd6e4">A step is a DISPLACEMENT on both circles at once. ∅ has</text>
+  <text x="58" y="1380" font-size="11" fill="#cdd6e4">no pair, so ∅ is the hole and not a point of the surface.</text>
+  <text x="58" y="1406" font-size="10.5" font-style="italic" fill="#7c8598">If this fails, the figure is a picture of two circles, not a torus.</text>
+  <text x="58" y="1428" font-size="10.5" font-weight="bold" fill="#c79bf0">⛔ Naming the base “the ring buffer” is READING A — Q1 is OPEN.</text>
+  <text x="58" y="1444" font-size="10.5" fill="#cdd6e4">The AMPLITUDE half is FORCED on either reading; this half is not.</text>
+
+  <!-- THE CLAIMS -->
+  <rect x="535" y="1230" width="470" height="220" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="553" y="1256" font-size="12" font-weight="bold" fill="#cdd6e4">THE CLAIMS — asserted, versus merely illustrated</text>
+  <text x="553" y="1280" font-size="10.5" font-weight="bold" fill="#cdd6e4">ASSERTED — declared in &lt;metadata&gt;, all four UNPROVEN:</text>
+  <text x="553" y="1298" font-size="10.5" fill="#cdd6e4">· c-torus-pi1 / c-torus-pi2 — a point IS the pair</text>
+  <text x="553" y="1314" font-size="10.5" fill="#cdd6e4">· c-go-there — b = a + (b − a): a displacement is a MOVE</text>
+  <text x="553" y="1330" font-size="10.5" fill="#cdd6e4">· c-wrap — Δ = −2 and Δ = +254 are the SAME MOVE (‘o’→‘m’)</text>
+  <text x="553" y="1346" font-size="10.5" fill="#cdd6e4">· a-genesis — ∅ is LEFT by one genesis fold (an arrow, no square)</text>
+  <text x="553" y="1370" font-size="10.5" font-weight="bold" fill="#cdd6e4">ILLUSTRATED — drawn, and NOT asserted:</text>
+  <text x="553" y="1388" font-size="10.5" fill="#cdd6e4">· the perspective torus — a sketch, not a measurement</text>
+  <text x="553" y="1404" font-size="10.5" fill="#cdd6e4">· everything the MOTION adds, and both word-boundary readings</text>
+  <text x="553" y="1428" font-size="10.5" font-style="italic" fill="#7c8598">Compass rules on the block. Stencil emits it and does not judge it.</text>
+  <text x="553" y="1444" font-size="10.5" font-style="italic" fill="#7c8598">An unmarked claim is an assertion that cannot fail; there are none here.</text>
+
+  <rect x="1030" y="1230" width="490" height="220" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="1048" y="1256" font-size="12" font-weight="bold" fill="#cdd6e4">WHAT THIS DIAGRAM CANNOT SHOW</text>
+  <text x="1048" y="1280" font-size="10.5" fill="#cdd6e4">· Where byte 0 sits on the amplitude circle is a DRAWING</text>
+  <text x="1048" y="1296" font-size="10.5" fill="#cdd6e4">  CONVENTION. Nothing here fixes the meridian’s origin.</text>
+  <text x="1048" y="1316" font-size="10.5" fill="#cdd6e4">· N is NOT ruled — and the register’s numbers are NOT</text>
+  <text x="1048" y="1332" font-size="10.5" fill="#cdd6e4">  candidates: cat-bytes.md §3c — “the register is the</text>
+  <text x="1048" y="1348" font-size="10.5" fill="#cdd6e4">  MEASUREMENT of ∫A, NOT the base category.” Corrected.</text>
+  <text x="1048" y="1368" font-size="10.5" fill="#cdd6e4">· cat-byte’s morphisms are ADJACENCY (byte-pair edges) and</text>
+  <text x="1048" y="1384" font-size="10.5" fill="#cdd6e4">  are register-OBSERVED DATA — NOT ±1 on either circle.</text>
+  <text x="1048" y="1404" font-size="10.5" fill="#cdd6e4">· The fiber of ∫A is B-elt = Fin 256 + the unit I. Only the</text>
+  <text x="1048" y="1420" font-size="10.5" fill="#cdd6e4">  Fin 256 part is ON the surface; I is the hole.</text>
+  <text x="1048" y="1440" font-size="10.5" fill="#cdd6e4">· The register is not drawn. [[SUBSTRATE-CANON]]</text>
+
+  <!-- ================= WHAT THE MOTION CLAIMS ================= -->
+  <rect x="40" y="1472" width="1480" height="150" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="58" y="1498" font-size="12" font-weight="bold" fill="#4fd99b">WHAT THE MOTION ASSERTS — motion can smuggle a claim, so it is DECLARED</text>
+  <text x="58" y="1522" font-size="10.5" fill="#cdd6e4">· c-wrap — two heads leave ‘o’ 0x6f TOGETHER, one stepping −2 and one +254</text>
+  <text x="58" y="1538" font-size="10.5" fill="#cdd6e4">  through the seam. They ARRIVE TOGETHER at ‘m’ 0x6d. That CONVERGENCE is the assertion:</text>
+  <text x="58" y="1554" font-size="10.5" fill="#cdd6e4">  on a circle those are the same move. Status UNPROVEN, like the other three.</text>
+  <text x="58" y="1570" font-size="10.5" fill="#cdd6e4">· a-genesis — the head LEAVES the hole. ∅ → the surface is one genesis fold.</text>
+  <text x="800" y="1498" font-size="12" font-weight="bold" fill="#c79bf0">WHAT IT ONLY ILLUSTRATES — no claim is made by any of these</text>
+  <text x="800" y="1522" font-size="10.5" fill="#cdd6e4">· the swept CURVE of the genesis glide. The FOLD is one step, not a path.</text>
+  <text x="800" y="1538" font-size="10.5" fill="#cdd6e4">· the GLIDE between marked positions. The frequency circle is ℤ/N and DISCRETE —</text>
+  <text x="800" y="1554" font-size="10.5" fill="#cdd6e4">  gliding asserts nothing about anything lying between position 0 and position 1.</text>
+  <text x="800" y="1570" font-size="10.5" fill="#cdd6e4">· one full turn back to position 0 — the cyclic successor. N is still not ruled.</text>
+  <text x="800" y="1586" font-size="10.5" fill="#cdd6e4">· the word-boundary DIPS and the three BANDS — chart facts, not walk facts. Controlled.</text>
+  <text x="58" y="1610" font-size="10" font-style="italic" fill="#7c8598">ANTENNA TIER: declarative SMIL on the VIEWER’S clock — no frame sequence, no wall-clock at authoring time. Honours prefers-reduced-motion; with motion off the static trajectory, markers, routes and arrows carry every claim.</text>
+
+  <!-- ================= FOUNDATION CHECK ================= -->
+  <rect x="40" y="1642" width="1480" height="228" rx="6" fill="#201a2c" stroke="#b491e8" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="58" y="1668" font-size="12" font-weight="bold" fill="#c79bf0">FOUNDATION CHECK — /git/thecowboyai/hatter @ 1d9ea2cc, sources read 2026-08-24 · VERDICT: (c) THEY DISAGREE, and (a) IT REDRAWS. Both — and (c) outranks.</text>
+  <text x="58" y="1694" font-size="10.5" font-weight="bold" fill="#cdd6e4">⛔ DISAGREEMENT 1 — Q1 IS OPEN AND THIS FIGURE ANSWERED IT SILENTLY.</text>
+  <text x="58" y="1712" font-size="10.5" fill="#cdd6e4">  foundation.md §4.2 / §9 Q1: is the second circle POSITION-WITHIN-A-SEQUENCE (A), or does</text>
+  <text x="58" y="1728" font-size="10.5" fill="#cdd6e4">  “which byte in which sequence” make the SEQUENCE a coordinate (B)? Foundation: “I am not</text>
+  <text x="58" y="1744" font-size="10.5" fill="#cdd6e4">  choosing … A ruling is owed BEFORE anything is drawn on it.” This figure drew READING A and</text>
+  <text x="58" y="1760" font-size="10.5" fill="#cdd6e4">  asserted it. The left≡right FREQUENCY seam IS that commitment. The amplitude seam is NOT.</text>
+  <text x="58" y="1782" font-size="10.5" font-weight="bold" fill="#cdd6e4">⛔ DISAGREEMENT 2 — IsZeroNumber WAS DRAWN AS THE ∅-TEST. It is a PINNED DEFECT.</text>
+  <text x="58" y="1800" font-size="10.5" fill="#cdd6e4">  “ZeroNumber implies Byte(0) not Byte({ })” — it cannot tell ABSENT from PRESENT-AND-ZERO,</text>
+  <text x="58" y="1816" font-size="10.5" fill="#cdd6e4">  and a hole has NO COORDINATES to detect. Removed; Byte({ }) is the unit I.</text>
+  <text x="58" y="1832" font-size="10.5" fill="#cdd6e4">  [pin: feedback_byte_empty_is_the_hole_not_byte_zero]. My label “an empty byte sequence” was</text>
+  <text x="58" y="1848" font-size="10.5" fill="#cdd6e4">  wrong the same way: it is a BYTE whose CONTENT is absent, not a missing byte.</text>
+  <text x="800" y="1694" font-size="10.5" font-weight="bold" fill="#cdd6e4">(a) REDRAWN — already asserted elsewhere, so now CITED and not claimed here:</text>
+  <text x="800" y="1712" font-size="10.5" fill="#cdd6e4">  · the floor is T² = S¹ × S¹ · Byte({ }) is the HOLE and IS I ..... foundation.md §4.1</text>
+  <text x="800" y="1728" font-size="10.5" fill="#cdd6e4">  · S¹value = ℤ/256, exactly 256 pts · PREV/NEXT ARE adjacency ... §4.2, both FORCED</text>
+  <text x="800" y="1744" font-size="10.5" fill="#cdd6e4">  · GO THERE, not lookup (Modulate / Demodulate) ................. cat-bytes.md §0.1</text>
+  <text x="800" y="1760" font-size="10.5" fill="#cdd6e4">  · A-fiber is CONSTANT ⇒ the bundle IS trivial ⇒ torus, not Klein  cat-bytes.md §3d</text>
+  <text x="800" y="1776" font-size="10.5" fill="#cdd6e4">    ⇒ so my “trivial vs Klein bottle, untested” caveat was UNDER-claiming. Discharged.</text>
+  <text x="800" y="1798" font-size="10.5" font-weight="bold" fill="#4fd99b">(b) GENUINELY NEW — the FUNDAMENTAL SQUARE and c-wrap. Neither document draws either,</text>
+  <text x="800" y="1814" font-size="10.5" fill="#cdd6e4">  and c-wrap rides only on the VALUE circle, which is FORCED on either reading of Q1.</text>
+  <text x="800" y="1836" font-size="10.5" font-weight="bold" fill="#c79bf0">⚠ ALSO FOUND, AND NOT MINE TO RESOLVE — §4.2 lists T² as FORCED “on either reading”,</text>
+  <text x="800" y="1852" font-size="10.5" fill="#cdd6e4">  then says reading B makes the floor “not T²”. Reported to Compass, not adjusted.</text>
+
+  <!-- ========================== LEGEND ========================== -->
+  <line x1="48" y1="1902" x2="96" y2="1902" stroke="#5fc9f0" stroke-width="2.6" stroke-dasharray="11 7"/>
+  <text x="106" y="1906" font-size="10.5" fill="#7c8598">the FREQUENCY circle — READING A of the OPEN Q1: position in the walk, ℤ/N.</text>
+  <line x1="640" y1="1902" x2="688" y2="1902" stroke="#c79bf0" stroke-width="2.6"/>
+  <text x="698" y="1906" font-size="10.5" fill="#7c8598">the AMPLITUDE circle — the byte, ℤ/256. It wraps.</text>
+  <line x1="1100" y1="1902" x2="1148" y2="1902" stroke="#4fd99b" stroke-width="2.8"/>
+  <text x="1158" y="1906" font-size="10.5" fill="#7c8598">a WALK — a displacement, never a lookup.</text>
+  <text x="48" y="1926" font-size="10.5" fill="#7c8598">Arrowheads are DELIBERATE: every arrow is an olog ASPECT with a domain and a codomain. ⚠ NOT all are Cat(byte) morphisms — Cat(byte)’s are register-OBSERVED adjacency (B-le); a-short / a-long are this olog’s.</text>
+  </g>
+</svg>

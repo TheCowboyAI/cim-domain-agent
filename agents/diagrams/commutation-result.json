@@ -1,0 +1,86 @@
+{
+  "artifact": "diagram-commutation-result",
+  "claims": [
+    {
+      "file": "act-expert-cospan.svg",
+      "from": "spec",
+      "id": "pushout-square",
+      "pathA": [
+        "s1",
+        "p2"
+      ],
+      "pathB": [
+        "s2",
+        "p1"
+      ],
+      "proof": null,
+      "reason": "commutativity of a pushout square is part of the DATA of a colimiting cocone, not a consequence of it — true by construction the moment the apex is a pushout. A #def would re-prove the peer-accepted. What IS owed and is NOT this square: (1) the shared object is the same OBJECT not the same WORD, (2) the decoration merges, i.e. F is lax monoidal (Fong-Spivak arXiv:1806.08304 discharges by instantiation). Ruled by Compass 2026-08-23.",
+      "stage1_defects": [],
+      "stage1_verdict": "WELL-FORMED",
+      "stage2_defects": [],
+      "status": "DEFINITIONAL",
+      "to": "pushout"
+    },
+    {
+      "file": "act-expert-olog.svg",
+      "from": "proposed-composition",
+      "id": "verdict-square",
+      "pathA": [
+        "a1",
+        "a2"
+      ],
+      "pathB": [
+        "b1",
+        "b2"
+      ],
+      "proof": null,
+      "reason": "quantifies over \"an algebraic derivation\", a carrier with no boundary — no exhaustive statement can be made over it. Splits into a PROVABLE soundness direction (walk-coherent => path-equal, owed as walk-adequacy.rzk#walk-coherence-is-sound) and a PERMANENTLY UNPROVABLE completeness direction (coherence is a measurement over a monotone fold at a time-range). Ruled by Compass 2026-08-23.",
+      "stage1_defects": [],
+      "stage1_verdict": "WELL-FORMED",
+      "stage2_defects": [],
+      "status": "UNPROVABLE-AS-STATED",
+      "to": "verdict"
+    },
+    {
+      "file": "act-expert-string-diagram.svg",
+      "from": "gw",
+      "id": "frobenius-special",
+      "pathA": [
+        "delta",
+        "mu"
+      ],
+      "pathB": [
+        "id-gw"
+      ],
+      "proof": null,
+      "reason": "Specialness is an AXIOM of a *special* commutative Frobenius monoid (Fong-Spivak arXiv:1806.08304 Def 2.5, the (special) axiom), and a hypergraph category is DEFINED as one where every object carries that structure (ibid. §2.2). A #def would re-prove the definition. CAVEAT: DEFINITIONAL discharges the law GIVEN the structure — \"this category IS hypergraph\" is a separate unproven claim living OUTSIDE this picture. Ruled by Compass 2026-08-23.",
+      "stage1_defects": [],
+      "stage1_verdict": "WELL-FORMED",
+      "stage2_defects": [],
+      "status": "DEFINITIONAL",
+      "to": "gw"
+    }
+  ],
+  "defects": [],
+  "files": [
+    "act-expert-cospan.svg",
+    "act-expert-olog.svg",
+    "act-expert-string-diagram.svg"
+  ],
+  "options": {
+    "strict": false
+  },
+  "summary": {
+    "by_status": {
+      "DEFINITIONAL": 2,
+      "PROVEN": 0,
+      "UNPROVABLE-AS-STATED": 1,
+      "UNPROVEN": 0
+    },
+    "claims": 3,
+    "defects": 0,
+    "files": 3,
+    "malformed_claims": 0
+  },
+  "version": 1
+}

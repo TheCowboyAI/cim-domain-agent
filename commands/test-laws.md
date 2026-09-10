@@ -10,37 +10,55 @@ Where `[law]` is optional: `monoid`, `functor`, `adjunction`, `monad`, `mealy`, 
 
 ## What It Generates
 
-### Monoid Laws (CT-8) — for event logs, ValueObject collections
+### Monoid Laws (CT-8) — over the CARRIER, not over event logs
+
+⛔ This section stated its laws over `Vec<Event>` and "event logs". There are no events and
+no event log. Substituting `Vec<Observation>` would NOT fix it — a `Vec` of anything the
+register can reproduce is a MATERIALIZED WALK, which is the residency defect. The monoid
+that actually exists is the FOLD onto the head.
+
+**The carrier is `u64` and the operation is `Modulate`.** `Modulate(head, cid) => head + cid`
+with identity `0`; `Demodulate(headAfter, from) => headAfter - from` recovers the addend.
+That is a monoid on `u64` under addition — associative, with a two-sided identity — and it
+is the one the substrate runs on.
 
 ```rust
 proptest! {
+    /// Left identity: folding nothing changes nothing.
+    /// FALSIFIER: any head h for which modulate(h, 0) != h.
     #[test]
-    fn monoid_identity_left(events in vec(arb_event(), 0..50)) {
-        let empty: Vec<Event> = vec![];
-        let result = fold(empty.into_iter().chain(events.iter().cloned()), initial());
-        let expected = fold(events.into_iter(), initial());
-        prop_assert_eq!(result, expected);
+    fn monoid_identity_left(h: u64) {
+        prop_assert_eq!(modulate(h, 0), h);
     }
 
+    /// Right identity: the empty fold is the identity from either side.
+    /// FALSIFIER: any cid c for which modulate(0, c) != c.
     #[test]
-    fn monoid_identity_right(events in vec(arb_event(), 0..50)) {
-        let empty: Vec<Event> = vec![];
-        let result = fold(events.iter().cloned().chain(empty.into_iter()), initial());
-        let expected = fold(events.into_iter(), initial());
-        prop_assert_eq!(result, expected);
+    fn monoid_identity_right(c: u64) {
+        prop_assert_eq!(modulate(0, c), c);
     }
 
+    /// Associativity: fold order does not change the head.
+    /// FALSIFIER: any (a,b,c) where the two groupings differ.
     #[test]
-    fn monoid_associativity(
-        a in vec(arb_event(), 0..20),
-        b in vec(arb_event(), 0..20),
-    ) {
-        let ab = fold(a.iter().chain(b.iter()).cloned(), initial());
-        let a_then_b = fold(b.into_iter(), fold(a.into_iter(), initial()));
-        prop_assert_eq!(ab, a_then_b);
+    fn monoid_associativity(a: u64, b: u64, c: u64) {
+        prop_assert_eq!(modulate(modulate(a, b), c), modulate(a, modulate(b, c)));
+    }
+
+    /// Round-trip: Demodulate inverts Modulate. This is the law that makes a
+    /// FRAME an address rather than a container — content is recovered, not shipped.
+    /// FALSIFIER: any (h,c) where the recovered value differs from c.
+    #[test]
+    fn carrier_round_trips(h: u64, c: u64) {
+        prop_assert_eq!(demodulate(modulate(h, c), h), c);
     }
 }
 ```
+
+⚠ **Order-forgetting is a SEPARATE law and it is already PROVEN — do not re-prove it here.**
+`walk-algebra.rzk::wa-sum-forgets-order` gives `sum(A ++ B) = sum(B ++ A)`, i.e. the head
+does NOT determine the walk. Cite it; a proptest cannot establish it and would only be
+sampling the theorem.
 
 ### Functor Laws (CT-2) — for lift, context maps, concept associations
 

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2025-2026 - Cowboy AI, Inc. -->
+<!--
+  CALCULUS: DECORATED COSPAN.  PRIMARY: Fong, "Decorated Cospans" (Theory and
+  Applications of Categories 30(33)) — an open system is a cospan X → N ← Y with BOTH
+  legs mapping INTO the apex, decorated by 1 → F N; composition of cospans is the
+  PUSHOUT over the shared foot. §2.2: a hypergraph category equips every object with a
+  special commutative Frobenius monoid.
+  SUBJECT: act-expert (Compass) — the SCOPE, and how it composes with Stencil.
+  THEME: agents/diagrams/THEME.md §5 (dark). No departures. Apex green, leg soft
+  off-white with arrowheads, decoration dashed green, grouping purple for the pushout.
+  DARK TWIN of act-expert-cospan.svg. Parity is absolute: identical geometry, identical
+  labels, identical panels. Only colour, glow and stroke width differ.
+  GLOW: medium on the two apexes, soft on the type boxes, the decoration and the grouping
+  region, strong on the shared object and the pushout object, because the shared object is
+  the structure the composite depends on. Panels never glow. No text carries a filter.
+  No <line> carries a filter either — an axis-aligned line has a zero-height bbox and a
+  percentage filter region erases it (THEME.md §5).
+  REDRAWN 2026-08-22 for steele's ruling: "composition is in the graph… the register is
+  not intended to hold composition" · "the graph is where EVERYTHING exists". The
+  DECORATION read "the register readings the lane carries" — that named the wrong carrier.
+  It is now "the graph walks the lane carries", and the caveat says why.
+  STATIC. No animation in this file.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1150" width="1400" height="1150"
+     font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Compass (act-expert) — decorated cospan: the scope, and the pushout with Stencil (dark)</title>
+  <desc>Two parts, dark theme. Part one is a decorated cospan: a left box X listing what
+enters Compass, a green apex box N naming what Compass does, and a right box Y listing what
+leaves. Two legs carry arrowheads and both point INTO the apex. A dashed green box
+below the apex carries the decoration 1 to F N — the graph walks the lane carries —
+with a dashed arrow into the apex. Part two is a pushout square drawn inside a dashed
+purple grouping region. The shared object "a diagram specification" sits at the top left
+and maps by arrows into two apexes: right into M, the Stencil apex, and down into N, the
+Compass apex. Those two in turn map into the bottom-right box N +Y M, whose inner corner
+carries the standard pushout corner mark. Text in the middle of the square reads
+"Compass composed with Stencil equals N +Y M over the shared object". A panel states that
+without a named shared object there is no composite, and a caveat panel states that the
+diagram does not show that the decoration functor is lax monoidal.</desc>
+
+  <!-- THE DECLARED GRAPH — machine-readable, so what this picture asserts can be
+       CHECKED. Emitted by Stencil; ruled on by Compass via
+       scripts/check-diagram-commutation.py. IDENTICAL to the light twin's block: one
+       diagram in two themes declares ONE graph.
+       ① THE COSPAN ITSELF MAKES NO COMMUTING CLAIM. X → N ← Y converges; the two legs
+       are NOT parallel, so there is no equation between them to state. It asserts an
+       INTERFACE, and the declaration below says exactly that and no more.
+       ② THE PUSHOUT SQUARE DOES. It is drawn with a pushout corner mark and the equation
+       "Compass ∘ Stencil = N +Y M", and its two routes from the shared object to the
+       pushout object ARE parallel. That claim is DECLARED, not invented — it is on the
+       face of the picture. It is marked UNPROVEN because no #def establishes it. -->
+  <metadata>
+    <diagram xmlns="https://cowboy.ai/diagram/v1" calculus="cospan">
+      <node id="X"          label="X — what ENTERS"/>
+      <node id="N"          label="N — the APEX: Compass"/>
+      <node id="Y"          label="Y — what LEAVES"/>
+      <node id="decoration" label="the graph walks the lane carries"/>
+      <node id="spec"       label="a diagram specification"/>
+      <node id="M"          label="M — the APEX: Stencil"/>
+      <node id="pushout"    label="Compass ∘ Stencil"/>
+
+      <arrow id="legX" src="X"          tgt="N"       label="a leg"/>
+      <arrow id="legY" src="Y"          tgt="N"       label="a leg"/>
+      <!-- id is 'decor', NOT 'dec': <marker id="dec"> already owns that id in <defs>,
+           and a duplicate id makes url(#dec) resolve to this element instead of the
+           marker — which silently ERASES the decoration's arrowhead. Measured. -->
+      <arrow id="decor" src="decoration" tgt="N"      label="the decoration: 1 → F N"/>
+      <arrow id="s1"   src="spec"       tgt="M"       label="Stencil's left leg"/>
+      <arrow id="s2"   src="spec"       tgt="N"       label="Compass's leg"/>
+      <arrow id="p1"   src="N"          tgt="pushout" label="into the pushout"/>
+      <arrow id="p2"   src="M"          tgt="pushout" label="into the pushout"/>
+
+      <commutes id="pushout-square" from="spec" to="pushout"
+                pathA="s1;p2" pathB="s2;p1"
+                status="DEFINITIONAL" reason="commutativity of a pushout square is part of the DATA of a colimiting cocone, not a consequence of it — true by construction the moment the apex is a pushout. A #def would re-prove the peer-accepted. What IS owed and is NOT this square: (1) the shared object is the same OBJECT not the same WORD, (2) the decoration merges, i.e. F is lax monoidal (Fong-Spivak arXiv:1806.08304 discharges by instantiation). Ruled by Compass 2026-08-23."/>
+    </diagram>
+  </metadata>
+
+  <defs>
+    <filter id="glow-soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-med" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-strong" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="3.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <marker id="leg" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b9c6da"/>
+    </marker>
+    <marker id="leg-am" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c79bf0"/>
+    </marker>
+    <marker id="dec" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4fd99b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="1150" fill="#151820"/>
+
+  <text x="60" y="36" font-size="15" font-weight="bold" fill="#cdd6e4">Compass (act-expert) — DECORATED COSPAN: the SCOPE, and how it COMPOSES</text>
+  <text x="60" y="58" font-size="11.5" fill="#8b95a7">decorated cospan — X → N ← Y, both legs pointing INTO the apex · decoration 1 → F N drawn separately and dashed · composition is a PUSHOUT · Fong, Decorated Cospans</text>
+  <text x="60" y="78" font-size="11.5" fill="#8b95a7">In the Universe of Bytes.</text>
+
+  <!-- ==================== ① THE COSPAN ==================== -->
+  <text x="60" y="106" font-size="12" font-weight="bold" fill="#4fd99b">① THE COSPAN — Compass as an OPEN SYSTEM:  X → N ← Y</text>
+
+  <!-- X -->
+  <rect x="60" y="124" width="340" height="232" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="80" y="152" font-size="13" font-weight="bold" fill="#cdd6e4">X — what ENTERS</text>
+  <text x="80" y="184" font-size="12" fill="#cdd6e4">a projected diagram</text>
+  <text x="80" y="208" font-size="12" fill="#cdd6e4">a code pattern</text>
+  <text x="80" y="232" font-size="12" fill="#cdd6e4">a signal design</text>
+  <text x="80" y="256" font-size="12" fill="#cdd6e4">an axiom requirement</text>
+  <text x="80" y="280" font-size="12" fill="#cdd6e4">a region</text>
+  <text x="80" y="304" font-size="12" fill="#cdd6e4">an experiment result</text>
+  <text x="80" y="334" font-size="10.5" font-style="italic" fill="#8b95a7">the left leg's domain</text>
+
+  <!-- N (apex) -->
+  <rect x="500" y="150" width="400" height="200" rx="4" fill="#152420" stroke="#4fd99b" stroke-width="2.5" filter="url(#glow-med)"/>
+  <text x="700" y="182" font-size="13" font-weight="bold" fill="#4fd99b" text-anchor="middle">N — the APEX: Compass</text>
+  <text x="700" y="216" font-size="12" fill="#cdd6e4" text-anchor="middle">categorical law verification</text>
+  <text x="700" y="240" font-size="12" fill="#cdd6e4" text-anchor="middle">olog / string-diagram / cospan validation</text>
+  <text x="700" y="264" font-size="12" fill="#cdd6e4" text-anchor="middle">commutativity detection</text>
+  <text x="700" y="288" font-size="12" fill="#cdd6e4" text-anchor="middle">antimatter interpretation</text>
+  <text x="700" y="322" font-size="10.5" font-style="italic" fill="#7fc9a8" text-anchor="middle">everything else is outside this apex, and therefore not Compass's</text>
+
+  <!-- Y -->
+  <rect x="1000" y="124" width="340" height="200" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="1020" y="152" font-size="13" font-weight="bold" fill="#cdd6e4">Y — what LEAVES</text>
+  <text x="1020" y="184" font-size="12" fill="#cdd6e4">a law verdict</text>
+  <text x="1020" y="208" font-size="12" fill="#cdd6e4">a compliance ruling</text>
+  <text x="1020" y="232" font-size="12" fill="#cdd6e4">a proposal toward commutativity</text>
+  <text x="1020" y="258" font-size="12" fill="#c79bf0">a diagram specification  ●</text>
+  <text x="1020" y="290" font-size="10.5" font-style="italic" fill="#ab8fd0">● this one is the SHARED OBJECT in ② below</text>
+
+  <!-- legs, both INTO the apex, with arrowheads -->
+  <line x1="404" y1="258" x2="494" y2="250" stroke="#b9c6da" stroke-width="2.3" marker-end="url(#leg)"/>
+  <text x="450" y="232" font-size="11" fill="#cdd6e4" text-anchor="middle">a leg</text>
+  <line x1="996" y1="228" x2="906" y2="244" stroke="#b9c6da" stroke-width="2.3" marker-end="url(#leg)"/>
+  <text x="950" y="204" font-size="11" fill="#cdd6e4" text-anchor="middle">a leg</text>
+
+  <!-- decoration -->
+  <line x1="700" y1="398" x2="700" y2="356" stroke="#4fd99b" stroke-width="2.3"
+        stroke-dasharray="7 5" marker-end="url(#dec)"/>
+  <rect x="500" y="400" width="400" height="70" rx="4" fill="#14201c" stroke="#4fd99b"
+        stroke-width="1.7" stroke-dasharray="7 5" filter="url(#glow-soft)"/>
+  <text x="700" y="428" font-size="12" fill="#4fd99b" text-anchor="middle">the graph walks the lane carries</text>
+  <text x="700" y="452" font-size="11.5" font-style="italic" fill="#4fd99b" text-anchor="middle">the decoration:  1 → F N</text>
+
+  <text x="60" y="500" font-size="10.5" fill="#7c8598">A leg carries an ARROWHEAD — it is a genuine morphism INTO the apex, with a domain and a codomain. The decoration is DASHED, because it is carried and not contained.</text>
+
+  <!-- ==================== ② THE PUSHOUT ==================== -->
+  <rect x="60" y="540" width="1280" height="460" rx="6" fill="#201a2c" stroke="#b491e8"
+        stroke-width="1.7" stroke-dasharray="8 5" filter="url(#glow-soft)"/>
+  <text x="80" y="568" font-size="12" font-weight="bold" fill="#c79bf0">② THE PUSHOUT — a GROUPING (finite colimit). Two cospans compose over one shared object.</text>
+
+  <!-- shared object -->
+  <rect x="190" y="600" width="310" height="86" rx="4" fill="#1c2029" stroke="#c79bf0" stroke-width="2.5" filter="url(#glow-strong)"/>
+  <text x="345" y="630" font-size="13" font-weight="bold" fill="#c79bf0" text-anchor="middle">a diagram specification</text>
+  <text x="345" y="651" font-size="11.5" fill="#c79bf0" text-anchor="middle">(the SHARED OBJECT)</text>
+  <text x="345" y="672" font-size="10" font-style="italic" fill="#ab8fd0" text-anchor="middle">calculus · boxes · connections · structure · law · caveat</text>
+
+  <!-- M: Stencil apex -->
+  <rect x="830" y="592" width="330" height="100" rx="4" fill="#152420" stroke="#4fd99b" stroke-width="2.5" filter="url(#glow-med)"/>
+  <text x="995" y="624" font-size="13" font-weight="bold" fill="#4fd99b" text-anchor="middle">M — the APEX: Stencil</text>
+  <text x="995" y="648" font-size="12" fill="#cdd6e4" text-anchor="middle">SVG rendering · theming</text>
+  <text x="995" y="670" font-size="12" fill="#cdd6e4" text-anchor="middle">animation</text>
+
+  <!-- N: Compass apex, referenced not redrawn -->
+  <rect x="190" y="810" width="310" height="100" rx="4" fill="#152420" stroke="#4fd99b" stroke-width="2.5" filter="url(#glow-med)"/>
+  <text x="345" y="842" font-size="13" font-weight="bold" fill="#4fd99b" text-anchor="middle">N — the APEX: Compass</text>
+  <text x="345" y="866" font-size="11.5" font-style="italic" fill="#7fc9a8" text-anchor="middle">the same apex as ① above</text>
+  <text x="345" y="888" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">referenced, not redrawn</text>
+
+  <!-- the pushout object -->
+  <rect x="830" y="810" width="330" height="100" rx="4" fill="#1c2029" stroke="#c79bf0" stroke-width="2.5" filter="url(#glow-strong)"/>
+  <text x="995" y="850" font-size="17" font-weight="bold" fill="#c79bf0" text-anchor="middle">N +<tspan font-size="11" dy="4">Y</tspan><tspan dy="-4"> M</tspan></text>
+  <text x="995" y="878" font-size="12" fill="#c79bf0" text-anchor="middle">Compass ∘ Stencil</text>
+  <!-- the standard pushout corner mark, in the corner nearest the pushout object -->
+  <path d="M 852 858 L 852 832 L 878 832" fill="none" stroke="#c79bf0" stroke-width="2.3"/>
+  <text x="820" y="822" font-size="10.5" fill="#ab8fd0" text-anchor="end">the pushout corner mark</text>
+
+  <!-- the four maps of the square -->
+  <line x1="504" y1="640" x2="826" y2="640" stroke="#b9c6da" stroke-width="2.3" marker-end="url(#leg)"/>
+  <text x="665" y="628" font-size="11" fill="#cdd6e4" text-anchor="middle">Stencil's left leg</text>
+
+  <line x1="345" y1="690" x2="345" y2="806" stroke="#b9c6da" stroke-width="2.3" marker-end="url(#leg)"/>
+  <text x="358" y="752" font-size="11" fill="#cdd6e4">Compass's leg</text>
+
+  <line x1="504" y1="860" x2="826" y2="860" stroke="#c79bf0" stroke-width="2.3" marker-end="url(#leg-am)"/>
+  <text x="665" y="848" font-size="11" fill="#c79bf0" text-anchor="middle">into the pushout</text>
+  <line x1="995" y1="696" x2="995" y2="806" stroke="#c79bf0" stroke-width="2.3" marker-end="url(#leg-am)"/>
+  <text x="1008" y="754" font-size="11" fill="#c79bf0">into the pushout</text>
+
+  <!-- the composite, stated in the middle of the square -->
+  <text x="665" y="744" font-size="13" font-weight="bold" fill="#c79bf0" text-anchor="middle">Compass ∘ Stencil  =  N +<tspan font-size="9" dy="3">Y</tspan><tspan dy="-3"> M</tspan></text>
+  <text x="665" y="768" font-size="12" fill="#c79bf0" text-anchor="middle">over the shared object “a diagram specification”</text>
+
+  <!-- panel -->
+  <rect x="110" y="920" width="700" height="64" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="130" y="946" font-size="12" font-weight="bold" fill="#cdd6e4">If nobody can NAME the shared object, there is no composite —</text>
+  <text x="130" y="968" font-size="12" font-weight="bold" fill="#cdd6e4">only two agents run in sequence.</text>
+
+  <!-- ==================== CAVEAT ==================== -->
+  <rect x="60" y="1020" width="1280" height="106" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="82" y="1046" font-size="12" font-weight="bold" fill="#cdd6e4">WHAT THIS DIAGRAM CANNOT SHOW</text>
+  <text x="82" y="1072" font-size="11.5" fill="#cdd6e4">This shows the scope and how it composes. It does not show that the decoration functor is lax monoidal — that proof is owed.</text>
+  <text x="82" y="1092" font-size="11.5" fill="#cdd6e4">The decoration is GRAPH WALKS, because composition lives in the graph. The register carries no morphisms and no composition, so it is not what this lane carries — it answers where bytes are.</text>
+  <text x="82" y="1112" font-size="10.5" font-style="italic" fill="#7c8598">Nor does it show that any particular specification carried all six of its required fields.</text>
+</svg>

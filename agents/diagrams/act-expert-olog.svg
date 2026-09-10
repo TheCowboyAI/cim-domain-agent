@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2025-2026 - Cowboy AI, Inc. -->
+<!--
+  CALCULUS: OLOG.  PRIMARY: Spivak & Kent, "Ologs: A Categorical Framework for
+  Knowledge Representation", arXiv:1102.1889 — §2.1 types are boxes labelled with a
+  singular indefinite noun phrase; §2.2 aspects are arrows (functional relationships);
+  §3 a commutative diagram is a FACT; §4 finite colimits are GROUPINGS.
+  SUBJECT: act-expert (Compass) — what Compass IS.
+  THEME: agents/diagrams/THEME.md §5 (dark).
+  DARK TWIN of act-expert-olog.svg. Parity is absolute: identical geometry, identical
+  labels, identical panels. Only colour, glow and stroke width differ.
+  REDRAWN 2026-08-22 for steele's ruling: "composition is in the graph… the register is
+  not intended to hold composition" · "the graph is where EVERYTHING exists". PATH A is
+  the WALK route through THE GRAPH; the register appears as a SIDE NODE drawn deliberately
+  OUTSIDE the fact region.
+  DEPARTURE FROM THEME, declared, and it is the SAME departure the light twin declares:
+  the theme has no path-highlight token. The two route bands are drawn from EXISTING
+  dark tokens rather than new colour — PATH A uses the fact-region stroke 5f86b5, PATH B
+  uses the grouping stroke b491e8 — at 9px, behind the boxes. Band opacity is 0.7 here
+  against 0.6 in the light twin, because a low-opacity stroke is swallowed by a dark
+  ground; that is a colour change, not a geometry change.
+  GLOW: soft on type boxes and regions, strong on the antimatter finding. Panels never
+  glow. No text element carries a filter. No <line> carries a filter either — an
+  axis-aligned line has a zero-height bbox and a percentage filter region erases it.
+  STATIC. No animation in this file.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1420 1070" width="1420" height="1070"
+     font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Compass (act-expert) — olog: what Compass IS (dark)</title>
+  <desc>An olog, dark theme. A commuting square: the type "a proposed composition" reaches
+the type "a commutativity verdict" by two routes that must agree. PATH A, drawn solid with a
+blue band behind it, goes "is walked in" the graph, which "yields" the verdict. PATH B, drawn
+dashed with a purple band behind it, goes "is derived by hand as" an algebraic derivation,
+which "yields" the same verdict. The two routes leave one box and arrive in one box; an
+equals sign and a cycle glyph sit in the middle of the square with the label PATH A equals
+PATH B. A further aspect leaves the graph box, crosses the boundary of the square, and
+points to a side node "a byte position" that sits entirely OUTSIDE the square; it is
+labelled "endpoints checked in" and captioned to say the register answers only where bytes
+are and is on neither route. Below and right, a dashed purple grouping region marks a
+finite colimit: a commutativity verdict is either a coherence or an antimatter finding, and
+an antimatter finding admits a proposal toward commutativity. Two panels state the fact the
+square asserts and what the diagram cannot show.</desc>
+
+  <!-- THE DECLARED GRAPH — machine-readable, so the commuting claim can be CHECKED
+       rather than merely typed. Emitted by Stencil; ruled on by Compass via
+       scripts/check-diagram-commutation.py. IDENTICAL to the light twin's block:
+       one diagram in two themes declares ONE graph. 'r1' deliberately leaves the
+       square — the register is on neither route, and the declaration says so. -->
+  <metadata>
+    <diagram xmlns="https://cowboy.ai/diagram/v1" calculus="olog">
+      <node id="proposed-composition" label="a proposed composition"/>
+      <node id="graph"                label="the graph"/>
+      <node id="derivation"           label="an algebraic derivation"/>
+      <node id="verdict"              label="a commutativity verdict"/>
+      <node id="byte-position"        label="a byte position"/>
+      <node id="coherence"            label="a coherence"/>
+      <node id="antimatter"           label="an antimatter finding"/>
+      <node id="proposal"             label="a proposal toward commutativity"/>
+
+      <arrow id="a1" src="proposed-composition" tgt="graph"         label="is walked in"/>
+      <arrow id="a2" src="graph"                tgt="verdict"       label="yields"/>
+      <arrow id="b1" src="proposed-composition" tgt="derivation"    label="is derived by hand as"/>
+      <arrow id="b2" src="derivation"           tgt="verdict"       label="yields"/>
+      <arrow id="r1" src="graph"                tgt="byte-position" label="endpoints checked in"/>
+      <arrow id="g1" src="verdict"              tgt="coherence"     label="is either"/>
+      <arrow id="g2" src="verdict"              tgt="antimatter"    label="is either"/>
+      <arrow id="g3" src="antimatter"           tgt="proposal"      label="admits"/>
+
+      <commutes id="verdict-square" from="proposed-composition" to="verdict"
+                pathA="a1;a2" pathB="b1;b2"
+                status="UNPROVABLE-AS-STATED" reason="quantifies over &quot;an algebraic derivation&quot;, a carrier with no boundary — no exhaustive statement can be made over it. Splits into a PROVABLE soundness direction (walk-coherent =&gt; path-equal, owed as walk-adequacy.rzk#walk-coherence-is-sound) and a PERMANENTLY UNPROVABLE completeness direction (coherence is a measurement over a monotone fold at a time-range). Ruled by Compass 2026-08-23."/>
+    </diagram>
+  </metadata>
+
+  <defs>
+    <filter id="glow-soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-med" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-strong" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="3.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <marker id="ah" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b9c6da"/>
+    </marker>
+    <marker id="ah-am" viewBox="0 0 10 10" refX="9.2" refY="5"
+            markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c79bf0"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1420" height="1070" fill="#151820"/>
+
+  <text x="60" y="36" font-size="15" font-weight="bold" fill="#cdd6e4">Compass (act-expert) — OLOG: what Compass IS</text>
+  <text x="60" y="58" font-size="11.5" fill="#8b95a7">olog — boxes are TYPES (singular indefinite noun phrases) · arrows are ASPECTS (with arrowheads) · a commuting diagram is a FACT · a finite colimit is a GROUPING · Spivak–Kent arXiv:1102.1889</text>
+  <text x="60" y="78" font-size="11.5" fill="#8b95a7">In the Universe of Bytes.</text>
+
+  <!-- the aspect that LEAVES the square, to the register side node -->
+  <text x="880" y="106" font-size="11.5" fill="#cdd6e4" text-anchor="middle">endpoints checked in</text>
+
+  <!-- ================= THE COMMUTING SQUARE — a FACT region ================= -->
+  <rect x="60" y="130" width="980" height="440" rx="6" fill="#18212e" stroke="#5f86b5" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="78" y="154" font-size="12" font-weight="bold" fill="#7fa8d0">A FACT — two routes, one source, one target. Trace them.</text>
+  <text x="830" y="154" font-size="12" font-weight="bold" fill="#7fa8d0" text-anchor="middle">PATH A — the WALK route (solid, blue band)</text>
+
+  <!-- route bands (behind the boxes) -->
+  <path d="M 170 346 L 340 334 L 425 240 L 675 240 L 785 334 L 960 346"
+        fill="none" stroke="#5f86b5" stroke-width="9" stroke-linecap="round"
+        stroke-linejoin="round" opacity="0.7"/>
+  <path d="M 170 364 L 340 376 L 405 495 L 695 495 L 790 376 L 960 364"
+        fill="none" stroke="#b491e8" stroke-width="9" stroke-linecap="round"
+        stroke-linejoin="round" stroke-dasharray="16 9" opacity="0.7"/>
+
+  <!-- aspects: PATH A — through THE GRAPH -->
+  <line x1="334" y1="336" x2="424" y2="248" stroke="#b9c6da" stroke-width="2.5" marker-end="url(#ah)"/>
+  <line x1="674" y1="248" x2="786" y2="336" stroke="#b9c6da" stroke-width="2.5" marker-end="url(#ah)"/>
+  <text x="330" y="260" font-size="11.5" fill="#cdd6e4" text-anchor="middle">is walked in</text>
+  <text x="762" y="260" font-size="11.5" fill="#cdd6e4" text-anchor="middle">yields</text>
+
+  <!-- aspects: PATH B — the algebraic route -->
+  <line x1="334" y1="372" x2="404" y2="464" stroke="#b9c6da" stroke-width="2.5"
+        stroke-dasharray="8 5" marker-end="url(#ah)"/>
+  <line x1="692" y1="464" x2="786" y2="372" stroke="#b9c6da" stroke-width="2.5"
+        stroke-dasharray="8 5" marker-end="url(#ah)"/>
+  <text x="300" y="458" font-size="11.5" fill="#cdd6e4" text-anchor="middle">is derived by hand as</text>
+  <text x="762" y="458" font-size="11.5" fill="#cdd6e4" text-anchor="middle">yields</text>
+
+  <!-- the four types of the square -->
+  <rect x="90" y="320" width="240" height="70" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="210" y="348" font-size="13" fill="#cdd6e4" text-anchor="middle">a proposed composition</text>
+  <text x="210" y="369" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">“these two pipelines are equal”</text>
+
+  <rect x="430" y="200" width="240" height="70" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="550" y="228" font-size="13" fill="#cdd6e4" text-anchor="middle">the graph</text>
+  <text x="550" y="249" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">where composition lives — edges, paths</text>
+
+  <rect x="410" y="460" width="280" height="70" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="550" y="488" font-size="13" fill="#cdd6e4" text-anchor="middle">an algebraic derivation</text>
+  <text x="550" y="509" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">what the arrows say by hand</text>
+
+  <rect x="790" y="320" width="240" height="70" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="2.5" filter="url(#glow-soft)"/>
+  <text x="910" y="348" font-size="13" fill="#cdd6e4" text-anchor="middle">a commutativity verdict</text>
+  <text x="910" y="369" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">does it commute?</text>
+
+  <text x="910" y="302" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">both routes arrive in THIS box</text>
+
+  <!-- the commuting glyph, in the middle of the square -->
+  <text x="560" y="320" font-size="26" fill="#7fa8d0" text-anchor="middle">⟳</text>
+  <text x="560" y="370" font-size="36" font-weight="bold" fill="#cdd6e4" text-anchor="middle">=</text>
+  <text x="560" y="408" font-size="13" font-weight="bold" fill="#cdd6e4" text-anchor="middle">PATH A  =  PATH B</text>
+
+  <text x="560" y="552" font-size="12" font-weight="bold" fill="#c79bf0" text-anchor="middle">PATH B — the algebraic route (dashed, purple band)</text>
+
+  <!-- ========= THE SIDE NODE — the register, deliberately OFF the square ========= -->
+  <path d="M 550 200 C 550 150 620 116 740 116 L 1160 116 C 1215 116 1230 152 1230 194"
+        fill="none" stroke="#b9c6da" stroke-width="2.5" marker-end="url(#ah)"/>
+
+  <text x="1090" y="190" font-size="11" font-weight="bold" fill="#8b95a7">OFF THE SQUARE</text>
+  <rect x="1090" y="200" width="280" height="70" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="1230" y="228" font-size="13" fill="#cdd6e4" text-anchor="middle">a byte position</text>
+  <text x="1230" y="249" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">a cid — where the bytes are</text>
+
+  <text x="1230" y="296" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="middle">the REGISTER answers only this —</text>
+  <text x="1230" y="314" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="middle">bytes → cid (the position), and whether</text>
+  <text x="1230" y="332" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="middle">that position was seen.</text>
+  <text x="1230" y="358" font-size="11" font-weight="bold" fill="#cdd6e4" text-anchor="middle">It is not on either route.</text>
+
+  <!-- ================= THE FACT PANEL ================= -->
+  <rect x="60" y="600" width="620" height="190" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="78" y="626" font-size="12" font-weight="bold" fill="#cdd6e4">THE FACT — what makes this square a fact and not a picture</text>
+  <text x="78" y="654" font-size="11.5" fill="#cdd6e4">Walking the graph and deriving by hand must give the SAME</text>
+  <text x="78" y="673" font-size="11.5" fill="#cdd6e4">verdict. When they DISAGREE, one of the two is wrong — and</text>
+  <text x="78" y="692" font-size="11.5" fill="#cdd6e4">that disagreement is the finding, not a tie to break.</text>
+  <text x="78" y="720" font-size="10.5" font-style="italic" fill="#7c8598">Trace both routes with a finger: they leave one box and land in</text>
+  <text x="78" y="739" font-size="10.5" font-style="italic" fill="#7c8598">one box. That IS the commuting; nothing here asks you to take</text>
+  <text x="78" y="758" font-size="10.5" font-style="italic" fill="#7c8598">it on trust.</text>
+
+  <!-- ================= CAVEAT ================= -->
+  <rect x="60" y="810" width="620" height="130" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="78" y="836" font-size="12" font-weight="bold" fill="#cdd6e4">WHAT THIS DIAGRAM CANNOT SHOW</text>
+  <text x="78" y="864" font-size="11.5" fill="#cdd6e4">Composition lives in the graph. The register has no morphisms</text>
+  <text x="78" y="883" font-size="11.5" fill="#cdd6e4">and no composition, so it cannot yield this verdict — it answers</text>
+  <text x="78" y="902" font-size="11.5" fill="#cdd6e4">where bytes are.</text>
+
+  <!-- ================= THE GROUPING — a finite colimit ================= -->
+  <rect x="720" y="600" width="600" height="180" rx="6" fill="#201a2c" stroke="#b491e8"
+        stroke-width="1.7" stroke-dasharray="8 5" filter="url(#glow-soft)"/>
+  <text x="738" y="626" font-size="12" font-weight="bold" fill="#c79bf0">a GROUPING</text>
+  <text x="738" y="644" font-size="12" font-weight="bold" fill="#c79bf0">(finite colimit)</text>
+
+  <line x1="872" y1="392" x2="866" y2="660" stroke="#b9c6da" stroke-width="2.5" marker-end="url(#ah)"/>
+  <line x1="978" y1="392" x2="1145" y2="660" stroke="#b9c6da" stroke-width="2.5" marker-end="url(#ah)"/>
+  <text x="1000" y="590" font-size="11.5" fill="#cdd6e4" text-anchor="middle">is either</text>
+
+  <rect x="750" y="666" width="220" height="64" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="860" y="694" font-size="13" fill="#cdd6e4" text-anchor="middle">a coherence</text>
+  <text x="860" y="714" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">the two agreed</text>
+
+  <rect x="1050" y="666" width="250" height="64" rx="4" fill="#1c2029" stroke="#c79bf0" stroke-width="2.5" filter="url(#glow-strong)"/>
+  <text x="1175" y="694" font-size="13" fill="#c79bf0" text-anchor="middle">an antimatter finding</text>
+  <text x="1175" y="714" font-size="10.5" font-style="italic" fill="#ab8fd0" text-anchor="middle">kept with its ruling, never deleted</text>
+
+  <line x1="1175" y1="732" x2="1175" y2="906" stroke="#c79bf0" stroke-width="2.5" marker-end="url(#ah-am)"/>
+  <text x="1189" y="822" font-size="11.5" fill="#c79bf0">admits</text>
+
+  <rect x="1030" y="910" width="290" height="64" rx="4" fill="#1c2029" stroke="#9db8dc" stroke-width="1.7" filter="url(#glow-soft)"/>
+  <text x="1175" y="938" font-size="13" fill="#cdd6e4" text-anchor="middle">a proposal toward commutativity</text>
+  <text x="1175" y="958" font-size="10.5" font-style="italic" fill="#8b95a7" text-anchor="middle">what Compass hands back</text>
+
+  <!-- ================= LEGEND ================= -->
+  <line x1="66" y1="1000" x2="106" y2="1000" stroke="#5f86b5" stroke-width="7" opacity="0.7"/>
+  <line x1="66" y1="1000" x2="106" y2="1000" stroke="#b9c6da" stroke-width="2.5"/>
+  <text x="116" y="1004" font-size="10.5" fill="#7c8598">PATH A — the WALK route, taken IN THE GRAPH where composition lives</text>
+  <line x1="66" y1="1022" x2="106" y2="1022" stroke="#b491e8" stroke-width="7" stroke-dasharray="10 6" opacity="0.7"/>
+  <line x1="66" y1="1022" x2="106" y2="1022" stroke="#b9c6da" stroke-width="2.5" stroke-dasharray="8 5"/>
+  <text x="116" y="1026" font-size="10.5" fill="#7c8598">PATH B — the algebraic route, derived by hand</text>
+  <text x="66" y="1048" font-size="10.5" fill="#7c8598">boxes are TYPES · arrows are ASPECTS, and they carry arrowheads · the register box sits OUTSIDE the square because it is on neither route</text>
+</svg>

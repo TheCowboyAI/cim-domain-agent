@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (c) 2025-2026 - Cowboy AI, Inc. -->
+<!--
+  CALCULUS: STRING DIAGRAM.  PRIMARY: Fong, "The Algebra of Open and Interconnected
+  Systems" §1.2.2 (boxes are MORPHISMS, connecting lines are WIRES carrying objects);
+  Fong & Spivak arXiv:1806.08304 §2.2 (hypergraph category — every object carries a
+  special commutative Frobenius monoid, so wires SPLIT and MERGE), Def 2.5 (the
+  (special) axiom) and Prop 3.1 (every hypergraph category is self-dual compact
+  closed); Selinger arXiv:0908.3347 §5 (TRACED categories), §5.7 (every compact closed
+  category is symmetric traced) and Caveat 3.2 (Joyal–Street coherence covers
+  PROGRESSIVE diagrams only — this one is not progressive: it loops and it branches).
+  SUBJECT: act-expert (Compass) — what Compass DOES.
+  THEME: agents/diagrams/THEME.md §5 (dark). No departures.
+  DARK TWIN of act-expert-string-diagram.svg. Parity is absolute: identical geometry,
+  identical labels, identical panels, identical metadata. Only colour, glow and stroke
+  width differ.
+
+  ⛔ RETRACTED 2026-08-23 — THIS FILE PREVIOUSLY DREW A FALSE LAW CLAIM ON ITS OWN FACE.
+  It labelled w11 (`judge` -> `query alice`) "the cap — the wire bends back", legended it
+  "a CAP", and put "SNAKE / YANKING at the cap" in the law panel. Checked against the
+  primary, not asserted:
+    · a CAP is a counit  ε : A ⊗ A* → I  — it TERMINATES IN THE MONOIDAL UNIT.
+    · a TRACE is  Tr^X : hom(A ⊗ X, B ⊗ X) → hom(A, B)  (Selinger §5.1, Definition) —
+      it CLOSES A LOOP ON A SHARED OBJECT and yields a morphism A → B.
+  w11 feeds an output back to an earlier box's input. IT IS A TRACE. There is no cap in
+  this picture, therefore NO SNAKE, and the snake row is WITHDRAWN.
+  ⇒ THE GEOMETRY WAS NEVER WRONG, ONLY THE NAME. Selinger §5.1: a right trace "is
+  graphically represented by drawing a loop from the output X to the input X".
+  Remark 5.19 — "Obviously every compact closed category is symmetric traced" — so the
+  structure is native and legitimate, and yanking survives as Tr^X(c_{X,X}) = id_X (§5.7).
+  ⇒ ONE GEOMETRY FIX WENT WITH IT: §5.1 requires that "each wire must be oriented
+  left-to-right near the endpoints", so the loop now enters `query alice` through its
+  LEFT edge instead of dropping vertically into the top.
+
+  ⛔ CORRECTION 1, RULED BY COMPASS 2026-08-23 — THE COMPACT CLOSED ROW IS RESTORED.
+  The previous redraw DELETED the compact closed row along with the snake. That was an
+  overcorrection and Compass overruled it. Fong–Spivak Prop 3.1: "Every hypergraph
+  category H is self-dual compact closed", with cup := eta;delta and cap := mu;epsilon
+  CONSTRUCTED FROM THE FROBENIUS MAPS. The hypergraph row is kept, so compact closed
+  follows as a THEOREM; deleting it understated the category and contradicted the row
+  above it. Compass also caught the argument's own inconsistency: monoidal (pentagon /
+  triangle) is kept although no reassociation is drawn either, so "undrawn law ⇒ delete"
+  would take monoidal and symmetric with it. THE PANEL HEADER IS "THE LAWS THIS DIAGRAM
+  OBLIGES" — obligation is a property of the CATEGORY, not of what the picture exhibits.
+  The restored row carries BOTH reasons the SNAKE specifically was dropped: it is FALSE
+  WHERE IT WAS POINTED (instantiated at w11 it would assert Tr^proposal(g) = id), and it
+  is NOT INDEPENDENTLY OWED (FS Prop 3.1's proof: the zigzag identities are "an
+  IMMEDIATE CONSEQUENCE of the Frobenius and co/unitality axioms").
+
+  ⛔ CORRECTION 2, RULED BY COMPASS 2026-08-23 — `frobenius-special` IS DEFINITIONAL.
+  It was declared UNPROVEN. Specialness is an AXIOM, not a theorem: FS Def 2.5 lists
+  (special) alongside (Frobenius) as an axiom of the structure, and a hypergraph
+  category is DEFINED as one where every object carries it (ibid. §2.2). Marking it
+  UNPROVEN schedules work to re-prove a definition. Same shape as the cospan file's
+  pushout-square claim, which Compass ruled the analogy holds for.
+
+  ⇒ AND THE ROOT IS NOW STATED ON THE FACE OF THE DIAGRAM, in the caveat panel:
+  EXACTLY ONE claim here is genuinely unproven — that Compass's workflow category IS a
+  hypergraph category. Every law-panel row is DERIVED from it. That claim lives OUTSIDE
+  this picture and is NOT a `commutes` block, because nothing in this file can reach it.
+
+  NOTE ON NOTATION: the composition symbol is written `;` throughout, matching the
+  panel's own "delta ; mu = id" and the metadata's "delta;mu". The fat semicolon U+2A1F
+  is NOT used, because DejaVu Sans coverage for it was not verified and an unrendered
+  glyph in a law statement is a silent defect.
+
+  NEW 2026-08-23: A LAW PANEL FOR SPECIALNESS, drawn as TWO SIDES OF AN EQUATION, in a
+  SEPARATE INSET. Not one wire was added to the main flow.
+  GLOW: strong on the Frobenius nodes and on the trace, because those two are the
+  structure an interchange-only reading misses. Medium on morphism boxes and wires.
+  Panels never glow. No text element carries a filter.
+  ⛔ EVERY <line> USES glow-med-line (filterUnits=userSpaceOnUse). An axis-aligned line
+  has a ZERO-height bbox, so a percentage filter region collapses and the line renders as
+  NOTHING AT ALL — measured 2026-08-22 with a control pair. See THEME.md §5. The region
+  below was widened to the new 1360x1400 canvas when the panels grew; a stale region
+  would have silently erased every line in the new lower half.
+  NOT MERMAID. ARROWHEAD RULE: not one arrowhead appears on any wire in this file.
+  STATIC. No animation in this file.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1360 1400" width="1360" height="1400"
+     font-family="DejaVu Sans, Verdana, sans-serif">
+  <title>Compass (act-expert) — string diagram: what Compass DOES (dark)</title>
+  <desc>A string diagram read left to right, dark theme. Boxes are morphisms, tinted blue;
+lines are wires carrying objects and none of them has an arrowhead. Two wires enter on the
+left, "a proposed composition" and "a vantage (seed by ranking)", into the box "query alice",
+which emits the wire "a workspace state" into the box "walk the graph", which emits the
+wire "a graph walk". That wire meets a red Frobenius node where it splits into two:
+the upper branch enters the box "judge" and leaves as "a verdict"; the lower branch enters
+the box "observe back" and leaves as "an epoch". A short stub wire drops downward off
+"walk the graph" into a small box "check presence", which emits a stub wire "a cid"; it is
+captioned "the register — position only" and marked as a side consultation rather than a
+step in the composition. A second wire leaves "judge" in purple, runs right, loops back
+over the top of the whole diagram and enters "query alice" from the left as "a proposal":
+this is a TRACE, a loop closing on a shared object, and it is labelled as such. A
+retraction panel records that this loop was previously and wrongly labelled a cap, and
+that the snake law has been withdrawn because there is no cap here. A law panel lists the
+cumulative obligations in order — monoidal, symmetric, traced with Selinger's four trace
+axioms, symmetric traced yanking, compact closed (self-dual), and hypergraph. The compact
+closed row records that cup and cap are derived from the Frobenius maps by Fong and
+Spivak Proposition 3.1, that neither is drawn here, and the two separate reasons the
+snake claim was dropped: it is false where it was pointed, and it is not independently
+owed. The hypergraph row is marked as the root from which every row above it derives. A
+separate inset law panel draws the Frobenius specialness law as an equation with both
+sides: on the left a wire splits at a node and merges again at a second node, on the
+right a plain identity wire, with an equals sign between them; it is marked DEFINITIONAL,
+because specialness is an axiom of the structure rather than a theorem about it. A caveat
+panel states the root: exactly one claim in this diagram is genuinely unproven, namely
+that Compass's workflow category is a hypergraph category, and that claim lives outside
+this picture. It also states that the diagram does not show whether any run discharged
+the laws.</desc>
+
+  <!-- THE DECLARED GRAPH — machine-readable, so what this picture asserts can be
+       CHECKED. Emitted by Stencil; ruled on by Compass via
+       scripts/check-diagram-commutation.py. IDENTICAL to the light twin's block: one
+       diagram in two themes declares ONE graph.
+
+       ⛔ NOTE ON <arrow> IN A STRING DIAGRAM. The metadata declares CONNECTIVITY for a
+       checker; it is not a rendering directive, and it puts no arrowhead on anything.
+       Each <arrow> in the MAIN FLOW is a wire, labelled with the OBJECT it carries.
+
+       ⛔ w11 IS RELABELLED. It read "a proposal (the cap — the wire bends back)". A cap
+       is a counit A ⊗ A* → I terminating in the monoidal UNIT; w11 closes a loop on a
+       SHARED object and yields A → B, which is a TRACE (Selinger §5.1). The old label
+       named a structure this picture does not have.
+
+       ⛔ THE MODELLING DECISION, STATED RATHER THAN INFERRED. The gate's own docstring
+       says specialness "is expressible only by declaring the intermediate TENSOR object
+       as a single node (delta : A -> A(x)A, mu : A(x)A -> A), which is a modelling
+       decision the author must make deliberately". It is made here, deliberately, and it
+       introduces TWO KINDS OF NODE in one block:
+         · MAIN-FLOW nodes  — boxes and boundary ports; their arrows are WIRES.
+         · LAW-PANEL nodes  — `gw` and `gw-tensor` are OBJECTS, and `delta` / `mu` /
+           `id-gw` are the MORPHISMS of an equation drawn in the inset panel.
+       Both are genuinely DRAWN. `gw` is the wire entering and leaving the law panel,
+       `gw-tensor` is the labelled pair of wires between the two nodes, `id-gw` is the
+       right-hand side. Nothing is declared that the picture does not draw.
+
+       ⛔ `frobenius-special` IS DEFINITIONAL, NOT UNPROVEN — ruled by Compass 2026-08-23.
+       Specialness is an AXIOM of the structure (FS Def 2.5), and a hypergraph category
+       is DEFINED as one where every object carries it (ibid. §2.2). UNPROVEN scheduled
+       work to re-prove a definition. The `reason=` attribute carries the citation AND
+       the caveat: DEFINITIONAL discharges the law GIVEN the structure; that this
+       category IS hypergraph is a separate unproven claim living outside this picture.
+
+       ⛔ WHAT IS STILL *NOT* DECLARED, and why — this list is the honest part.
+         · NO SNAKE CLAIM. There is no cap and no cup DRAWN in this file, and the snake
+           is not independently owed anyway (FS Prop 3.1: the zigzag identities follow
+           from Frobenius + co/unitality). The COMPACT CLOSED row is nonetheless present
+           in the law panel, because obligation is a property of the CATEGORY, not of
+           what the picture exhibits — Compass, 2026-08-23, overruling its deletion.
+         · NO TRACE-AXIOM CLAIMS. Tightening, Sliding, Vanishing, Strength and Yanking
+           are each an equation between two diagrams, and only ONE of the two sides is
+           drawn anywhere in this file. They are LISTED in the law panel as obligations
+           and declared NOWHERE, because declaring them would put in the metadata what
+           the picture does not draw — the exact defect this gate exists to catch.
+         · NO SYMMETRY CLAIM. Found by RENDERING and looking, 2026-08-23: the trace used
+           to leave `judge` BELOW its verdict port, so the loop crossed the verdict wire
+           — an UNDECLARED σ, structure asserted by the picture and absent from the
+           metadata. The two ports were swapped; the trace now leaves ABOVE. THE PICTURE
+           NOW CONTAINS NO CROSSING AT ALL, which is why no symmetry claim is owed.
+         · NO HYPERGRAPH CLAIM. "This category IS a hypergraph category" is THE ROOT and
+           the only genuinely unproven thing here — and it is not a `commutes` block,
+           because it is not an equation between two paths in this picture. It is stated
+           in the caveat panel instead, which is the honest place for it. -->
+  <metadata>
+    <diagram xmlns="https://cowboy.ai/diagram/v1" calculus="string-diagram">
+      <node id="in-proposed-composition" label="a proposed composition"/>
+      <node id="in-vantage"              label="a vantage (seed × ranking)"/>
+      <node id="query-alice"             label="query alice"/>
+      <node id="walk-the-graph"          label="walk the graph"/>
+      <node id="check-presence"          label="check presence"/>
+      <node id="frobenius"               label="Frobenius: one walk, two uses"/>
+      <node id="judge"                   label="judge"/>
+      <node id="observe-back"            label="observe back"/>
+      <node id="out-verdict"             label="a verdict"/>
+      <node id="out-epoch"               label="an epoch"/>
+      <node id="out-cid"                 label="a cid"/>
+
+      <!-- LAW-PANEL OBJECTS. Drawn in the inset at x=840..1290, not in the main flow. -->
+      <node id="gw"        label="a graph walk"/>
+      <node id="gw-tensor" label="a graph walk ⊗ a graph walk" tensor="gw;gw"/>
+
+      <arrow id="w1"  src="in-proposed-composition" tgt="query-alice"    label="a proposed composition"/>
+      <arrow id="w2"  src="in-vantage"              tgt="query-alice"    label="a vantage (seed × ranking)"/>
+      <arrow id="w3"  src="query-alice"             tgt="walk-the-graph" label="a workspace state"/>
+      <arrow id="w4"  src="walk-the-graph"          tgt="frobenius"      label="a graph walk"/>
+      <arrow id="w5"  src="frobenius"               tgt="judge"          label="a graph walk"/>
+      <arrow id="w6"  src="frobenius"               tgt="observe-back"   label="a graph walk"/>
+      <arrow id="w7"  src="judge"                   tgt="out-verdict"    label="a verdict"/>
+      <arrow id="w8"  src="observe-back"            tgt="out-epoch"      label="an epoch"/>
+      <arrow id="w9"  src="walk-the-graph"          tgt="check-presence" label="a side consultation"/>
+      <arrow id="w10" src="check-presence"          tgt="out-cid"        label="a cid"/>
+      <arrow id="w11" src="judge"                   tgt="query-alice"    label="a proposal (a TRACE — the loop closes on a shared object; NOT a cap)"/>
+
+      <!-- THE SPECIALNESS EQUATION, drawn in the inset law panel. -->
+      <arrow id="delta" src="gw"        tgt="gw-tensor" label="δ — comultiply"/>
+      <arrow id="mu"    src="gw-tensor" tgt="gw"        label="μ — multiply"/>
+      <arrow id="id-gw" src="gw"        tgt="gw"        label="id — a graph walk"/>
+
+      <commutes id="frobenius-special" from="gw" to="gw"
+                pathA="delta;mu" pathB="id-gw"
+                status="DEFINITIONAL"
+                reason="Specialness is an AXIOM of a *special* commutative Frobenius monoid (Fong-Spivak arXiv:1806.08304 Def 2.5, the (special) axiom), and a hypergraph category is DEFINED as one where every object carries that structure (ibid. §2.2). A #def would re-prove the definition. CAVEAT: DEFINITIONAL discharges the law GIVEN the structure — &quot;this category IS hypergraph&quot; is a separate unproven claim living OUTSIDE this picture. Ruled by Compass 2026-08-23."/>
+    </diagram>
+  </metadata>
+
+  <defs>
+    <filter id="glow-soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-med" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-strong" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="3.4" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- glow-med-line: the SAME glow as glow-med, for AXIS-ALIGNED LINES ONLY.
+         A horizontal or vertical line has a bounding box of zero height or zero width,
+         so a filter region given in bbox PERCENTAGES collapses to nothing and the line
+         renders as NOTHING AT ALL. Measured with a control: an identical pair of lines,
+         one filtered each way, showed only the userSpaceOnUse one. Hence the explicit
+         user-space region below, which covers the WHOLE 1360x1400 canvas. -->
+    <filter id="glow-med-line" filterUnits="userSpaceOnUse" x="0" y="0" width="1360" height="1400">
+      <feGaussianBlur stdDeviation="2.6" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="1360" height="1400" fill="#151820"/>
+
+  <text x="70" y="36" font-size="15" font-weight="bold" fill="#cdd6e4">Compass (act-expert) — STRING DIAGRAM: what Compass DOES</text>
+  <text x="70" y="58" font-size="11.5" fill="#8b95a7">string diagram — boxes are MORPHISMS · lines are WIRES carrying objects, never arrows and never arrowheads · Fong §1.2.2 · Fong–Spivak arXiv:1806.08304</text>
+  <text x="70" y="78" font-size="11.5" fill="#8b95a7">In the Universe of Bytes.</text>
+
+  <!-- ============ THE TRACE: a wire that LOOPS BACK (Selinger §5.1) ============ -->
+  <path d="M 1090 166 L 1140 166 C 1218 166 1218 110 1140 110 L 240 110 C 210 110 205 125 205 150 L 205 205 C 205 219 213 225 226 225 L 250 225"
+        fill="none" stroke="#c79bf0" stroke-width="2.4" stroke-linecap="round" filter="url(#glow-strong)"/>
+  <text x="690" y="100" font-size="11.5" fill="#c79bf0" text-anchor="middle">a proposal — the traced object X</text>
+  <text x="1330" y="262" font-size="11.5" font-weight="bold" fill="#c79bf0" text-anchor="end">a TRACE, Tr^X — the output loops back as a proposal (antimatter)</text>
+  <text x="1330" y="282" font-size="10.5" font-style="italic" fill="#ab8fd0" text-anchor="end">NOT a cap: a cap is a counit A ⊗ A* → I and ends in the monoidal unit</text>
+  <text x="1330" y="302" font-size="10.5" font-style="italic" fill="#ab8fd0" text-anchor="end">⛔ RETRACTED 2026-08-23 — see the retraction panel below</text>
+
+  <!-- ============ INPUT WIRES ============ -->
+  <line x1="60" y1="240" x2="250" y2="240" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="60" y1="310" x2="250" y2="310" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="60" y1="230" x2="60" y2="250" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="60" y1="300" x2="60" y2="320" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <text x="196" y="232" font-size="11.5" fill="#5fc9f0" text-anchor="end">a proposed composition</text>
+  <text x="155" y="302" font-size="11.5" fill="#5fc9f0" text-anchor="middle">a vantage (seed × ranking)</text>
+
+  <!-- ============ MORPHISM: query alice ============ -->
+  <rect x="250" y="205" width="150" height="140" rx="4" fill="#17242f" stroke="#5fb3e0" stroke-width="1.8" filter="url(#glow-med)"/>
+  <text x="325" y="281" font-size="13" fill="#cdd6e4" text-anchor="middle">query alice</text>
+
+  <line x1="400" y1="275" x2="560" y2="275" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <text x="480" y="267" font-size="11.5" fill="#5fc9f0" text-anchor="middle">a workspace state</text>
+
+  <!-- ============ MORPHISM: walk the graph — composition lives HERE ============ -->
+  <rect x="560" y="245" width="180" height="60" rx="4" fill="#17242f" stroke="#5fb3e0" stroke-width="1.8" filter="url(#glow-med)"/>
+  <text x="650" y="281" font-size="13" fill="#cdd6e4" text-anchor="middle">walk the graph</text>
+
+  <line x1="740" y1="275" x2="860" y2="275" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <text x="795" y="262" font-size="11.5" fill="#5fc9f0" text-anchor="middle">a graph walk</text>
+
+  <!-- ====== THE SIDE CONSULTATION: a stub down to the register ====== -->
+  <line x1="650" y1="305" x2="650" y2="360" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <rect x="575" y="360" width="150" height="46" rx="4" fill="#17242f" stroke="#5fb3e0" stroke-width="1.8" filter="url(#glow-med)"/>
+  <text x="650" y="389" font-size="13" fill="#cdd6e4" text-anchor="middle">check presence</text>
+  <line x1="725" y1="383" x2="810" y2="383" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="810" y1="373" x2="810" y2="393" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <text x="768" y="375" font-size="11.5" fill="#5fc9f0" text-anchor="middle">a cid</text>
+  <text x="650" y="430" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="middle">the register — position only</text>
+  <text x="650" y="448" font-size="10.5" font-style="italic" fill="#7c8598" text-anchor="middle">a SIDE consultation, not a step in the composition</text>
+
+  <!-- ============ FROBENIUS NODE — the wire SPLITS ============ -->
+  <path d="M 860 275 C 905 275 915 190 950 190" fill="none" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med)"/>
+  <path d="M 860 275 C 905 275 915 370 950 370" fill="none" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med)"/>
+  <circle cx="860" cy="275" r="8" fill="#ff6b74" stroke="#ff9aa1" stroke-width="2.2" filter="url(#glow-strong)"/>
+  <line x1="856" y1="267" x2="826" y2="238" stroke="#ff9aa1" stroke-width="1.2"/>
+  <text x="820" y="232" font-size="11.5" font-weight="bold" fill="#ff9aa1" text-anchor="end">Frobenius: one walk, two uses</text>
+
+  <!-- ============ MORPHISM: judge ============ -->
+  <rect x="950" y="152" width="140" height="78" rx="4" fill="#17242f" stroke="#5fb3e0" stroke-width="1.8" filter="url(#glow-med)"/>
+  <text x="1020" y="197" font-size="13" fill="#cdd6e4" text-anchor="middle">judge</text>
+
+  <line x1="1090" y1="212" x2="1240" y2="212" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="1240" y1="202" x2="1240" y2="222" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <text x="1165" y="204" font-size="11.5" fill="#5fc9f0" text-anchor="middle">a verdict</text>
+
+  <!-- ============ MORPHISM: observe back ============ -->
+  <rect x="950" y="340" width="170" height="60" rx="4" fill="#17242f" stroke="#5fb3e0" stroke-width="1.8" filter="url(#glow-med)"/>
+  <text x="1035" y="376" font-size="13" fill="#cdd6e4" text-anchor="middle">observe back</text>
+
+  <line x1="1120" y1="370" x2="1240" y2="370" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="1240" y1="360" x2="1240" y2="380" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <text x="1180" y="362" font-size="11.5" fill="#5fc9f0" text-anchor="middle">an epoch</text>
+
+  <!-- ============ RETRACTION PANEL — the correction stays VISIBLE ============ -->
+  <rect x="70" y="468" width="1220" height="118" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="92" y="494" font-size="12" font-weight="bold" fill="#c79bf0">⛔ RETRACTED 2026-08-23 — this diagram claimed “SNAKE / YANKING at the cap”. THERE IS NO CAP HERE.</text>
+  <text x="92" y="518" font-size="11.5" fill="#cdd6e4">The loop from “judge” back into “query alice” was labelled a CAP. A cap is a counit ε : A ⊗ A* → I — it TERMINATES IN THE MONOIDAL UNIT.</text>
+  <text x="92" y="536" font-size="11.5" fill="#cdd6e4">This wire feeds an output back to an earlier input: it closes a loop on a SHARED OBJECT and yields A → B. That is a TRACE — Selinger §5.1,</text>
+  <text x="92" y="554" font-size="11.5" fill="#cdd6e4">Tr^X : hom(A ⊗ X, B ⊗ X) → hom(A, B). No cap ⇒ no snake. The SNAKE row is WITHDRAWN — but the COMPACT CLOSED row is NOT; see the law panel.</text>
+  <text x="92" y="576" font-size="10.5" font-style="italic" fill="#7c8598">The GEOMETRY was never wrong — §5.1: a right trace “is graphically represented by drawing a loop from the output X to the input X”. The NAME was. Compact closed ⇒ symmetric traced (§5.7), so the structure stands.</text>
+
+  <!-- ============ LAW PANEL ============
+       ROW ORDER, ruled by Compass 2026-08-23:
+         monoidal → symmetric → symmetric traced → compact closed → hypergraph.
+       The header says OBLIGES. Obligation is a property of the CATEGORY, never of what
+       the picture happens to exhibit — which is why monoidal survives with no
+       reassociation drawn, and why compact closed survives with no cup or cap drawn. -->
+  <rect x="70" y="606" width="740" height="480" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="92" y="632" font-size="12" font-weight="bold" fill="#cdd6e4">THE LAWS THIS DIAGRAM OBLIGES — cumulative</text>
+
+  <text x="92" y="655" font-size="11.5" font-weight="bold" fill="#cdd6e4">monoidal</text>
+  <text x="250" y="655" font-size="11.5" fill="#cdd6e4">pentagon · triangle</text>
+
+  <text x="92" y="677" font-size="11.5" font-weight="bold" fill="#cdd6e4">symmetric</text>
+  <text x="250" y="677" font-size="11.5" fill="#cdd6e4">interchange · σ ∘ σ = 1</text>
+
+  <text x="92" y="701" font-size="11.5" font-weight="bold" fill="#c79bf0">traced</text>
+  <text x="250" y="701" font-size="11.5" fill="#c79bf0">Selinger §5.1 — the four axioms, verbatim:</text>
+  <text x="262" y="721" font-size="11.5" fill="#c79bf0">(a) Tightening — naturality in A, B</text>
+  <text x="262" y="739" font-size="11.5" fill="#c79bf0">(b) Sliding — dinaturality in X</text>
+  <text x="262" y="757" font-size="11.5" fill="#c79bf0">(c) Vanishing — Tr^I f = f · Tr^(X⊗Y) f = Tr^X(Tr^Y f)</text>
+  <text x="262" y="775" font-size="11.5" fill="#c79bf0">(d) Strength — Tr^X(g ⊗ f) = g ⊗ Tr^X f</text>
+
+  <text x="92" y="799" font-size="11.5" font-weight="bold" fill="#c79bf0">symmetric traced</text>
+  <text x="262" y="799" font-size="11.5" fill="#c79bf0">Yanking — Tr^X(c_X,X) = id_X   (Selinger §5.7)</text>
+
+  <text x="262" y="819" font-size="10.5" font-style="italic" fill="#7c8598">§5.1: Strength is Selinger’s PLANAR replacement for Joyal–Street–</text>
+  <text x="262" y="835" font-size="10.5" font-style="italic" fill="#7c8598">Verity’s non-planar Superposing. Ours is symmetric, so Yanking holds.</text>
+
+  <!-- COMPACT CLOSED — RESTORED 2026-08-23 on Compass's ruling. -->
+  <text x="92" y="861" font-size="11.5" font-weight="bold" fill="#c79bf0">compact closed</text>
+  <text x="250" y="861" font-size="11.5" fill="#c79bf0">(self-dual) — cup = η;δ · cap = μ;ε</text>
+  <text x="250" y="877" font-size="11.5" fill="#c79bf0">DERIVED from the Frobenius structure [FS Prop 3.1]. Neither is drawn</text>
+  <text x="250" y="893" font-size="11.5" fill="#c79bf0">here; the snake follows from Frobenius + unitality and is NOT an</text>
+  <text x="250" y="909" font-size="11.5" fill="#c79bf0">independent obligation. TWO reasons the SNAKE row was dropped:</text>
+  <text x="262" y="925" font-size="10.5" fill="#ab8fd0">· FALSE WHERE IT WAS POINTED — instantiated at w11 the snake would</text>
+  <text x="274" y="940" font-size="10.5" fill="#ab8fd0">assert Tr^proposal(g) = id: that Compass’s whole feedback loop is the</text>
+  <text x="274" y="955" font-size="10.5" fill="#ab8fd0">IDENTITY. The diagram’s own content contradicts that.</text>
+  <text x="262" y="972" font-size="10.5" fill="#ab8fd0">· NOT INDEPENDENTLY OWED — FS Prop 3.1’s proof: the zigzag identities</text>
+  <text x="274" y="987" font-size="10.5" fill="#ab8fd0">are “an IMMEDIATE CONSEQUENCE of the Frobenius and co/unitality axioms”.</text>
+
+  <text x="92" y="1011" font-size="11.5" font-weight="bold" fill="#ff9aa1">hypergraph</text>
+  <text x="250" y="1011" font-size="11.5" fill="#ff9aa1">SPECIAL COMMUTATIVE FROBENIUS at ●</text>
+  <text x="250" y="1029" font-size="10.5" fill="#ff9aa1">drawn as an equation, both sides, in the panel at right →</text>
+  <text x="250" y="1045" font-size="10.5" font-weight="bold" fill="#ff9aa1">⛔ THIS ROW IS THE ROOT — every row above it DERIVES from it. See the caveat panel.</text>
+
+  <text x="92" y="1069" font-size="12" font-weight="bold" fill="#cdd6e4">Checking interchange alone validates this in a category we are not in.</text>
+
+  <!-- ============ INSET LAW PANEL — SPECIALNESS, BOTH SIDES ============ -->
+  <rect x="840" y="606" width="450" height="480" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="862" y="632" font-size="12" font-weight="bold" fill="#cdd6e4">LAW PANEL — SPECIALNESS, both sides</text>
+  <text x="862" y="654" font-size="11.5" fill="#ff9aa1">δ ; μ  =  id      on   a graph walk</text>
+
+  <!-- LHS: split then merge -->
+  <line x1="862" y1="728" x2="886" y2="728" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="862" y1="720" x2="862" y2="736" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <path d="M 886 728 C 906 728 911 706 931 706" fill="none" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med)"/>
+  <path d="M 886 728 C 906 728 911 750 931 750" fill="none" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med)"/>
+  <line x1="931" y1="706" x2="951" y2="706" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="931" y1="750" x2="951" y2="750" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <path d="M 951 706 C 971 706 976 728 996 728" fill="none" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med)"/>
+  <path d="M 951 750 C 971 750 976 728 996 728" fill="none" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med)"/>
+  <line x1="996" y1="728" x2="1020" y2="728" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="1020" y1="720" x2="1020" y2="736" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <circle cx="886" cy="728" r="7" fill="#ff6b74" stroke="#ff9aa1" stroke-width="2.2" filter="url(#glow-strong)"/>
+  <circle cx="996" cy="728" r="7" fill="#ff6b74" stroke="#ff9aa1" stroke-width="2.2" filter="url(#glow-strong)"/>
+  <text x="876" y="716" font-size="12" font-weight="bold" fill="#ff9aa1" text-anchor="end">δ</text>
+  <text x="1006" y="716" font-size="12" font-weight="bold" fill="#ff9aa1" text-anchor="start">μ</text>
+  <text x="941" y="782" font-size="10.5" fill="#5fc9f0" text-anchor="middle">a graph walk ⊗ a graph walk</text>
+
+  <text x="1050" y="736" font-size="22" font-weight="bold" fill="#cdd6e4" text-anchor="middle">=</text>
+
+  <!-- RHS: the identity wire -->
+  <line x1="1090" y1="728" x2="1250" y2="728" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="1090" y1="720" x2="1090" y2="736" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <line x1="1250" y1="720" x2="1250" y2="736" stroke="#5fc9f0" stroke-width="2.4" filter="url(#glow-med-line)"/>
+  <text x="1170" y="716" font-size="12" font-weight="bold" fill="#5fc9f0" text-anchor="middle">id</text>
+  <text x="1170" y="752" font-size="10.5" fill="#5fc9f0" text-anchor="middle">a graph walk</text>
+
+  <text x="862" y="812" font-size="11.5" font-weight="bold" fill="#cdd6e4">status = DEFINITIONAL — declared as `frobenius-special` here.</text>
+  <text x="862" y="832" font-size="10.5" font-style="italic" fill="#7c8598">The MAIN FLOW draws the COMULTIPLY only: its two branches end at</text>
+  <text x="862" y="848" font-size="10.5" font-style="italic" fill="#7c8598">distinct boundary ports and never rejoin. The MERGE exists only here,</text>
+  <text x="862" y="864" font-size="10.5" font-style="italic" fill="#7c8598">as the left-hand side of an equation — never as a wire in the workflow.</text>
+  <text x="862" y="890" font-size="10.5" fill="#8b95a7">Fong–Spivak arXiv:1806.08304 §2.2 — special commutative Frobenius.</text>
+
+  <text x="862" y="920" font-size="11.5" font-weight="bold" fill="#ff9aa1">WHY DEFINITIONAL AND NOT UNPROVEN — Compass, 2026-08-23</text>
+  <text x="862" y="940" font-size="10.5" fill="#cdd6e4">Specialness is an AXIOM of a *special* commutative Frobenius monoid:</text>
+  <text x="862" y="956" font-size="10.5" fill="#cdd6e4">FS Def 2.5 lists (special) alongside (Frobenius) as an axiom of the</text>
+  <text x="862" y="972" font-size="10.5" fill="#cdd6e4">structure, and a hypergraph category is DEFINED (ibid. §2.2) as one</text>
+  <text x="862" y="988" font-size="10.5" fill="#cdd6e4">where every object carries it. δ;μ = id is part of BEING the structure.</text>
+  <text x="862" y="1004" font-size="10.5" fill="#cdd6e4">A #def would re-prove the definition; UNPROVEN scheduled that work.</text>
+  <text x="862" y="1028" font-size="10.5" font-style="italic" fill="#7c8598">CAVEAT: DEFINITIONAL discharges the law GIVEN the structure. “This</text>
+  <text x="862" y="1044" font-size="10.5" font-style="italic" fill="#7c8598">category IS hypergraph” is a separate UNPROVEN claim, and it lives</text>
+  <text x="862" y="1060" font-size="10.5" font-style="italic" fill="#7c8598">OUTSIDE this picture — see the caveat panel below.</text>
+
+  <!-- ============ CAVEAT PANEL ============ -->
+  <rect x="70" y="1106" width="1220" height="200" rx="6" fill="#1e1d17" stroke="#8f8a68" stroke-width="1.7"/>
+  <text x="92" y="1132" font-size="12" font-weight="bold" fill="#cdd6e4">WHAT THIS DIAGRAM CANNOT SHOW</text>
+  <text x="92" y="1156" font-size="12" font-weight="bold" fill="#ff9aa1">⛔ THE ROOT — EXACTLY ONE CLAIM IN THIS DIAGRAM IS GENUINELY UNPROVEN: that Compass’s workflow category IS A HYPERGRAPH CATEGORY.</text>
+  <text x="92" y="1176" font-size="11.5" fill="#cdd6e4">The δ drawn at ● asserts it — AND IT IS NOW MEASURED: 99 of 99 hyperedges in the substrate's graph connect MORE THAN TWO nodes (arity 4-10), which is exactly Fong-Spivak's characterization of a morphism indexed by a finite SET rather than a domain/codomain pair. The hypergraph STRUCTURE is a re-measurable fact; Def 2.12's Frobenius structure closes the categorical statement by instantiation. Everything else in the law panel either PRESUPPOSES it (monoidal, symmetric — FS Def 2.12: a hypergraph category IS a symmetric monoidal category with extra structure) or is DERIVED from it (compact closed, symmetric traced) — compact closed by Fong–Spivak Prop 3.1</text>
+  <text x="92" y="1194" font-size="11.5" fill="#cdd6e4">(“every hypergraph category is self-dual compact closed”), and symmetric traced by Selinger §5.7 (“obviously every compact closed category is</text>
+  <text x="92" y="1212" font-size="11.5" fill="#cdd6e4">symmetric traced”). That claim lives OUTSIDE this picture: it is NOT a &lt;commutes&gt; block, because it is not an equation between two paths drawn here.</text>
+  <text x="92" y="1236" font-size="11.5" fill="#cdd6e4">This shows the actions and the laws they oblige. It does not show whether any particular run discharged them.</text>
+  <text x="92" y="1254" font-size="11.5" fill="#cdd6e4">The five trace axioms are LISTED, not DRAWN. Each is an equation between two diagrams, and only one side of each is present here.</text>
+  <text x="92" y="1272" font-size="11.5" fill="#cdd6e4">There is NO wire crossing anywhere in this picture, so it asserts no symmetry σ; σ ∘ σ = 1 is an obligation of the tier, listed and not drawn.</text>
+  <text x="92" y="1292" font-size="10.5" font-style="italic" fill="#7c8598">Nor does it rule on the laws — a renderer that judges its own output is a verifier that cannot fail. Compass rules; this file only declares.</text>
+
+  <!-- ============ LEGEND ============ -->
+  <line x1="80" y1="1330" x2="130" y2="1330" stroke="#5fc9f0" stroke-width="2.4"/>
+  <text x="142" y="1334" font-size="10.5" fill="#7c8598">a WIRE — carries an object. NO ARROWHEAD, ever: in a hypergraph category a morphism is indexed by a finite SET, not a domain/codomain pair.</text>
+  <circle cx="105" cy="1354" r="8" fill="#ff6b74" stroke="#ff9aa1" stroke-width="2.2"/>
+  <text x="142" y="1358" font-size="10.5" fill="#7c8598">a FROBENIUS node — where one wire SPLITS into two, or two MERGE into one. The main flow draws a SPLIT only; the MERGE is in the law panel.</text>
+  <path d="M 80 1382 L 112 1382 C 134 1382 134 1366 112 1366 L 88 1366" fill="none" stroke="#c79bf0" stroke-width="2.4"/>
+  <text x="142" y="1382" font-size="10.5" fill="#7c8598">a TRACE — a wire that LOOPS BACK, closing on a SHARED object: Tr^X : hom(A ⊗ X, B ⊗ X) → hom(A, B). NOT a cap; a cap ends in the unit I.</text>
+</svg>
