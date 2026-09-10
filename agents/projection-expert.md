@@ -68,6 +68,7 @@ tools:
   - TaskStop
   - TaskUpdate
   - mcp__alice__arc_post
+  - mcp__alice__arc_read
   # ARC participation
   - mcp__alice__nats_publish
   - mcp__alice__nats_monitor

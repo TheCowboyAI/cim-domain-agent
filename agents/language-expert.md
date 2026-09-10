@@ -63,6 +63,7 @@ tools:
   - TaskStop
   - TaskUpdate
   - mcp__alice__arc_post
+  - mcp__alice__arc_read
   # Alice Cognitive Graph — the UL IS the graph topology
   - mcp__alice__query_status
   - mcp__alice__query_whatis

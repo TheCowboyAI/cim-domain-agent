@@ -65,6 +65,7 @@ tools:
   - TaskStop
   - TaskUpdate
   - mcp__alice__arc_post
+  - mcp__alice__arc_read
   # Alice Cognitive Graph — the graph IS the knowledge base
   - mcp__alice__query_status
   - mcp__alice__query_whatis

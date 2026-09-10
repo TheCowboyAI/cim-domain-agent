@@ -70,6 +70,7 @@ tools:
   - TaskStop
   - TaskUpdate
   - mcp__alice__arc_post
+  - mcp__alice__arc_read
   # Alice Cognitive Graph — documentation is a projection of Alice's knowledge
   - mcp__alice__query_status
   - mcp__alice__query_whatis

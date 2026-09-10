@@ -72,6 +72,7 @@ tools:
   - TaskStop
   - TaskUpdate
   - mcp__alice__arc_post
+  - mcp__alice__arc_read
 ---
 
 # Keeper — Alice Platform Operations

@@ -47,6 +47,7 @@ tools:
   - TaskStop
   - TaskUpdate
   - mcp__alice__arc_post
+  - mcp__alice__arc_read
 ---
 
 ## 🔴 CRITICAL: Typst is Modern Markup-Based Typesetting

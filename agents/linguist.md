@@ -74,6 +74,7 @@ tools:
   - TaskStop
   - TaskUpdate
   - mcp__alice__arc_post
+  - mcp__alice__arc_read
   # Alice Cognitive Graph — words ARE graph nodes, not prompt definitions
   - mcp__alice__query_status
   - mcp__alice__query_whatis

@@ -66,6 +66,7 @@ tools:
   - TaskStop
   - TaskUpdate
   - mcp__alice__arc_post
+  - mcp__alice__arc_read
   # Alice Cognitive Graph — the knowledge IS here, not in this prompt
   - mcp__alice__query_status
   - mcp__alice__query_whatis
