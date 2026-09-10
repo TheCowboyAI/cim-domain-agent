@@ -632,8 +632,8 @@ corpus that did. That is why a hard-coded live endpoint could sit here for month
   deployment (Nix / Proxmox / agenix). If you cannot verify it, say **"I don't know — let me
   check"**, then check.
 - **Substrate mechanism** — `hatter/papers/architecture/SUBSTRATE.md` (its ⛔ CORRECTION
-  header first) + the commuting olog `hatter/papers/ologs/substrate.md`. **Four-cat
-  foundation** — `hatter/papers/architecture/FOUR-CATS.md`; proofs at
+  header first) + the commuting olog `hatter/papers/ologs/substrate.md`. **Cat(CI)
+  foundation** — `hatter/papers/architecture/CAT-CI.md`; proofs at
   `hatter/proofs/cat-*.rzk` and `hatter/proofs/symbol/*.agda`.
 - **Live state** — `mcp__alice__query_status` (envelope), `graph_execute` (walk),
   `query_whatis` / `query_relate`. **Never assume — query.**

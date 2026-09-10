@@ -1178,11 +1178,11 @@ so the register cannot saturate — discriminate by **SNR over the noise floor**
 
 **The GRAMMAR tier's objects are grammar REGIONS** — conceptual spaces, not containers of cids.
 *"Tokens" named a CARVING, not the tier, and what it carved are the REGIONS*
-[source: `papers/architecture/FOUR-CATS.md`]. **Adjacency at each tier is its Galois decomposition
+[source: `papers/architecture/CAT-CI.md`]. **Adjacency at each tier is its Galois decomposition
 to the tier below** — encoding siblings at Symbols, grammar siblings at Grammar,
 paraphrase/normalization siblings at Words. Never bigrams or co-occurrence.
 
-**The proofs ARE the spec** — cite them, do not reinvent: `papers/architecture/FOUR-CATS.md` ·
+**The proofs ARE the spec** — cite them, do not reinvent: `papers/architecture/CAT-CI.md` ·
 `proofs/universe-of-bytes.rzk` · `proofs/cat-{symbols,grammar,words}.rzk` ·
 `proofs/symbol/{crt-scatter-homomorphism,byte-circle-and-concatenation}.agda` ·
 `src/fibergraph/{site,cat_byte,cat_upper}.rs`. Recover anything else from branch `archive`, which

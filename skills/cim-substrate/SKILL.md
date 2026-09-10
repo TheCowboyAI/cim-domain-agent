@@ -1,6 +1,6 @@
 ---
 name: cim-substrate
-description: Tower substrate mechanism reference for CIM work — the LAW 1 paper/recipe corpus (SUBSTRATE.md, FOUR-CATS.md, papers/ologs), and the Tower symbol surface (Frames/Frame5, the op_* opcode surface, walk paths, var.* cover carrier, NTAR port). Load this when an action touches a fold, a cover write, a CID, a walk or query, a store, or a symbol/word/language operation — i.e. whenever you need to cite a Tower symbol or follow a governing recipe.
+description: Tower substrate mechanism reference for CIM work — the LAW 1 paper/recipe corpus (SUBSTRATE.md, CAT-CI.md, papers/ologs), and the Tower symbol surface (Frames/Frame5, the op_* opcode surface, walk paths, var.* cover carrier, NTAR port). Load this when an action touches a fold, a cover write, a CID, a walk or query, a store, or a symbol/word/language operation — i.e. whenever you need to cite a Tower symbol or follow a governing recipe.
 ---
 
 ⛔ **CIDs ARE LOCKED — ALL ARE `u64`** (steele 2026-08-17). Eight bytes, sixteen hex. The
@@ -53,8 +53,8 @@ walk/query, a store, a symbol/word/language operation — you MUST:
 1. **Read the governing paper and FOLLOW ITS RECIPE.** Substrate mechanism:
    `/git/thecowboyai/hatter/papers/architecture/SUBSTRATE.md` + its commuting
    olog/recipe `/git/thecowboyai/hatter/papers/ologs/substrate.md`
-   (`INGEST = FOLD ⊗ BIND`; `DETECT / WALK / RECONSTRUCT`). Four-cat foundation:
-   `/git/thecowboyai/hatter/papers/architecture/FOUR-CATS.md`. Recipe corpus + algebra:
+   (`INGEST = FOLD ⊗ BIND`; `DETECT / WALK / RECONSTRUCT`). Cat(CI) foundation:
+   `/git/thecowboyai/hatter/papers/architecture/CAT-CI.md`. Recipe corpus + algebra:
    `/git/thecowboyai/hatter/papers/ologs/*.md` (each an SMP process, `x → y = "make y
    from x"`; series = `∘`, parallel = `⊗`; `papers/ologs/recipe.md`). **Where a paper's
    MECHANISM claim disagrees with Tower code, the code wins (LAW 0) and the paper is the

@@ -466,7 +466,7 @@ silently. Read the authority, then cite it:
 
 - **Substrate mechanism** — `hatter/papers/architecture/SUBSTRATE.md` (its ⛔ CORRECTION
   header first) + the commuting olog `hatter/papers/ologs/substrate.md`.
-- **Four-cat foundation** — `hatter/papers/architecture/FOUR-CATS.md`; proofs at
+- **Cat(CI) foundation** — `hatter/papers/architecture/CAT-CI.md`; proofs at
   `hatter/proofs/cat-*.rzk` and `hatter/proofs/symbol/*.agda`.
 - **Parser-as-functor** — `Tower/papers/architecture/parser-as-functor-one-substrate.md`
   (JoinGraph variants are parser-functors over one substrate, not separate stores).

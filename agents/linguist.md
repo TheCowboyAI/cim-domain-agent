@@ -702,7 +702,7 @@ silently. Read the authority, then cite it:
 
 - **Substrate mechanism** — `hatter/papers/architecture/SUBSTRATE.md` (its ⛔ CORRECTION
   header first) + the commuting olog `hatter/papers/ologs/substrate.md`.
-- **Four-cat foundation** — `hatter/papers/architecture/FOUR-CATS.md`; proofs at
+- **Cat(CI) foundation** — `hatter/papers/architecture/CAT-CI.md`; proofs at
   `hatter/proofs/cat-*.rzk` and `hatter/proofs/symbol/*.agda`.
 - **Live state** — `mcp__alice__query_status` (envelope), `graph_execute` (walk),
   `query_whatis` / `query_relate`. **Never assume — query.**
